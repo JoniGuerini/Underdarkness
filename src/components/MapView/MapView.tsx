@@ -264,9 +264,10 @@ function MapTooltip({ location, state, position }: MapTooltipProps) {
 interface MapHeaderProps {
   character: Character;
   onClose: () => void;
+  shortcut?: string;
 }
 
-export function MapHeader({ character, onClose }: MapHeaderProps) {
+export function MapHeader({ character, onClose, shortcut = 'M' }: MapHeaderProps) {
   const current = getLocationById(character.location);
   return (
     <div className={styles.header}>
@@ -278,7 +279,7 @@ export function MapHeader({ character, onClose }: MapHeaderProps) {
       </div>
       <button className={`btn-secondary ${styles.btnBack}`} onClick={onClose}>
         <span>← Voltar</span>
-        <span className={styles.btnBackKey}>M</span>
+        <span className={styles.btnBackKey}>{shortcut}</span>
       </button>
     </div>
   );

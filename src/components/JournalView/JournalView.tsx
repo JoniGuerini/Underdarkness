@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import type { Character, Quest, QuestStatus } from '../../types';
+import type { Character, Quest, QuestStatus, QuestType } from '../../types';
 import {
   QUESTS,
   QUEST_STATUS_LABEL,
@@ -7,21 +7,55 @@ import {
   getQuestsByStatus,
 } from '../../data/quests';
 import { getLocationById } from '../../data/world';
+import { ConfirmDialog } from '../ConfirmDialog/ConfirmDialog';
 import styles from './JournalView.module.css';
 
 interface JournalViewProps {
   character: Character;
+  onUpdate: (patch: { abandonedQuestIds: string[] }) => void;
 }
 
 const STATUS_ORDER: QuestStatus[] = ['ativa', 'concluida', 'falhada'];
+const TYPE_ORDER: QuestType[] = ['principal', 'side', 'bounty', 'classe', 'evento', 'faccao'];
 
-export function JournalView({ character: _character }: JournalViewProps) {
+export function JournalView({ character, onUpdate }: JournalViewProps) {
   const [activeStatus, setActiveStatus] = useState<QuestStatus>('ativa');
+  // Filtro multi-select por tipo. Set vazio = sem filtro (mostra todos os tipos).
+  const [selectedTypes, setSelectedTypes] = useState<Set<QuestType>>(new Set());
+  const [pendingAbandon, setPendingAbandon] = useState<Quest | null>(null);
 
-  const questsForTab = useMemo(
-    () => getQuestsByStatus(activeStatus),
-    [activeStatus],
+  // Missões abandonadas somem do diário inteiro (qualquer aba).
+  const abandonedSet = useMemo(
+    () => new Set(character.abandonedQuestIds),
+    [character.abandonedQuestIds],
   );
+
+  const questsForTab = useMemo(() => {
+    const base = getQuestsByStatus(activeStatus).filter(
+      (q) => !abandonedSet.has(q.id),
+    );
+    if (selectedTypes.size === 0) return base;
+    return base.filter((q) => selectedTypes.has(q.type));
+  }, [activeStatus, abandonedSet, selectedTypes]);
+
+  const toggleType = (type: QuestType) => {
+    setSelectedTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(type)) next.delete(type);
+      else next.add(type);
+      return next;
+    });
+  };
+
+  const requestAbandon = (quest: Quest) => setPendingAbandon(quest);
+  const cancelAbandon = () => setPendingAbandon(null);
+  const confirmAbandon = () => {
+    if (!pendingAbandon) return;
+    onUpdate({
+      abandonedQuestIds: [...character.abandonedQuestIds, pendingAbandon.id],
+    });
+    setPendingAbandon(null);
+  };
 
   // Default: primeira quest da tab ativa
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -39,51 +73,103 @@ export function JournalView({ character: _character }: JournalViewProps) {
     questsForTab.find((q) => q.id === selectedId) ?? questsForTab[0] ?? null;
 
   return (
-    <div className={styles.card}>
-      {/* Tabs por status */}
-      <div className={styles.tabs}>
-        {STATUS_ORDER.map((status) => {
-          const count = QUESTS.filter((q) => q.status === status).length;
-          const active = activeStatus === status;
-          return (
-            <button
-              key={status}
-              type="button"
-              className={`${styles.tab} ${active ? styles.tabActive : ''}`}
-              onClick={() => handleTabChange(status)}
-            >
-              <span className={styles.tabLabel}>{QUEST_STATUS_LABEL[status]}</span>
-              <span className={styles.tabCount}>{count}</span>
-            </button>
-          );
-        })}
+    <div className={styles.root}>
+      {/* Card de filtros: status (single-select) + tipo (multi-select) */}
+      <div className={styles.filterCard}>
+        <div className={styles.filterRow}>
+          <span className={styles.filterLabel}>Status</span>
+          <div className={styles.filterChips}>
+            {STATUS_ORDER.map((status) => {
+              const count = QUESTS.filter(
+                (q) =>
+                  q.status === status &&
+                  !abandonedSet.has(q.id) &&
+                  (selectedTypes.size === 0 || selectedTypes.has(q.type)),
+              ).length;
+              const active = activeStatus === status;
+              return (
+                <button
+                  key={status}
+                  type="button"
+                  className={`${styles.statusChip} ${active ? styles.statusChipActive : ''}`}
+                  onClick={() => handleTabChange(status)}
+                >
+                  <span className={styles.statusChipLabel}>{QUEST_STATUS_LABEL[status]}</span>
+                  <span className={styles.statusChipCount}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className={styles.filterRow}>
+          <span className={styles.filterLabel}>Tipo</span>
+          <div className={styles.filterChips}>
+            {TYPE_ORDER.map((type) => {
+              const active = selectedTypes.has(type);
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  className={`${styles.typeChip} ${styles[`type_${type}`]} ${active ? styles.typeChipActive : ''}`}
+                  onClick={() => toggleType(type)}
+                >
+                  {QUEST_TYPE_LABEL[type]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
-      {/* Split: lista | detalhe */}
-      <div className={styles.split}>
-        <aside className={styles.list}>
-          {questsForTab.length === 0 ? (
-            <div className={styles.empty}>Nenhuma missão {QUEST_STATUS_LABEL[activeStatus].toLowerCase()}.</div>
-          ) : (
-            questsForTab.map((quest) => (
-              <QuestCard
-                key={quest.id}
-                quest={quest}
-                selected={selectedId === quest.id}
-                onClick={() => setSelectedId(quest.id)}
-              />
-            ))
-          )}
+      <div className={styles.layout}>
+        {/* Card esquerdo: lista de missões */}
+        <aside className={styles.listCard}>
+          <div className={styles.list}>
+            {questsForTab.length === 0 ? (
+              <div className={styles.empty}>Nenhuma missão {QUEST_STATUS_LABEL[activeStatus].toLowerCase()}.</div>
+            ) : (
+              questsForTab.map((quest) => (
+                <QuestCard
+                  key={quest.id}
+                  quest={quest}
+                  selected={selectedId === quest.id}
+                  onClick={() => setSelectedId(quest.id)}
+                />
+              ))
+            )}
+          </div>
         </aside>
 
-        <main className={styles.detail}>
+        {/* Card direito: detalhe da missão selecionada */}
+        <main className={styles.detailCard}>
           {selectedQuest ? (
-            <QuestDetail quest={selectedQuest} />
+            <QuestDetail quest={selectedQuest} onAbandon={requestAbandon} />
           ) : (
             <div className={styles.empty}>Selecione uma missão.</div>
           )}
         </main>
       </div>
+
+      <ConfirmDialog
+        open={pendingAbandon !== null}
+        title="Abandonar missão"
+        message={
+          pendingAbandon ? (
+            <>
+              Tem certeza que quer abandonar <em className={styles.confirmTitle}>{pendingAbandon.title}</em>?
+              {' '}A missão sai do diário. Você poderá retomá-la com quem a ofereceu.
+            </>
+          ) : (
+            ''
+          )
+        }
+        confirmLabel="Abandonar"
+        cancelLabel="Cancelar"
+        danger
+        onConfirm={confirmAbandon}
+        onCancel={cancelAbandon}
+      />
     </div>
   );
 }
@@ -142,9 +228,12 @@ function QuestCard({ quest, selected, onClick }: QuestCardProps) {
 // ============================================================================
 interface QuestDetailProps {
   quest: Quest;
+  onAbandon: (quest: Quest) => void;
 }
 
-function QuestDetail({ quest }: QuestDetailProps) {
+function QuestDetail({ quest, onAbandon }: QuestDetailProps) {
+  // Principais não podem ser abandonadas — fazem parte da história.
+  const canAbandon = quest.status === 'ativa' && quest.type !== 'principal';
   const location = quest.locationId ? getLocationById(quest.locationId) : null;
 
   // Progresso geral (objetivos completados / total)
@@ -183,6 +272,17 @@ function QuestDetail({ quest }: QuestDetailProps) {
             {quest.giver && <span>{quest.giver}</span>}
             {quest.giver && location && <span className={styles.metaSep}>·</span>}
             {location && <span>{location.name}</span>}
+          </div>
+        )}
+        {canAbandon && (
+          <div className={styles.detailActions}>
+            <button
+              type="button"
+              className={`btn-secondary danger ${styles.btnAbandon}`}
+              onClick={() => onAbandon(quest)}
+            >
+              Abandonar missão
+            </button>
           </div>
         )}
       </header>
@@ -269,10 +369,14 @@ function QuestDetail({ quest }: QuestDetailProps) {
 interface JournalHeaderProps {
   character: Character;
   onClose: () => void;
+  shortcut?: string;
 }
 
-export function JournalHeader({ character, onClose }: JournalHeaderProps) {
-  const activeCount = QUESTS.filter((q) => q.status === 'ativa').length;
+export function JournalHeader({ character, onClose, shortcut = 'J' }: JournalHeaderProps) {
+  const abandoned = new Set(character.abandonedQuestIds);
+  const activeCount = QUESTS.filter(
+    (q) => q.status === 'ativa' && !abandoned.has(q.id),
+  ).length;
   return (
     <div className={styles.header}>
       <div className={styles.nameBlock}>
@@ -283,7 +387,7 @@ export function JournalHeader({ character, onClose }: JournalHeaderProps) {
       </div>
       <button className={`btn-secondary ${styles.btnBack}`} onClick={onClose}>
         <span>← Voltar</span>
-        <span className={styles.btnBackKey}>J</span>
+        <span className={styles.btnBackKey}>{shortcut}</span>
       </button>
     </div>
   );

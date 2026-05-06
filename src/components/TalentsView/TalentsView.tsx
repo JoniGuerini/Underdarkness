@@ -385,9 +385,10 @@ function TalentTooltip({
 interface TalentsHeaderProps {
   character: Character;
   onClose: () => void;
+  shortcut?: string;
 }
 
-export function TalentsHeader({ character, onClose }: TalentsHeaderProps) {
+export function TalentsHeader({ character, onClose, shortcut = 'T' }: TalentsHeaderProps) {
   return (
     <div className={styles.header}>
       <div className={styles.nameBlock}>
@@ -398,7 +399,7 @@ export function TalentsHeader({ character, onClose }: TalentsHeaderProps) {
       </div>
       <button className={`btn-secondary ${styles.btnBack}`} onClick={onClose}>
         <span>← Voltar</span>
-        <span className={styles.btnBackKey}>T</span>
+        <span className={styles.btnBackKey}>{shortcut}</span>
       </button>
     </div>
   );

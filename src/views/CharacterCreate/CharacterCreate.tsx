@@ -50,6 +50,7 @@ export function CharacterCreate({ canGoBack, onBack, onCreate }: CharacterCreate
       inventory,
       talentRanks: {},
       visitedLocations: ['origem'],
+      abandonedQuestIds: [],
       gold: 0,
       time: '06:00',
       day: 1,

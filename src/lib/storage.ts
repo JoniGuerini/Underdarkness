@@ -41,6 +41,7 @@ function migrate(c: Character): Character {
     inventory: sized,
     talentRanks: c.talentRanks ?? {},
     visitedLocations: c.visitedLocations ?? ['origem'],
+    abandonedQuestIds: c.abandonedQuestIds ?? [],
   };
 }
 

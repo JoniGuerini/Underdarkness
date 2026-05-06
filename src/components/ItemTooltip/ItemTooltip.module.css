@@ -18,6 +18,18 @@
   animation: tooltipIn 0.15s ease-out;
 }
 
+/* Variante "inline" — usada em previews (Forja). Reaproveita o visual do
+   tooltip mas remove portal-positioning e animação de hover. */
+.tooltip.inline {
+  position: static;
+  transform: none;
+  animation: none;
+  z-index: auto;
+  pointer-events: auto;
+  max-width: none;
+  width: 100%;
+}
+
 @keyframes tooltipIn {
   from { opacity: 0; transform: translateY(-100%) translateY(-2px); }
   to   { opacity: 1; transform: translateY(-100%) translateY(-8px); }
@@ -90,12 +102,22 @@
   letter-spacing: 0.01em;
 }
 
+/* Divisória entre grupos de stats (base / prefixo / sufixo). Linha bem
+   discreta — o objetivo é só dar respiração visual sem virar separador
+   forte que compete com o nome do item. */
+.statDivider {
+  height: 1px;
+  background: var(--border-soft);
+  margin: 4px 0 2px;
+}
+
 /* Cores por categoria (espelho do que StatLine usa) */
 .fisico    { color: var(--elem-fisico); }
 .fogo      { color: var(--elem-fogo); }
 .gelo      { color: var(--elem-gelo); }
 .raio      { color: var(--elem-raio); }
 .caos      { color: var(--elem-caos); }
+.sagrado   { color: var(--elem-sagrado); }
 .vida      { color: var(--vital-vida); }
 .mana      { color: var(--vital-mana); }
 .forca     { color: var(--stat-forca); }

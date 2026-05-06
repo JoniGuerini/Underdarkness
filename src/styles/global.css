@@ -14,11 +14,35 @@ body {
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   overflow-x: hidden;
+  /* UI de jogo: seleção de texto desativada por padrão. Reativada só em
+     inputs/textarea (onde é necessária pra editar). */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input, textarea {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 #root {
   min-height: 100vh;
   background-color: var(--bg);
+}
+
+/* Foco: o ring de :focus padrão fica visível depois de qualquer clique
+   ("sticky focus") e polui a UI. Usamos :focus-visible — só aparece em
+   navegação por teclado (Tab), invisível depois de clique de mouse. */
+button:focus,
+[role='button']:focus,
+a:focus {
+  outline: none;
+}
+button:focus-visible,
+[role='button']:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
 }
 
 ::selection { background: var(--brass); color: var(--paper); }

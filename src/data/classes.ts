@@ -54,6 +54,7 @@ export const TAB_LABEL: Record<string, string> = {
   habilidades: 'Habilidades',
   mapa: 'Mapa',
   diario: 'Diário',
+  codice: 'Códice',
   opcoes: 'Opções',
 };
 
@@ -63,6 +64,7 @@ export const TAB_SHORTCUT: Record<string, string> = {
   habilidades: 'A',
   mapa: 'M',
   diario: 'J',
+  codice: 'K',
   opcoes: 'ESC',
 };
 
@@ -72,5 +74,6 @@ export const TAB_DESC: Record<string, string> = {
   habilidades: 'Habilidades ativas e magias conhecidas.',
   mapa: 'Localização atual e regiões já exploradas.',
   diario: 'Quests, anotações e fragmentos de lore.',
+  codice: 'Referência sobre itens, mods, criaturas e lore do mundo.',
   opcoes: 'Preferências do jogo.',
 };

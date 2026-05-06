@@ -252,6 +252,24 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
             />
           </Section>
 
+          <Section title="Dano Sagrado">
+            <StatLine
+              name="Dano Sagrado"
+              value={s.danoSagrado}
+              color="sagrado"
+              tooltip={
+                <>
+                  <TooltipLine>
+                    Dano <Mod color="sagrado">Sagrado</Mod> aplicado por golpe — efetivo contra criaturas profanas e mortos-vivos.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Mitigado pela <Mod color="sagrado">Resistência ao Sagrado</Mod> do alvo.
+                  </TooltipLine>
+                </>
+              }
+            />
+          </Section>
+
           <Section title="Velocidade">
             <StatLine
               name="Velocidade de Ataque"
@@ -368,6 +386,16 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
                 </>
               }
             />
+            <StatLine
+              name="Penetração de Sagrado"
+              value={`${s.penSagrado}%`}
+              color="sagrado"
+              tooltip={
+                <>
+                  Ignora {s.penSagrado}% da <Mod color="sagrado">Resistência ao Sagrado</Mod> do alvo.
+                </>
+              }
+            />
           </Section>
         </Column>
 
@@ -464,6 +492,17 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               }
             />
             <StatLine
+              name="Resistência ao Sagrado"
+              value={<>{s.resSagrado}%{resCap}</>}
+              color="sagrado"
+              tooltip={
+                <>
+                  Diminui o <Mod color="sagrado">Dano Sagrado</Mod> recebido em {s.resSagrado}%.
+                  <TooltipMeta>Limite máximo: {s.resistMax}%</TooltipMeta>
+                </>
+              }
+            />
+            <StatLine
               name="Resistência Física"
               value={`${s.resFisico}%`}
               color="fisico"
@@ -530,9 +569,10 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
 interface CharacterSheetHeaderProps {
   character: Character;
   onClose: () => void;
+  shortcut?: string;
 }
 
-export function CharacterSheetHeader({ character, onClose }: CharacterSheetHeaderProps) {
+export function CharacterSheetHeader({ character, onClose, shortcut = 'C' }: CharacterSheetHeaderProps) {
   return (
     <div className={styles.header}>
       <div className={styles.nameBlock}>
@@ -543,7 +583,7 @@ export function CharacterSheetHeader({ character, onClose }: CharacterSheetHeade
       </div>
       <button className={`btn-secondary ${styles.btnBack}`} onClick={onClose}>
         <span>← Voltar</span>
-        <span className={styles.btnBackKey}>C</span>
+        <span className={styles.btnBackKey}>{shortcut}</span>
       </button>
     </div>
   );

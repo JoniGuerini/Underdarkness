@@ -36,6 +36,12 @@ export interface ItemStat {
   text: string;
   /** cor de categoria aplicada na linha inteira (opcional) */
   color?: ModColor;
+  /**
+   * Categoria do stat — usada pelo tooltip pra inserir divisória visual
+   * entre grupos (base | prefixos | sufixos). Opcional: itens mock antigos
+   * sem `kind` renderizam como linha plana.
+   */
+  kind?: 'base' | 'prefix' | 'suffix';
 }
 
 export interface Item {
@@ -54,7 +60,7 @@ export interface Item {
 }
 
 export type ModColor =
-  | 'fisico' | 'fogo' | 'gelo' | 'raio' | 'caos'
+  | 'fisico' | 'fogo' | 'gelo' | 'raio' | 'caos' | 'sagrado'
   | 'vida' | 'mana'
   | 'forca' | 'agilidade' | 'intelecto'
   | 'defesa' | 'critico';
@@ -99,6 +105,8 @@ export interface Character {
   talentRanks: Record<string, number>;
   /** ids de locais já visitados — controla descoberta progressiva no Atlas */
   visitedLocations: string[];
+  /** ids de missões abandonadas — somem do diário, podem ser retomadas no futuro */
+  abandonedQuestIds: string[];
   gold: number;
   time: string;
   day: number;
@@ -134,6 +142,9 @@ export interface DerivedStats {
   penRaio: number;
   danoCaos: number;
   penCaos: number;
+  danoSagrado: number;
+  resSagrado: number;
+  penSagrado: number;
   bonusMagico: number;
   velConjuracao: number;
   eficienciaMana: number;
@@ -146,7 +157,7 @@ export interface DerivedStats {
   acerto: number;
 }
 
-export type TabKey = 'personagem' | 'talentos' | 'habilidades' | 'mapa' | 'diario' | 'opcoes';
+export type TabKey = 'personagem' | 'talentos' | 'habilidades' | 'mapa' | 'diario' | 'codice' | 'opcoes';
 
 // ============================================================================
 // Árvore de Talentos (estilo Diablo 2)

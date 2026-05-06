@@ -49,9 +49,14 @@ export function computeDerivedStats(c: Character): DerivedStats {
   const danoCaos = 0;
   const penCaos = 0;
 
-  // Dano Total — soma de todos os tipos (físico + elemental + caos)
-  const danoTotalMin = danoFisicoMin + danoFogo + danoGelo + danoRaio + danoCaos;
-  const danoTotalMax = danoFisicoMax + danoFogo + danoGelo + danoRaio + danoCaos;
+  // Ofensiva / Defensiva — Sagrado
+  const danoSagrado = 0;
+  const resSagrado = 0;
+  const penSagrado = 0;
+
+  // Dano Total — soma de todos os tipos (físico + elemental + caos + sagrado)
+  const danoTotalMin = danoFisicoMin + danoFogo + danoGelo + danoRaio + danoCaos + danoSagrado;
+  const danoTotalMax = danoFisicoMax + danoFogo + danoGelo + danoRaio + danoCaos + danoSagrado;
   const danoMedio = (danoTotalMin + danoTotalMax) / 2;
   const dps = danoMedio * velAtaque * (1 + (chanceCritico / 100) * (multCritico - 1));
 
@@ -101,6 +106,9 @@ export function computeDerivedStats(c: Character): DerivedStats {
     penRaio,
     danoCaos,
     penCaos,
+    danoSagrado,
+    resSagrado,
+    penSagrado,
     bonusMagico,
     velConjuracao,
     eficienciaMana,

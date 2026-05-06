@@ -1,37 +1,62 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Character, TabKey } from '../../types';
-import { TAB_LABEL, TAB_SHORTCUT, TAB_DESC } from '../../data/classes';
+import { TAB_LABEL } from '../../data/classes';
 import { Modal } from '../../components/Modal/Modal';
 import { CharacterSheet, CharacterSheetHeader } from '../../components/CharacterSheet/CharacterSheet';
 import { Inventory } from '../../components/Inventory/Inventory';
 import { TalentsView, TalentsHeader } from '../../components/TalentsView/TalentsView';
 import { MapView, MapHeader } from '../../components/MapView/MapView';
 import { JournalView, JournalHeader } from '../../components/JournalView/JournalView';
+import { CodexView, CodexHeader } from '../../components/CodexView/CodexView';
+import { OptionsView, OptionsHeader } from '../../components/OptionsView/OptionsView';
+import {
+  EDITABLE_TABS,
+  displayKey,
+  normalizeKey,
+  type EditableTab,
+  type Settings,
+} from '../../lib/settings';
 import { getLocationById } from '../../data/world';
 import { useRealTime } from '../../hooks/useRealTime';
 import styles from './GameHud.module.css';
 
 interface GameHudProps {
   character: Character;
+  settings: Settings;
+  onSettingsChange: (next: Settings) => void;
+  onResetShortcuts: () => void;
   onUpdate: (character: Character) => void;
   onBackToList: () => void;
 }
 
-const KEY_TO_TAB: Record<string, TabKey> = {
-  c: 'personagem',
-  t: 'talentos',
-  a: 'habilidades',
-  m: 'mapa',
-  j: 'diario',
-};
+const TAB_ORDER: TabKey[] = ['personagem', 'talentos', 'habilidades', 'mapa', 'diario', 'codice', 'opcoes'];
 
-const TAB_ORDER: TabKey[] = ['personagem', 'talentos', 'habilidades', 'mapa', 'diario', 'opcoes'];
-
-export function GameHud({ character, onUpdate, onBackToList }: GameHudProps) {
+export function GameHud({
+  character,
+  settings,
+  onSettingsChange,
+  onResetShortcuts,
+  onUpdate,
+  onBackToList,
+}: GameHudProps) {
   const [activeTab, setActiveTab] = useState<TabKey | null>(null);
   const realTime = useRealTime();
 
   const closeTab = () => setActiveTab(null);
+
+  // Mapa "tecla pressionada → tab que abre" derivado dos settings.
+  // Reconstrói a cada mudança de atalho — propaga customização instantaneamente.
+  const keyToTab = useMemo(() => {
+    const map: Record<string, EditableTab> = {};
+    for (const tab of EDITABLE_TABS) {
+      map[normalizeKey(settings.shortcuts[tab])] = tab;
+    }
+    return map;
+  }, [settings.shortcuts]);
+
+  // Lookup pra exibir o atalho de uma tab (footer + header de cada modal).
+  const shortcutFor = (tab: TabKey): string =>
+    tab === 'opcoes' ? 'ESC' : displayKey(settings.shortcuts[tab as EditableTab]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -44,7 +69,7 @@ export function GameHud({ character, onUpdate, onBackToList }: GameHudProps) {
         return;
       }
 
-      const tab = KEY_TO_TAB[e.key.toLowerCase()];
+      const tab = keyToTab[normalizeKey(e.key)];
       if (tab) {
         e.preventDefault();
         // Toggle: se já está aberta na mesma tab, fecha; senão, abre/troca
@@ -53,7 +78,7 @@ export function GameHud({ character, onUpdate, onBackToList }: GameHudProps) {
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [activeTab]);
+  }, [activeTab, keyToTab]);
 
   const vidaPct = (character.vidaAtual / character.vidaMax) * 100;
   const manaPct = (character.manaAtual / character.manaMax) * 100;
@@ -217,7 +242,7 @@ export function GameHud({ character, onUpdate, onBackToList }: GameHudProps) {
             onClick={() => setActiveTab((prev) => (prev === tab ? null : tab))}
           >
             <span className={styles.tabLabel}>{TAB_LABEL[tab]}</span>
-            <span className={styles.tabShortcut}>{TAB_SHORTCUT[tab]}</span>
+            <span className={styles.tabShortcut}>{shortcutFor(tab)}</span>
           </button>
         ))}
       </footer>
@@ -230,20 +255,26 @@ export function GameHud({ character, onUpdate, onBackToList }: GameHudProps) {
       {(activeTab === 'personagem' ||
         activeTab === 'talentos' ||
         activeTab === 'mapa' ||
-        activeTab === 'diario') && (
+        activeTab === 'diario' ||
+        activeTab === 'codice' ||
+        activeTab === 'opcoes') && (
         <Modal
           open
           onClose={closeTab}
           large
           header={
             activeTab === 'personagem' ? (
-              <CharacterSheetHeader character={character} onClose={closeTab} />
+              <CharacterSheetHeader character={character} onClose={closeTab} shortcut={shortcutFor('personagem')} />
             ) : activeTab === 'talentos' ? (
-              <TalentsHeader character={character} onClose={closeTab} />
+              <TalentsHeader character={character} onClose={closeTab} shortcut={shortcutFor('talentos')} />
             ) : activeTab === 'mapa' ? (
-              <MapHeader character={character} onClose={closeTab} />
+              <MapHeader character={character} onClose={closeTab} shortcut={shortcutFor('mapa')} />
+            ) : activeTab === 'diario' ? (
+              <JournalHeader character={character} onClose={closeTab} shortcut={shortcutFor('diario')} />
+            ) : activeTab === 'codice' ? (
+              <CodexHeader character={character} onClose={closeTab} shortcut={shortcutFor('codice')} />
             ) : (
-              <JournalHeader character={character} onClose={closeTab} />
+              <OptionsHeader character={character} onClose={closeTab} />
             )
           }
         >
@@ -273,38 +304,33 @@ export function GameHud({ character, onUpdate, onBackToList }: GameHudProps) {
                 }
               />
             )}
-            {activeTab === 'diario' && <JournalView character={character} />}
+            {activeTab === 'diario' && (
+              <JournalView
+                character={character}
+                onUpdate={({ abandonedQuestIds }) =>
+                  onUpdate({ ...character, abandonedQuestIds })
+                }
+              />
+            )}
+            {activeTab === 'codice' && <CodexView character={character} />}
+            {activeTab === 'opcoes' && (
+              <OptionsView
+                settings={settings}
+                onSettingsChange={onSettingsChange}
+                onResetShortcuts={onResetShortcuts}
+                onBackToList={onBackToList}
+              />
+            )}
           </div>
         </Modal>
       )}
 
-      {/* Modal de Opções */}
-      {activeTab === 'opcoes' && (
-        <Modal open onClose={closeTab} title={TAB_LABEL.opcoes} shortcut={TAB_SHORTCUT.opcoes}>
-          <div className={styles.optionsList}>
-            <button className={styles.optionItem} onClick={onBackToList}>
-              <span className={styles.optName}>Trocar personagem</span>
-              <span className={styles.optDesc}>Salvar progresso e voltar para a seleção de personagens.</span>
-            </button>
-            <button className={`${styles.optionItem} ${styles.disabled}`} disabled>
-              <span className={styles.optName}>Configurações</span>
-              <span className={styles.optDesc}>Em desenvolvimento.</span>
-            </button>
-          </div>
-        </Modal>
-      )}
-
-      {/* Modais stub das outras tabs (só Habilidades = ex-Magias agora) */}
-      {activeTab &&
-        activeTab !== 'personagem' &&
-        activeTab !== 'talentos' &&
-        activeTab !== 'mapa' &&
-        activeTab !== 'diario' &&
-        activeTab !== 'opcoes' && (
-        <Modal open onClose={closeTab} title={TAB_LABEL[activeTab]} shortcut={TAB_SHORTCUT[activeTab]}>
+      {/* Modal stub do Habilidades (única tab grande sem implementação) */}
+      {activeTab === 'habilidades' && (
+        <Modal open onClose={closeTab} title={TAB_LABEL.habilidades} shortcut={shortcutFor('habilidades')}>
           <div className={styles.modalEmpty}>
             <h3>Em desenvolvimento</h3>
-            <p>{TAB_DESC[activeTab]}</p>
+            <p>Habilidades ativas e magias conhecidas.</p>
           </div>
         </Modal>
       )}

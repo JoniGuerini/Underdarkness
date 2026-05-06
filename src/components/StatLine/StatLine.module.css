@@ -8,7 +8,7 @@
   position: relative;
 }
 .line:last-child { border-bottom: none; }
-.line.hasTooltip { cursor: help; }
+.line.hasTooltip { cursor: default; }
 
 /* Tooltip — renderizado em portal pro document.body, então usa position: fixed.
    Coordenadas (left/top) vêm de getBoundingClientRect() da linha (top da linha).
@@ -47,6 +47,7 @@
 .gelo { color: var(--elem-gelo); }
 .raio { color: var(--elem-raio); }
 .caos { color: var(--elem-caos); }
+.sagrado { color: var(--elem-sagrado); }
 .vida { color: var(--vital-vida); }
 .mana { color: var(--vital-mana); }
 .forca { color: var(--stat-forca); }

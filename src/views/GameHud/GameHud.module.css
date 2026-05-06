@@ -284,7 +284,7 @@
   border-radius: 4px;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   overflow: hidden; /* mantém os hovers dos botões dentro do raio do card */
 }
 .tabButton {
@@ -405,6 +405,6 @@
     border-right: none;
     border-top: 1px solid var(--border-soft);
   }
-  .footer { grid-template-columns: repeat(3, 1fr); }
+  .footer { grid-template-columns: repeat(4, 1fr); }
   .tabButton { border-right: 1px solid var(--border-faint); border-bottom: 1px solid var(--border-faint); }
 }

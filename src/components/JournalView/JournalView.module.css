@@ -41,94 +41,162 @@
 }
 
 /* ============================================================
-   Card principal — flex column: tabs em cima, split embaixo
+   Root — flex column: filtros em cima, lista+detalhe embaixo,
+   ambos respiram com gap 8px deixando o --bg aparecer.
    ============================================================ */
-.card {
+.root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+/* Card de filtros — duas linhas (status, tipo), label à esquerda + chips à direita */
+.filterCard {
   background: var(--paper);
   border: 1px solid var(--border-soft);
   border-radius: 6px;
   box-shadow: var(--shadow-sm);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filterRow {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+}
+
+.filterLabel {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.filterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Status chip — single-select, mostra label + count */
+.statusChip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: 0.15s;
+  font: inherit;
+  color: inherit;
+}
+.statusChip:hover {
+  background: var(--surface);
+  border-color: var(--brass-light);
+}
+.statusChip.statusChipActive {
+  background: var(--surface);
+  border-color: var(--brass);
+}
+.statusChipLabel {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.statusChip.statusChipActive .statusChipLabel { color: var(--brass-deep); }
+.statusChipCount {
+  font: 500 11px/1 var(--mono);
+  color: var(--brass-deep);
+  letter-spacing: 0.04em;
+}
+
+/* Type chip — multi-select, label colorida pela categoria */
+.typeChip {
+  padding: 6px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: 0.15s;
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.typeChip:hover {
+  background: var(--surface);
+  border-color: var(--brass-light);
+}
+.typeChip.typeChipActive {
+  background: var(--surface);
+  border-color: var(--brass);
+}
+/* Cor da label = cor do tipo (ativa explicita a categoria) */
+.typeChip.type_principal.typeChipActive { color: var(--brass-bright); }
+.typeChip.type_side.typeChipActive { color: var(--ink); }
+.typeChip.type_bounty.typeChipActive { color: var(--vital-vida); }
+.typeChip.type_classe.typeChipActive { color: var(--rarity-magico); }
+.typeChip.type_evento.typeChipActive { color: var(--stat-agilidade); }
+.typeChip.type_faccao.typeChipActive { color: var(--elem-caos); }
+
+/* ============================================================
+   Layout — dois cards lado a lado (lista | detalhe), gap 8px
+   espelhando o mergedPanel da ficha de personagem.
+   ============================================================ */
+.layout {
   flex: 1;
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: 8px;
+  min-height: 0;
+}
+
+.listCard {
+  background: var(--paper);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
 }
 
-/* ============================================================
-   Tabs (Ativas / Concluídas / Falhadas)
-   ============================================================ */
-.tabs {
-  display: flex;
-  gap: 6px;
-  padding: 18px 20px 0;
-}
-
-.tab {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 10px;
-  padding: 10px 18px;
-  background: var(--bg);
+.detailCard {
+  background: var(--paper);
   border: 1px solid var(--border-soft);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: 0.15s;
-  font: inherit;
-  color: inherit;
+  border-radius: 6px;
+  box-shadow: var(--shadow-sm);
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-.tab:hover {
-  background: var(--surface);
-  border-color: var(--brass-light);
-}
-.tab.tabActive {
-  background: var(--surface);
-  border-color: var(--brass);
-}
-.tabLabel {
-  font: 500 16px/1 var(--serif);
-  font-variation-settings: "opsz" 24;
-  color: var(--ink);
-  letter-spacing: -0.005em;
-}
-.tab.tabActive .tabLabel { color: var(--brass-deep); }
-.tabCount {
-  font: 500 12px/1 var(--mono);
-  color: var(--brass-deep);
-  letter-spacing: 0.04em;
-}
+.detailCard::-webkit-scrollbar { display: none; }
 
 /* ============================================================
-   Split — lista (esquerda) + detalhe (direita)
+   Lista de quest cards (rola dentro do listCard)
    ============================================================ */
-.split {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 380px minmax(0, 1fr);
-  gap: 0;
-  min-height: 0;
-  border-top: 1px solid var(--border-soft);
-  margin-top: 18px;
-}
-
 .list {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 18px 16px;
-  border-right: 1px solid var(--border-soft);
+  padding: 16px;
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 .list::-webkit-scrollbar { display: none; }
-
-.detail {
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.detail::-webkit-scrollbar { display: none; }
 
 .empty {
   padding: 40px 20px;
@@ -273,6 +341,26 @@
   letter-spacing: 0.04em;
   color: var(--brass-deep);
   margin-top: 4px;
+}
+
+.detailActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+.btnAbandon {
+  font-size: 11px;
+  padding: 7px 14px;
+  letter-spacing: 0.06em;
+}
+
+/* Nome da missão dentro da mensagem do ConfirmDialog — destacado em latão,
+   serif italic pra dar peso narrativo sem ser dramático. */
+.confirmTitle {
+  font: italic 500 14px/1.55 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--brass-deep);
+  font-style: italic;
 }
 
 .detailDescription {
@@ -435,7 +523,7 @@
    Responsivo
    ============================================================ */
 @media (max-width: 980px) {
-  .split { grid-template-columns: 1fr; }
-  .list { border-right: none; border-bottom: 1px solid var(--border-soft); max-height: 280px; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .listCard { max-height: 320px; }
   .detailInner { padding: 20px 24px; }
 }
