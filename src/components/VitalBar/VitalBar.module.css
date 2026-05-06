@@ -1,0 +1,42 @@
+.line {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.line:last-child { border-bottom: none; }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.label {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.label.vida { color: var(--vital-vida); }
+.label.mana { color: var(--vital-mana); }
+.label.exp { color: var(--vital-exp); }
+
+.values {
+  font: 500 12px/1 var(--mono);
+  color: var(--brass-deep);
+}
+
+.track {
+  height: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border-faint);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  transition: width 0.3s ease-out;
+}
+.fill.vida { background: var(--vital-vida); }
+.fill.mana { background: var(--vital-mana); }
+.fill.exp { background: var(--vital-exp); }

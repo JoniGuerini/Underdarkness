@@ -1,0 +1,117 @@
+/* ItemTooltip — renderizado em portal pro document.body, position: fixed.
+   Coordenadas (left, top) vêm de getBoundingClientRect do slot.
+   O transform empurra o tooltip pra cima da própria altura + 8px de gap. */
+.tooltip {
+  position: fixed;
+  width: max-content;
+  max-width: 280px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  border-radius: 4px;
+  font: 12px/1.5 var(--mono);
+  color: var(--ink);
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-100%) translateY(-8px);
+  animation: tooltipIn 0.15s ease-out;
+}
+
+@keyframes tooltipIn {
+  from { opacity: 0; transform: translateY(-100%) translateY(-2px); }
+  to   { opacity: 1; transform: translateY(-100%) translateY(-8px); }
+}
+
+/* ============================================================
+   Header — nome + meta (raridade · slot · stack)
+   ============================================================ */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.name {
+  font: 500 15px/1.2 var(--serif);
+  font-variation-settings: "opsz" 18;
+  letter-spacing: -0.01em;
+}
+.tooltip.comum    .name { color: var(--rarity-comum); }
+.tooltip.magico   .name { color: var(--rarity-magico); }
+.tooltip.raro     .name { color: var(--rarity-raro); }
+.tooltip.unico    .name { color: var(--rarity-unico); }
+.tooltip.lendario .name { color: var(--rarity-lendario); }
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.metaSep { color: var(--ink-faint); }
+
+.rarity {
+  /* Pequena, em cor da raridade pra reforçar */
+}
+.tooltip.comum    .rarity { color: var(--rarity-comum); }
+.tooltip.magico   .rarity { color: var(--rarity-magico); }
+.tooltip.raro     .rarity { color: var(--rarity-raro); }
+.tooltip.unico    .rarity { color: var(--rarity-unico); }
+.tooltip.lendario .rarity { color: var(--rarity-lendario); }
+
+.slotLabel {
+  color: var(--ink-muted);
+}
+
+.stackLabel {
+  color: var(--brass-deep);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+/* ============================================================
+   Stats — uma linha por mod, cor por categoria
+   ============================================================ */
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat {
+  font: 500 12px/1.4 var(--mono);
+  letter-spacing: 0.01em;
+}
+
+/* Cores por categoria (espelho do que StatLine usa) */
+.fisico    { color: var(--elem-fisico); }
+.fogo      { color: var(--elem-fogo); }
+.gelo      { color: var(--elem-gelo); }
+.raio      { color: var(--elem-raio); }
+.caos      { color: var(--elem-caos); }
+.vida      { color: var(--vital-vida); }
+.mana      { color: var(--vital-mana); }
+.forca     { color: var(--stat-forca); }
+.agilidade { color: var(--stat-agilidade); }
+.intelecto { color: var(--stat-intelecto); }
+.defesa    { color: var(--stat-defesa); }
+.critico   { color: var(--stat-critico); }
+
+/* ============================================================
+   Descrição (italic flavor)
+   ============================================================ */
+.description {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+  font: italic 400 12px/1.45 var(--serif);
+  color: var(--ink-muted);
+  letter-spacing: 0.01em;
+}

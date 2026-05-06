@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RPG — Mockup V2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-0: #0c0e12;
+  --bg-1: #131620;
+  --bg-2: #1a1e2a;
+  --bg-3: #232838;
+  --line: #2a3045;
+  --line-soft: #1d2230;
+  --text: #d8dce2;
+  --text-soft: #8b96a3;
+  --text-mute: #545d6e;
+  --accent: #bcb09a;
+  --accent-dim: #7a7060;
+  --accent-2: #c2a878;
+  --hp: #b85450;
+  --mana: #5a8aa8;
+  --xp: #8aa85a;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-style: normal;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'JetBrains Mono', monospace;
+  background-color: var(--bg-0);
+  color: var(--text);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  font-size: 13px;
+}
+
+body {
+  background-image:
+    radial-gradient(1400px 900px at 100% 0%, rgba(188, 176, 154, 0.04), transparent 60%),
+    radial-gradient(900px 600px at 0% 100%, rgba(90, 138, 168, 0.04), transparent 70%);
+}
+
+.serif {
+  font-family: 'Spectral', serif;
+  font-weight: 400;
+  letter-spacing: 0.005em;
+}
+
+button { font-family: inherit; color: inherit; cursor: pointer; }
+
+.screen { display: none; height: 100vh; width: 100vw; }
+.screen.active { display: flex; }
+
+/* ===== HELPERS ===== */
+.mono { font-family: 'JetBrains Mono', monospace; }
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   TELA 1 — SELEÇÃO DE CLASSE
+============================================================ */
+#screen-class {
+  flex-direction: column;
+  padding: 56px 48px 32px;
+  position: relative;
+}
+#screen-class::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.012) 2px 3px);
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.cls-screen-pad {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.cls-title-block {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.cls-title-block h1 {
+  font-family: 'Spectral', serif;
+  font-size: 44px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+.cls-title-block h1 .accent { color: var(--accent); }
+.cls-title-block .desc {
+  font-family: 'Spectral', serif;
+  font-size: 14px;
+  color: var(--text-soft);
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.cls-main {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.cls-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--line);
+  background: var(--bg-1);
+}
+.cls-list-item {
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line-soft);
+  padding: 22px 24px;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 14px;
+  transition: background 0.2s, color 0.2s;
+  width: 100%;
+  color: var(--text);
+}
+.cls-list-item:last-child { border-bottom: none; }
+.cls-list-item:hover { background: var(--bg-2); }
+.cls-list-item.active { background: var(--bg-2); }
+.cls-list-item .nm {
+  display: block;
+  font-family: 'Spectral', serif;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+.cls-list-item.active .nm { color: var(--accent); }
+.cls-list-item .role {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.cls-list-item .arrow {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-mute);
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.cls-list-item:hover .arrow,
+.cls-list-item.active .arrow { opacity: 1; color: var(--accent); }
+
+.cls-preview {
+  border: 1px solid var(--line);
+  background: var(--bg-1);
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  position: relative;
+}
+
+.cls-preview-name {
+  font-family: 'Spectral', serif;
+  font-size: 56px;
+  font-weight: 300;
+  line-height: 1;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.cls-preview-role {
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 26px;
+}
+.cls-preview-flavor {
+  font-family: 'Spectral', serif;
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--text-soft);
+  margin-bottom: 28px;
+  max-width: 620px;
+}
+
+.cls-preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin-bottom: 24px;
+}
+
+.cls-block-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.cls-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px dotted var(--line-soft);
+  font-size: 12px;
+}
+.cls-stat:last-child { border-bottom: none; }
+.cls-stat .lbl { color: var(--text-soft); letter-spacing: 0.04em; }
+.cls-stat .vl  { color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+.cls-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cls-tag {
+  display: inline-block;
+  padding: 5px 10px;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+}
+.cls-tag.primary {
+  color: var(--accent);
+  border-color: var(--accent-dim);
+}
+
+.cls-cta-bar {
+  margin-top: auto;
+  padding-top: 24px;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.cls-cta-btn {
+  background: var(--accent);
+  color: var(--bg-0);
+  border: none;
+  padding: 14px 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.cls-cta-btn:hover { background: var(--accent-2); color: var(--bg-0); }
+
+/* ============================================================
+   TELA 2 — HUD PRINCIPAL
+============================================================ */
+#screen-hud {
+  flex-direction: column;
+  padding: 12px;
+  gap: 8px;
+}
+
+.hud-top {
+  display: grid;
+  grid-template-columns: 280px 1fr 1fr;
+  gap: 16px;
+  align-items: center;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  padding: 14px 22px;
+}
+.hud-top-id .hud-name {
+  font-family: 'Spectral', serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.1;
+  color: var(--text);
+}
+.hud-top-id .hud-sub {
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-top: 6px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.hud-top-id .hud-sub .sep { color: var(--accent); }
+
+.hud-top-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hud-top-bar-row {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+.hud-top-bar-row .lbl {
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.hud-top-bar-row .nm {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+.bar {
+  height: 10px;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+}
+.bar-fill { height: 100%; }
+.bar-fill.hp   { background: var(--hp); }
+.bar-fill.mana { background: var(--mana); }
+.bar-fill.xp   { background: var(--xp); }
+
+.hud-top-meta {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 28px;
+}
+.hud-top-meta .res .lbl {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  text-align: right;
+}
+.hud-top-meta .res .val {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  margin-top: 3px;
+  text-align: right;
+}
+.hud-top-meta .res.gold .val { color: var(--accent); }
+.hud-top-meta .place {
+  text-align: right;
+  border-right: 1px solid var(--line);
+  padding-right: 28px;
+}
+.hud-top-meta .place .name {
+  font-family: 'Spectral', serif;
+  font-size: 15px;
+  color: var(--text);
+}
+.hud-top-meta .place .when {
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-top: 4px;
+}
+
+.hud-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  gap: 8px;
+  min-height: 0;
+}
+
+.panel {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.panel-head h3 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  font-weight: 500;
+}
+.panel-head .ref {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  font-variant-numeric: tabular-nums;
+}
+.panel-body {
+  padding: 18px;
+  overflow-y: auto;
+  flex: 1;
+}
+.panel-body::-webkit-scrollbar       { width: 6px; }
+.panel-body::-webkit-scrollbar-track  { background: transparent; }
+.panel-body::-webkit-scrollbar-thumb  { background: var(--line); }
+
+.subdiv {
+  font-size: 9px;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  padding: 16px 0 8px;
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 4px;
+}
+.subdiv:first-child { padding-top: 0; }
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px dotted var(--line-soft);
+  font-size: 12px;
+}
+.row:last-child { border-bottom: none; }
+.row .nm  { color: var(--text); }
+.row .nm .mod { color: var(--text-mute); margin-left: 8px; font-size: 10px; letter-spacing: 0.04em; }
+.row .vl  {
+  color: var(--accent);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.row .vl .unit { color: var(--text-mute); font-size: 10px; font-weight: 400; margin-left: 2px; }
+
+.list-row {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dotted var(--line-soft);
+  font-size: 11px;
+  align-items: baseline;
+}
+.list-row:last-child { border-bottom: none; }
+.list-row .lb { color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.18em; font-size: 10px; }
+.list-row .vl { color: var(--text); font-family: 'Spectral', serif; font-size: 13px; }
+.list-row.empty .vl { color: var(--text-mute); font-style: normal; }
+
+.numlist {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dotted var(--line-soft);
+  font-size: 11px;
+  align-items: baseline;
+}
+.numlist:last-child { border-bottom: none; }
+.numlist .num { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-weight: 600; font-variant-numeric: tabular-nums; }
+.numlist .vl  { color: var(--text); font-family: 'Spectral', serif; font-size: 13px; }
+.numlist .qty { color: var(--text-mute); font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+.numlist.empty .vl { color: var(--text-mute); }
+
+.effect {
+  display: grid;
+  grid-template-columns: 14px 1fr auto;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px dotted var(--line-soft);
+  font-size: 11px;
+  align-items: baseline;
+}
+.effect:last-child { border-bottom: none; }
+.effect .sg {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+}
+.effect.buff   .sg { color: var(--xp); }
+.effect.debuff .sg { color: var(--accent); }
+.effect .nm { color: var(--text); font-family: 'Spectral', serif; font-size: 13px; }
+.effect .tm { color: var(--text-mute); font-variant-numeric: tabular-nums; font-size: 10px; }
+
+.scene .panel-body { padding: 26px 30px; }
+.scene-meta {
+  font-family: 'Spectral', serif;
+  font-size: 13px;
+  color: var(--text-mute);
+  margin-bottom: 12px;
+}
+.scene-title {
+  font-family: 'Spectral', serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 22px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line-soft);
+  line-height: 1.2;
+}
+.narrative {
+  font-family: 'Spectral', serif;
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text);
+}
+.narrative + .narrative { margin-top: 14px; }
+.narrative .speaker { color: var(--accent); font-weight: 500; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; }
+
+.choices { margin-top: 32px; display: flex; flex-direction: column; gap: 6px; }
+.choices-head {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.choice {
+  background: transparent;
+  border: 1px solid var(--line);
+  padding: 12px 16px;
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-soft);
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  gap: 12px;
+  align-items: baseline;
+  transition: all 0.2s;
+}
+.choice:hover { border-color: var(--accent); color: var(--text); background: var(--bg-2); }
+.choice .ix  { color: var(--accent); font-weight: 600; }
+.choice .tx  { color: var(--text); font-family: 'Spectral', serif; font-size: 14px; }
+.choice .ck  { color: var(--text-mute); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; }
+
+.hud-nav {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.nav-item {
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--line-soft);
+  padding: 16px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+  transition: background 0.2s;
+}
+.nav-item:last-child { border-right: none; }
+.nav-item:hover { background: var(--bg-2); }
+.nav-item:hover .nv-lb { color: var(--accent); }
+.nv-lb {
+  font-family: 'Spectral', serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+  transition: color 0.2s;
+}
+.nv-key {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  color: var(--text-mute);
+}
+
+.reset-btn {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  color: var(--text-mute);
+  padding: 7px 12px;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  z-index: 10;
+  transition: color 0.2s, border-color 0.2s;
+  font-family: 'JetBrains Mono', monospace;
+}
+.reset-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ============================================================
+   TELA 3 — PERSONAGEM
+============================================================ */
+#screen-character {
+  flex-direction: column;
+  overflow-y: auto;
+  background-color: var(--bg-0);
+}
+#screen-character::-webkit-scrollbar       { width: 8px; }
+#screen-character::-webkit-scrollbar-track  { background: var(--bg-0); }
+#screen-character::-webkit-scrollbar-thumb  { background: var(--line); }
+
+.char-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 28px;
+  padding: 18px 32px;
+  background: rgba(19,22,32,0.95);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.header-back {
+  background: transparent;
+  border: 1px solid var(--line);
+  padding: 9px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  transition: all 0.2s;
+}
+.header-back:hover { color: var(--accent); border-color: var(--accent); }
+
+.char-h1 {
+  font-family: 'Spectral', serif;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--text);
+}
+.char-h1-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-top: 8px;
+  display: flex;
+  gap: 12px;
+}
+.char-h1-sub .sep { color: var(--accent); }
+.header-side .lbl {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  text-align: right;
+  margin-bottom: 4px;
+}
+.header-side .vl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.char-body {
+  padding: 22px 32px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.char-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.char-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.char-section {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  padding: 22px 24px;
+}
+.char-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.char-section-head h3 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  font-weight: 500;
+}
+.char-section-head .ref {
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+/* atributo com bonus descritivo */
+.attr-detail {
+  padding: 12px 0;
+  border-bottom: 1px dotted var(--line-soft);
+}
+.attr-detail:last-child { border-bottom: none; }
+.attr-detail-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+}
+.attr-detail-top .nm { color: var(--text); font-family: 'Spectral', serif; font-size: 16px; }
+.attr-detail-top .vl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+.attr-detail-sub {
+  font-size: 10px;
+  color: var(--text-mute);
+  margin-top: 5px;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+}
+
+/* DPS headline */
+.headline {
+  text-align: center;
+  padding: 4px 0 22px;
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 16px;
+}
+.headline .lb { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.42em; text-transform: uppercase; color: var(--text-mute); display: block; margin-bottom: 12px; }
+.headline .vl { font-family: 'JetBrains Mono', monospace; font-size: 60px; font-weight: 600; color: var(--accent); line-height: 1; font-variant-numeric: tabular-nums; display: block; letter-spacing: -0.02em; }
+.headline .sub { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.42em; color: var(--text-soft); margin-top: 12px; text-transform: uppercase; display: block; }
+
+/* points */
+.points-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.point { border: 1px solid var(--line); padding: 12px 8px; text-align: center; background: var(--bg-2); }
+.point .lb { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 6px; }
+.point .vl { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text); }
+.point.has .vl { color: var(--accent); }
+
+/* skill cards */
+.skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+.skill-card {
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  padding: 16px 18px;
+  position: relative;
+}
+.skill-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+.skill-card-name {
+  font-family: 'Spectral', serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.2;
+}
+.skill-card-slot {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.skill-card-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 12px;
+}
+.skill-stats { display: flex; flex-direction: column; gap: 6px; }
+.skill-stats .row {
+  padding: 0;
+  border: none;
+  font-size: 11px;
+}
+.skill-stats .row .nm { color: var(--text-mute); text-transform: uppercase; font-size: 10px; letter-spacing: 0.18em; }
+.skill-stats .row .vl { color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-variant-numeric: tabular-nums; font-weight: 400; }
+
+/* talents */
+.trait { padding: 13px 0; border-bottom: 1px dotted var(--line-soft); }
+.trait:last-child { border-bottom: none; padding-bottom: 0; }
+.trait:first-child { padding-top: 0; }
+.trait-head { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+.trait-name { font-family: 'Spectral', serif; font-size: 16px; font-weight: 500; color: var(--text); line-height: 1.2; }
+.trait-type { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-mute); flex-shrink: 0; }
+.trait-type.active { color: var(--accent); }
+.trait-desc {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--text-soft);
+  letter-spacing: 0.02em;
+}
+
+/* 2 col grid */
+.char-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+/* Vital com label do v2 */
+.vital-block { margin-bottom: 12px; }
+.vital-block:last-child { margin-bottom: 0; }
+.vital-block-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.vital-block-top .nb { color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+
+@media (max-width: 1100px) { .char-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 760px)  { .char-grid, .char-grid-2 { grid-template-columns: 1fr; } }
+
+/* ===== Card unificado em 3 colunas ===== */
+.unified {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+.unified-col {
+  padding: 32px 36px;
+  border-right: 1px solid var(--line-soft);
+  min-width: 0;
+}
+.unified-col:last-child { border-right: none; }
+
+.unified-col-title {
+  font-family: 'Spectral', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 24px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.unified-block {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  font-weight: 500;
+  margin-top: 28px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.unified-block:first-of-type { margin-top: 0; }
+
+@media (max-width: 1100px) {
+  .unified { grid-template-columns: 1fr 1fr; }
+  .unified-col:nth-child(2) { border-right: none; }
+  .unified-col:nth-child(3) {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--line-soft);
+  }
+}
+@media (max-width: 760px) {
+  .unified { grid-template-columns: 1fr; }
+  .unified-col {
+    border-right: none;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .unified-col:last-child { border-bottom: none; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     TELA 1 — SELEÇÃO DE CLASSE
+============================================================ -->
+<section id="screen-class" class="screen active">
+
+  <div class="cls-title-block">
+    <h1>Selecione sua <span class="accent">Classe</span></h1>
+    <p class="desc">A escolha define seus atributos primários, equipamentos iniciais e árvore de habilidades.</p>
+  </div>
+
+  <div class="cls-main">
+
+    <div class="cls-list">
+
+      <button class="cls-list-item active" data-class="guerreiro" onclick="selectClass(this)">
+        <span>
+          <span class="nm">Guerreiro</span>
+          <span class="role">Linha de Frente</span>
+        </span>
+        <span class="arrow">→</span>
+      </button>
+
+      <button class="cls-list-item" data-class="ladino" onclick="selectClass(this)">
+        <span>
+          <span class="nm">Ladino</span>
+          <span class="role">Sombra & Lâmina</span>
+        </span>
+        <span class="arrow">→</span>
+      </button>
+
+      <button class="cls-list-item" data-class="mago" onclick="selectClass(this)">
+        <span>
+          <span class="nm">Mago</span>
+          <span class="role">Tecedor de Ciclos</span>
+        </span>
+        <span class="arrow">→</span>
+      </button>
+
+    </div>
+
+    <div class="cls-preview" id="cls-preview">
+
+      <div class="cls-preview-name" id="prev-name">Guerreiro</div>
+      <div class="cls-preview-role" id="prev-role">Linha de Frente</div>
+      <p class="cls-preview-flavor" id="prev-flavor">Forjado pelo aço e pela disciplina. Encara o golpe antes que ele encontre os outros, e devolve com peso o que recebe. Construído sobre vida, armadura e dano físico — apto a sustentar combate prolongado.</p>
+
+      <div class="cls-preview-grid">
+
+        <div>
+          <div class="cls-block-title">Atributos Iniciais</div>
+          <div class="cls-stat"><span class="lbl">Força</span><span class="vl" id="st-for">32</span></div>
+          <div class="cls-stat"><span class="lbl">Destreza</span><span class="vl" id="st-des">14</span></div>
+          <div class="cls-stat"><span class="lbl">Vitalidade</span><span class="vl" id="st-vit">28</span></div>
+          <div class="cls-stat"><span class="lbl">Energia</span><span class="vl" id="st-ene">8</span></div>
+        </div>
+
+        <div>
+          <div class="cls-block-title">Recursos</div>
+          <div class="cls-stat"><span class="lbl">Vida</span><span class="vl" id="st-hp">120</span></div>
+          <div class="cls-stat"><span class="lbl">Mana</span><span class="vl" id="st-mp">20</span></div>
+          <div class="cls-stat"><span class="lbl">Armadura Inicial</span><span class="vl" id="st-arm">42</span></div>
+          <div class="cls-stat"><span class="lbl">DPS Base</span><span class="vl" id="st-dps">38</span></div>
+        </div>
+
+        <div>
+          <div class="cls-block-title">Estilo de Combate</div>
+          <div class="cls-tags" id="prev-tags">
+            <span class="cls-tag primary">Corpo a Corpo</span>
+            <span class="cls-tag">Tanque</span>
+            <span class="cls-tag">Físico</span>
+            <span class="cls-tag">Dano Sustentado</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="cls-block-title">Habilidade Inicial</div>
+          <div class="cls-stat"><span class="lbl" id="sk-name">Golpe Pesado</span><span class="vl" id="sk-cost">4 vigor</span></div>
+          <div class="attr-detail-sub" style="margin-top: 8px;" id="sk-desc">Ataque corpo a corpo que aplica 145% do dano de arma e ignora 8 pontos de armadura.</div>
+        </div>
+
+      </div>
+
+      <div class="cls-cta-bar">
+        <button class="cls-cta-btn" onclick="confirmClass()">Iniciar Jornada →</button>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+
+<!-- ============================================================
+     TELA 2 — HUD PRINCIPAL
+============================================================ -->
+<section id="screen-hud" class="screen">
+
+  <div class="hud-top">
+
+    <div class="hud-top-id">
+      <div class="hud-name" id="char-name">Aldric, o Sem-Brasão</div>
+      <div class="hud-sub">
+        <span id="char-class">Guerreiro</span>
+        <span class="sep">·</span>
+        <span>Nv 04</span>
+      </div>
+    </div>
+
+    <div class="hud-top-bars">
+      <div class="hud-top-bar-row">
+        <span class="lbl">Vida</span>
+        <div class="bar"><div class="bar-fill hp" style="width: 78%"></div></div>
+        <span class="nm">94 / 120</span>
+      </div>
+      <div class="hud-top-bar-row">
+        <span class="lbl">Mana</span>
+        <div class="bar"><div class="bar-fill mana" style="width: 64%"></div></div>
+        <span class="nm">13 / 20</span>
+      </div>
+      <div class="hud-top-bar-row">
+        <span class="lbl">Exp</span>
+        <div class="bar"><div class="bar-fill xp" style="width: 42%"></div></div>
+        <span class="nm">420 / 1000</span>
+      </div>
+    </div>
+
+    <div class="hud-top-meta">
+      <div class="place">
+        <div class="name">Vila de Corvalho</div>
+        <div class="when">Dia 12 — Crepúsculo</div>
+      </div>
+      <div class="res">
+        <span class="lbl">Tempo</span>
+        <span class="val">17:42</span>
+      </div>
+      <div class="res gold">
+        <span class="lbl">Ouro</span>
+        <span class="val">248</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="hud-main">
+
+    <!-- ESQUERDA -->
+    <aside class="panel">
+      <div class="panel-head"><h3>Ficha</h3></div>
+      <div class="panel-body">
+
+        <div class="subdiv">Atributos</div>
+        <div class="row"><span class="nm">Força</span><span class="vl">32</span></div>
+        <div class="row"><span class="nm">Destreza</span><span class="vl">24</span></div>
+        <div class="row"><span class="nm">Vitalidade</span><span class="vl">28</span></div>
+        <div class="row"><span class="nm">Energia</span><span class="vl">16</span></div>
+
+        <div class="subdiv">Combate</div>
+        <div class="row"><span class="nm">DPS</span><span class="vl">184</span></div>
+        <div class="row"><span class="nm">Vel. Ataque</span><span class="vl">1.45<span class="unit">/s</span></span></div>
+        <div class="row"><span class="nm">Crítico</span><span class="vl">8.4%</span></div>
+        <div class="row"><span class="nm">Mult. Crít.</span><span class="vl">×1.85</span></div>
+
+        <div class="subdiv">Defesa</div>
+        <div class="row"><span class="nm">Armadura</span><span class="vl">248</span></div>
+        <div class="row"><span class="nm">Evasão</span><span class="vl">1240</span></div>
+        <div class="row"><span class="nm">Bloqueio</span><span class="vl">18%</span></div>
+
+        <div class="subdiv">Resistências</div>
+        <div class="row"><span class="nm">Fogo</span><span class="vl">45<span class="unit">/75</span></span></div>
+        <div class="row"><span class="nm">Gelo</span><span class="vl">38<span class="unit">/75</span></span></div>
+        <div class="row"><span class="nm">Raio</span><span class="vl">41<span class="unit">/75</span></span></div>
+        <div class="row"><span class="nm">Caos</span><span class="vl">12<span class="unit">/75</span></span></div>
+
+      </div>
+    </aside>
+
+    <!-- CENTRO -->
+    <main class="panel scene">
+      <div class="panel-head"><h3>Cena Atual</h3><span class="ref">04 / 12</span></div>
+      <div class="panel-body">
+
+        <div class="scene-meta">
+          <span>Capítulo II</span>
+        </div>
+        <h2 class="scene-title">Encontro na Estalagem do Corvo Cinza</h2>
+
+        <p class="narrative">A lareira estala baixo. Há cheiro de cevada queimada e cera velha. No fundo da sala, três homens encurvados sobre canecas de barro fingem não notar quando você entra — mas notaram.</p>
+        <p class="narrative"><span class="speaker">Estalajadeira</span> Forasteiro com ar de quem não dorme há dias. Quarto custa quatro moedas. Pergunta custa mais.</p>
+
+        <div class="choices">
+          <div class="choices-head">Suas Ações</div>
+          <button class="choice"><span class="ix">01</span><span class="tx">Pagar pelo quarto e descansar até o amanhecer.</span><span class="ck">−4 ouro</span></button>
+          <button class="choice"><span class="ix">02</span><span class="tx">Perguntar sobre os homens encurvados ao fundo.</span><span class="ck">Carisma 12</span></button>
+          <button class="choice"><span class="ix">03</span><span class="tx">Mostrar a moeda partida e ver se ela a reconhece.</span><span class="ck">Investigação</span></button>
+          <button class="choice"><span class="ix">04</span><span class="tx">Sair sem dizer mais nada.</span><span class="ck">—</span></button>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- DIREITA -->
+    <aside class="panel">
+      <div class="panel-head"><h3>Equipamento</h3><span class="ref">8 / 10</span></div>
+      <div class="panel-body">
+
+        <div class="list-row"><span class="lb">Mão Princ.</span><span class="vl">Espada Longa de Aço</span></div>
+        <div class="list-row"><span class="lb">Mão Sec.</span><span class="vl">Escudo de Carvalho</span></div>
+        <div class="list-row"><span class="lb">Elmo</span><span class="vl">Capacete de Bronze</span></div>
+        <div class="list-row"><span class="lb">Peitoral</span><span class="vl">Cota de Malha</span></div>
+        <div class="list-row empty"><span class="lb">Manto</span><span class="vl">— vazio —</span></div>
+        <div class="list-row"><span class="lb">Anel</span><span class="vl">Anel de Prata</span></div>
+        <div class="list-row"><span class="lb">Amuleto</span><span class="vl">Amuleto do Viajante</span></div>
+        <div class="list-row empty"><span class="lb">Botas</span><span class="vl">— vazio —</span></div>
+
+        <div class="subdiv">Ações Rápidas</div>
+        <div class="numlist"><span class="num">01</span><span class="vl">Golpe Pesado</span><span class="qty">—</span></div>
+        <div class="numlist"><span class="num">02</span><span class="vl">Bênção do Aço</span><span class="qty">—</span></div>
+        <div class="numlist"><span class="num">03</span><span class="vl">Poção de Vida</span><span class="qty">×3</span></div>
+        <div class="numlist empty"><span class="num">04</span><span class="vl">— vazio —</span><span class="qty"></span></div>
+        <div class="numlist"><span class="num">05</span><span class="vl">Tocha</span><span class="qty">×2</span></div>
+        <div class="numlist empty"><span class="num">06</span><span class="vl">— vazio —</span><span class="qty"></span></div>
+        <div class="numlist empty"><span class="num">07</span><span class="vl">— vazio —</span><span class="qty"></span></div>
+        <div class="numlist empty"><span class="num">08</span><span class="vl">— vazio —</span><span class="qty"></span></div>
+
+        <div class="subdiv">Status Ativos</div>
+        <div class="effect buff"><span class="sg">+</span><span class="nm">Bênção do Caminho</span><span class="tm">02:14</span></div>
+        <div class="effect debuff"><span class="sg">−</span><span class="nm">Fadiga Leve</span><span class="tm">∞</span></div>
+        <div class="effect buff"><span class="sg">+</span><span class="nm">Bem Alimentado</span><span class="tm">04:48</span></div>
+
+      </div>
+    </aside>
+
+  </div>
+
+  <nav class="hud-nav">
+    <button class="nav-item" onclick="showCharacter()"><span class="nv-lb">Personagem</span><span class="nv-key">C</span></button>
+    <button class="nav-item"><span class="nv-lb">Inventário</span><span class="nv-key">I</span></button>
+    <button class="nav-item"><span class="nv-lb">Habilidades</span><span class="nv-key">K</span></button>
+    <button class="nav-item"><span class="nv-lb">Magias</span><span class="nv-key">M</span></button>
+    <button class="nav-item"><span class="nv-lb">Mapa</span><span class="nv-key">P</span></button>
+    <button class="nav-item"><span class="nv-lb">Diário</span><span class="nv-key">J</span></button>
+    <button class="nav-item"><span class="nv-lb">Opções</span><span class="nv-key">Esc</span></button>
+  </nav>
+
+  <button class="reset-btn" onclick="resetScreen()">← Voltar à Seleção</button>
+</section>
+
+
+<!-- ============================================================
+     TELA 3 — PERSONAGEM (FICHA ARPG)
+============================================================ -->
+<section id="screen-character" class="screen">
+
+  <header class="char-header">
+    <button class="header-back" onclick="backToHud()">← Voltar à Cena</button>
+
+    <div>
+      <div class="char-h1" id="ch-name">Aldric, o Sem-Brasão</div>
+      <div class="char-h1-sub">
+        <span id="ch-class">Guerreiro</span>
+        <span class="sep">·</span>
+        <span>Linha de Frente</span>
+        <span class="sep">·</span>
+        <span>Nv 04</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="char-body">
+
+    <div class="unified">
+
+      <!-- ============ RECURSOS ============ -->
+      <div class="unified-col">
+        <h2 class="unified-col-title">Recursos</h2>
+
+        <div class="unified-block">Vitalidade</div>
+        <div class="vital-block">
+          <div class="vital-block-top"><span>Vida</span><span class="nb">94 / 120</span></div>
+          <div class="bar"><div class="bar-fill hp" style="width:78%"></div></div>
+        </div>
+        <div class="vital-block">
+          <div class="vital-block-top"><span>Mana</span><span class="nb">13 / 20</span></div>
+          <div class="bar"><div class="bar-fill mana" style="width:64%"></div></div>
+        </div>
+        <div class="vital-block">
+          <div class="vital-block-top"><span>Experiência</span><span class="nb">420 / 1000</span></div>
+          <div class="bar"><div class="bar-fill xp" style="width:42%"></div></div>
+        </div>
+
+        <div class="unified-block">Carga</div>
+        <div class="row"><span class="nm">Peso</span><span class="vl">28.5<span class="unit"> / 60 kg</span></span></div>
+        <div class="row"><span class="nm">Itens</span><span class="vl">14</span></div>
+
+        <div class="unified-block">Bolsa</div>
+        <div class="row"><span class="nm">Ouro</span><span class="vl">248</span></div>
+        <div class="row"><span class="nm">Prata</span><span class="vl">47</span></div>
+        <div class="row"><span class="nm">Bronze</span><span class="vl">132</span></div>
+
+        <div class="unified-block">Bônus de Saque</div>
+        <div class="row"><span class="nm">Quantidade</span><span class="vl">+18%</span></div>
+        <div class="row"><span class="nm">Raridade</span><span class="vl">+24%</span></div>
+        <div class="row"><span class="nm">Achado de Ouro</span><span class="vl">+12%</span></div>
+
+      </div>
+
+      <!-- ============ OFENSIVO ============ -->
+      <div class="unified-col">
+        <h2 class="unified-col-title">Ofensivo</h2>
+
+        <div class="row"><span class="nm">Dano por Segundo</span><span class="vl">184</span></div>
+        <div class="row"><span class="nm">Vel. Ataque</span><span class="vl">1.45<span class="unit">/s</span></span></div>
+        <div class="row"><span class="nm">Vel. Conjuração</span><span class="vl">1.20<span class="unit">/s</span></span></div>
+        <div class="row"><span class="nm">Acurácia</span><span class="vl">85%</span></div>
+
+        <div class="unified-block">Dano Físico</div>
+        <div class="row"><span class="nm">Corte</span><span class="vl">18 — 32</span></div>
+
+        <div class="unified-block">Dano Elemental</div>
+        <div class="row"><span class="nm">Fogo</span><span class="vl">4 — 8</span></div>
+        <div class="row"><span class="nm">Gelo</span><span class="vl">—</span></div>
+        <div class="row"><span class="nm">Raio</span><span class="vl">2 — 4</span></div>
+
+        <div class="unified-block">Dano Caos & Contínuo</div>
+        <div class="row"><span class="nm">Caos Direto</span><span class="vl">—</span></div>
+        <div class="row"><span class="nm">Veneno <span class="mod">DoT</span></span><span class="vl">12<span class="unit">/s</span></span></div>
+        <div class="row"><span class="nm">Sangramento <span class="mod">DoT</span></span><span class="vl">—</span></div>
+        <div class="row"><span class="nm">Queimadura <span class="mod">DoT</span></span><span class="vl">—</span></div>
+
+        <div class="unified-block">Crítico</div>
+        <div class="row"><span class="nm">Chance</span><span class="vl">8.4%</span></div>
+        <div class="row"><span class="nm">Multiplicador</span><span class="vl">×1.85</span></div>
+        <div class="row"><span class="nm">Crítico Elemental</span><span class="vl">+10%</span></div>
+
+        <div class="unified-block">Penetração</div>
+        <div class="row"><span class="nm">Armadura</span><span class="vl">12</span></div>
+        <div class="row"><span class="nm">Resistência Elem.</span><span class="vl">0%</span></div>
+        <div class="row"><span class="nm">Resistência Caos</span><span class="vl">0%</span></div>
+
+      </div>
+
+      <!-- ============ DEFENSIVO ============ -->
+      <div class="unified-col">
+        <h2 class="unified-col-title">Defensivo</h2>
+
+        <div class="unified-block">Mitigação</div>
+        <div class="row"><span class="nm">Armadura</span><span class="vl">248</span></div>
+        <div class="row"><span class="nm">Evasão</span><span class="vl">1240</span></div>
+        <div class="row"><span class="nm">Bloqueio</span><span class="vl">18%</span></div>
+        <div class="row"><span class="nm">Vel. Movimento</span><span class="vl">+12%</span></div>
+
+        <div class="unified-block">Resistências Elementais</div>
+        <div class="row"><span class="nm">Fogo</span><span class="vl">45<span class="unit">/75</span></span></div>
+        <div class="row"><span class="nm">Gelo</span><span class="vl">38<span class="unit">/75</span></span></div>
+        <div class="row"><span class="nm">Raio</span><span class="vl">41<span class="unit">/75</span></span></div>
+        <div class="row"><span class="nm">Caos</span><span class="vl">12<span class="unit">/75</span></span></div>
+
+        <div class="unified-block">Resistências de Status</div>
+        <div class="row"><span class="nm">Sangramento</span><span class="vl">15%</span></div>
+        <div class="row"><span class="nm">Atordoamento</span><span class="vl">20%</span></div>
+        <div class="row"><span class="nm">Congelamento</span><span class="vl">5%</span></div>
+        <div class="row"><span class="nm">Choque</span><span class="vl">8%</span></div>
+
+        <div class="unified-block">Regeneração</div>
+        <div class="row"><span class="nm">Vida</span><span class="vl">+4.2<span class="unit">/s</span></span></div>
+        <div class="row"><span class="nm">Mana</span><span class="vl">+2.1<span class="unit">/s</span></span></div>
+
+        <div class="unified-block">Roubo & Acerto</div>
+        <div class="row"><span class="nm">Vida por Acerto</span><span class="vl">+8</span></div>
+        <div class="row"><span class="nm">Roubo de Vida</span><span class="vl">3%</span></div>
+        <div class="row"><span class="nm">Roubo de Mana</span><span class="vl">1%</span></div>
+        <div class="row"><span class="nm">Mana por Eliminação</span><span class="vl">+2</span></div>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<script>
+  const classData = {
+    guerreiro: {
+      name: 'Guerreiro', role: 'Linha de Frente',
+      flavor: 'Forjado pelo aço e pela disciplina. Encara o golpe antes que ele encontre os outros, e devolve com peso o que recebe. Construído sobre vida, armadura e dano físico — apto a sustentar combate prolongado.',
+      stats: { for: 32, des: 14, vit: 28, ene: 8, hp: 120, mp: 20, arm: 42, dps: 38 },
+      tags: [['Corpo a Corpo','primary'],['Tanque',''],['Físico',''],['Dano Sustentado','']],
+      skill: { name: 'Golpe Pesado', cost: '4 vigor', desc: 'Ataque corpo a corpo que aplica 145% do dano de arma e ignora 8 pontos de armadura.' },
+      char: 'Aldric, o Sem-Brasão'
+    },
+    ladino: {
+      name: 'Ladino', role: 'Sombra & Lâmina',
+      flavor: 'Rápido onde os outros titubeiam. Vê fechaduras como convites e usa o silêncio melhor do que qualquer arma. Construído sobre crítico, esquiva e ataques pontuais com altíssima velocidade.',
+      stats: { for: 16, des: 32, vit: 18, ene: 14, hp: 85, mp: 45, arm: 24, dps: 52 },
+      tags: [['Corpo a Corpo','primary'],['Crítico',''],['Esquiva',''],['Burst',''],['Veneno','']],
+      skill: { name: 'Lâmina Sombria', cost: '6 mana', desc: 'Ataque furtivo que aplica 200% do dano de arma e tem +25% chance de crítico se atacar pelas costas.' },
+      char: 'Renn, da Ponte Velha'
+    },
+    mago: {
+      name: 'Mago', role: 'Tecedor de Ciclos',
+      flavor: 'Lê o mundo em runas e correntes invisíveis. Frágil de corpo, vasto de alcance — e perigoso quando se concentra. Construído sobre dano elemental, mana e habilidades de área.',
+      stats: { for: 8, des: 16, vit: 14, ene: 32, hp: 70, mp: 110, arm: 12, dps: 64 },
+      tags: [['À Distância','primary'],['Elemental',''],['Área',''],['Burst',''],['Mana','']],
+      skill: { name: 'Lança de Fogo', cost: '14 mana', desc: 'Conjura uma lança de chamas que causa 28–48 dano de fogo e aplica queimadura por 4s.' },
+      char: 'Iselda Vorn'
+    }
+  };
+
+  let currentClass = 'guerreiro';
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function selectClass(el) {
+    const cls = el.getAttribute('data-class');
+    currentClass = cls;
+    document.querySelectorAll('.cls-list-item').forEach(it => it.classList.remove('active'));
+    el.classList.add('active');
+
+    const d = classData[cls];
+    document.getElementById('prev-name').textContent = d.name;
+    document.getElementById('prev-role').textContent = d.role;
+    document.getElementById('prev-flavor').textContent = d.flavor;
+    document.getElementById('st-for').textContent = d.stats.for;
+    document.getElementById('st-des').textContent = d.stats.des;
+    document.getElementById('st-vit').textContent = d.stats.vit;
+    document.getElementById('st-ene').textContent = d.stats.ene;
+    document.getElementById('st-hp').textContent  = d.stats.hp;
+    document.getElementById('st-mp').textContent  = d.stats.mp;
+    document.getElementById('st-arm').textContent = d.stats.arm;
+    document.getElementById('st-dps').textContent = d.stats.dps;
+    document.getElementById('sk-name').textContent = d.skill.name;
+    document.getElementById('sk-cost').textContent = d.skill.cost;
+    document.getElementById('sk-desc').textContent = d.skill.desc;
+
+    const tagBox = document.getElementById('prev-tags');
+    tagBox.innerHTML = '';
+    d.tags.forEach(([txt, cls]) => {
+      const t = document.createElement('span');
+      t.className = 'cls-tag ' + cls;
+      t.textContent = txt;
+      tagBox.appendChild(t);
+    });
+  }
+
+  function confirmClass() {
+    const d = classData[currentClass];
+    document.getElementById('char-name').textContent = d.char;
+    document.getElementById('char-class').textContent = d.name;
+    document.getElementById('ch-name').textContent   = d.char;
+    document.getElementById('ch-class').textContent  = d.name;
+    showScreen('screen-hud');
+  }
+
+  function resetScreen()   { showScreen('screen-class'); }
+  function showCharacter() { showScreen('screen-character'); }
+  function backToHud()     { showScreen('screen-hud'); }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('screen-character').classList.contains('active')) backToHud();
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,87 @@
+:root {
+  /* ============================================================
+     FUNDOS — base graduada do mais profundo ao mais elevado
+     ============================================================ */
+  --bg: #0c0e12;
+  --paper: #131620;
+  --surface: #1a1e2a;
+  --surface-hover: #232838;
+  --surface-deep: #2a3045;
+
+  /* ============================================================
+     LATÃO — UI primária, acentos, botões principais e títulos
+     (mais dessaturado/sóbrio na nova paleta)
+     ============================================================ */
+  --brass-light: #5a5040;
+  --brass: #7a7060;
+  --brass-deep: #bcb09a;
+  --brass-bright: #c2a878;
+
+  /* ============================================================
+     FOLHA — textos, do mais forte ao mais discreto
+     ============================================================ */
+  --ink: #d8dce2;
+  --ink-soft: #b0b6c0;
+  --ink-muted: #8b96a3;
+  --ink-faint: #545d6e;
+
+  /* ============================================================
+     ACENTO — destrutivo (vermelho)
+     ============================================================ */
+  --accent: #c45a4d;
+  --accent-deep: #9a3e34;
+
+  /* ============================================================
+     VITAIS — convenção de jogo
+     ============================================================ */
+  --vital-vida: #b85450;       /* Terracota — do mockup de referência (rpg-mockup.html) */
+  --vital-mana: #5a8aa8;       /* Azul-cinza dessaturado — do mockup de referência */
+  --vital-exp: #8a6f3e;
+
+  /* ============================================================
+     TIPOS DE DANO — alinhados com Grim Dawn Rainbow Filter
+     ============================================================ */
+  --elem-fisico: #F0E68C;      /* GD: Physical (Khaki) */
+  --elem-fogo: #C09060;        /* GD: Fire (Tussock) */
+  --elem-gelo: #4DD9D9;        /* GD: Cold (Cyan) */
+  --elem-raio: #6495ED;        /* GD: Lightning (Cornflower Blue) */
+  --elem-caos: #B57EDC;        /* GD: Chaos (Lavender Purple) */
+
+  /* ============================================================
+     CATEGORIAS DE MODS — atributos primários em RGB clássico
+     ============================================================ */
+  --stat-forca: #E04848;       /* Vermelho — atributo de força (mesmo red do --vital-vida) */
+  --stat-agilidade: #22C55E;   /* Verde — atributo de agilidade */
+  --stat-intelecto: #3B82F6;   /* Azul — atributo de intelecto */
+  --stat-defesa: #9aa6b4;
+  --stat-critico: #4F5934;     /* GD: Special (Tom Thumb — verde-oliva escuro) */
+
+  /* ============================================================
+     RARIDADE DE ITENS — convenção ARPG (alinhada com Grim Dawn)
+     ============================================================ */
+  --rarity-comum: #b0b6c0;       /* Cinza-folha — itens neutros */
+  --rarity-magico: #6495ED;      /* Azul Cornflower — mágico (mesma família do Raio) */
+  --rarity-raro: #F0E68C;        /* Khaki — raro (mesma família do Físico) */
+  --rarity-unico: #C09060;       /* Tussock — único (mesma família do Fogo) */
+  --rarity-lendario: #B57EDC;    /* Lavender — lendário (mesma família do Caos) */
+
+  /* ============================================================
+     BORDAS — visíveis sobre fundo escuro
+     ============================================================ */
+  --border: #2a3045;
+  --border-soft: #1d2230;
+  --border-faint: #14181f;
+
+  /* ============================================================
+     SOMBRAS — pretas e densas
+     ============================================================ */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.7);
+
+  /* ============================================================
+     TIPOGRAFIA
+     ============================================================ */
+  --serif: 'Fraunces', Georgia, serif;
+  --mono: 'JetBrains Mono', 'Courier New', monospace;
+}

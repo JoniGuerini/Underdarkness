@@ -1,0 +1,257 @@
+/* ============================================================
+   Header — espelha CharacterSheet
+   ============================================================ */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+.nameBlock {
+  flex: 1;
+  text-align: left;
+}
+
+.title {
+  font: 500 28px/1.1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font: 500 11px/1.4 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.btnBack {
+  font-size: 11px;
+  padding: 9px 14px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg);
+}
+.btnBack:hover { background: var(--surface); }
+
+.btnBackKey {
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+}
+
+/* ============================================================
+   Card — wrapper geral, layout vertical: paper-doll em cima, inventário embaixo
+   ============================================================ */
+.card {
+  /* tamanho fixo dos slots — ajustável só aqui */
+  --slot-size: 76px;
+  --slot-gap: 8px;
+
+  background: var(--paper);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-height: 0;
+}
+
+/* ============================================================
+   Sections (Equipado / Inventário)
+   ============================================================ */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.sectionTitle {
+  font: 500 18px/1.1 var(--serif);
+  font-variation-settings: "opsz" 24;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin: 0;
+}
+
+/* ============================================================
+   Grids — agora com tamanho fixo de slot, sem flexão
+   ============================================================ */
+/* Paper-doll: grid 3×3, slots em ordem definida em PAPER_DOLL_ORDER.
+   Centralizado horizontalmente dentro do card. */
+.equippedGrid {
+  display: grid;
+  grid-template-columns: repeat(3, var(--slot-size));
+  gap: var(--slot-gap);
+  align-self: center;
+}
+
+/* Inventário 6×4 abaixo do paper-doll, também centralizado */
+.inventoryGrid {
+  display: grid;
+  grid-template-columns: repeat(6, var(--slot-size));
+  gap: var(--slot-gap);
+  align-self: center;
+}
+
+/* ============================================================
+   Slot — quadrado de tamanho fixo
+   ============================================================ */
+.slot {
+  position: relative;
+  width: var(--slot-size);
+  height: var(--slot-size);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: default;
+  transition: background 0.12s, border-color 0.12s, transform 0.08s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.slot.filled {
+  background: var(--surface);
+  border-color: var(--border);
+  cursor: grab;
+}
+.slot.filled:hover {
+  background: var(--surface-hover);
+  border-color: var(--brass-light);
+}
+.slot.filled:active { cursor: grabbing; }
+
+.slot.dragging {
+  opacity: 0.35;
+  transform: scale(0.94);
+}
+
+.slot.compatible {
+  border-color: var(--brass-light);
+  border-style: dashed;
+  background: var(--surface);
+}
+
+/* Slot incompatível enquanto há um drag — espelha o tratamento de .compatible
+   (borda dashed) só que em vermelho. Usa o mesmo tom da barra de Vida com
+   transparência pra ficar discreto: avisa sem chamar atenção. */
+.slot.incompatible {
+  border-color: color-mix(in srgb, var(--vital-vida) 50%, transparent);
+  border-style: dashed;
+  background: var(--surface);
+  cursor: not-allowed;
+}
+
+.slot.hover {
+  border-color: var(--brass-bright);
+  border-style: solid;
+  background: var(--surface-hover);
+  box-shadow: 0 0 0 2px rgba(194, 168, 120, 0.25) inset;
+}
+
+/* ============================================================
+   Conteúdo do slot
+   ============================================================ */
+.itemName {
+  font: 500 10px/1.2 var(--mono);
+  color: var(--brass-deep);
+  word-break: break-word;
+  hyphens: auto;
+  letter-spacing: 0.01em;
+}
+
+/* Cor do nome do item por raridade — substitui o brass-deep default */
+.slot.comum    .itemName { color: var(--rarity-comum); }
+.slot.magico   .itemName { color: var(--rarity-magico); }
+.slot.raro     .itemName { color: var(--rarity-raro); }
+.slot.unico    .itemName { color: var(--rarity-unico); }
+.slot.lendario .itemName { color: var(--rarity-lendario); }
+
+.slotLabel {
+  font: 500 9px/1.15 var(--mono);
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  word-break: break-word;
+}
+
+/* Badge de quantidade no canto inferior-direito do slot */
+.stackBadge {
+  position: absolute;
+  bottom: 3px;
+  right: 4px;
+  font: 500 10px/1 var(--mono);
+  color: var(--brass-deep);
+  background: var(--bg);
+  padding: 1px 4px;
+  border-radius: 2px;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+/* ============================================================
+   Context menu (right-click)
+   ============================================================ */
+.contextMenu {
+  position: fixed;
+  z-index: 2000;
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: var(--shadow-lg);
+  min-width: 140px;
+  font: 500 12px/1 var(--mono);
+}
+
+.contextMenu li {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 2px;
+  letter-spacing: 0.02em;
+}
+.contextMenu li:hover {
+  background: var(--surface-hover);
+}
+
+.menuItemDanger {
+  color: var(--vital-vida);
+}
+.menuItemDanger:hover {
+  color: var(--accent);
+  background: rgba(184, 84, 80, 0.08) !important;
+}
+
+/* ============================================================
+   Responsivo — em telas estreitas, vira layout vertical
+   ============================================================ */
+@media (max-width: 760px) {
+  .card { --slot-size: 68px; gap: 22px; }
+  .inventoryGrid { grid-template-columns: repeat(6, var(--slot-size)); }
+}
+
+@media (max-width: 540px) {
+  .card { --slot-size: 62px; padding: 18px 20px; }
+  .inventoryGrid { grid-template-columns: repeat(4, var(--slot-size)); }
+}

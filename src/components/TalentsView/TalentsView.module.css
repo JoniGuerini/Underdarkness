@@ -1,0 +1,382 @@
+/* ============================================================
+   Header (modal)
+   ============================================================ */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+.nameBlock { flex: 1; text-align: left; }
+.title {
+  font: 500 28px/1.1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.subtitle {
+  font: 500 11px/1.4 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.btnBack {
+  font-size: 11px;
+  padding: 9px 14px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg);
+}
+.btnBack:hover { background: var(--surface); }
+.btnBackKey {
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+}
+
+/* ============================================================
+   Card principal
+   ============================================================ */
+.card {
+  /* Tamanho do node — precisa bater com NODE_SIZE em TalentsView.tsx */
+  --node-size: 100px;
+
+  background: var(--paper);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: 0;
+  overflow-y: auto;
+  /* esconde scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.card::-webkit-scrollbar { display: none; }
+
+/* ============================================================
+   Tabs (3 árvores) + indicador de pontos disponíveis
+   ============================================================ */
+.tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 18px;
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.15s;
+  font: inherit;
+  color: inherit;
+}
+.tab:hover {
+  background: var(--surface);
+  border-color: var(--brass-light);
+}
+.tab.tabActive {
+  background: var(--surface);
+  border-color: var(--brass);
+}
+.tabName {
+  font: 500 16px/1 var(--serif);
+  font-variation-settings: "opsz" 24;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+.tab.tabActive .tabName { color: var(--brass-deep); }
+
+.tabPoints {
+  font: 500 12px/1 var(--mono);
+  color: var(--brass-deep);
+  letter-spacing: 0.04em;
+}
+
+.spacer { flex: 1; }
+
+.available {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  padding-left: 18px;
+  border-left: 1px solid var(--border-soft);
+  align-self: center;
+}
+.availableLabel {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.availableValue {
+  font: 500 22px/1 var(--serif);
+  font-variation-settings: "opsz" 24;
+  color: var(--brass-deep);
+}
+
+/* ============================================================
+   Cabeçalho da árvore ativa
+   ============================================================ */
+.treeHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.treeName {
+  font: 500 22px/1.1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.treeDesc {
+  font: italic 400 14px/1.5 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-muted);
+  margin: 0;
+}
+
+/* ============================================================
+   Wrapper da árvore — contém SVG de linhas + grid de nodes
+   posicionados nas mesmas coordenadas. Width/height vêm inline
+   do componente (calculados a partir de NODE_SIZE/COL_GAP/ROW_GAP).
+   ============================================================ */
+.gridWrapper {
+  position: relative;
+  align-self: center;
+  margin: 16px auto 24px;
+}
+
+/* SVG dos conectores — atrás dos nodes (z-index 0).
+   pointer-events: none pra não bloquear cliques nos nodes. */
+.connectors {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+}
+
+/* Linha padrão: prereq não cumprido — discreta, dashed */
+.connector {
+  stroke: var(--border);
+  stroke-width: 2;
+  stroke-dasharray: 5 6;
+  stroke-linecap: round;
+  transition: stroke 0.2s, stroke-dasharray 0.2s;
+}
+
+/* Linha "ativada": prereq tem rank > 0 — sólida, brass-light */
+.connector.connectorMet {
+  stroke: var(--brass-light);
+  stroke-dasharray: none;
+}
+
+/* Grid de nodes — z-index 1 pra ficar sobre as linhas, e o bg sólido
+   de cada node esconde a porção da linha que passa por dentro dele */
+.grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+}
+
+/* ============================================================
+   Talent Node (quadrado individual)
+   ============================================================ */
+.node {
+  position: relative;
+  width: var(--node-size);
+  height: var(--node-size);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.15s;
+  font: inherit;
+  color: inherit;
+  user-select: none;
+}
+.node:hover {
+  border-color: var(--brass-light);
+  background: var(--surface);
+}
+
+/* Quando não pode ser ranqueado (sem pontos / locked / maxed) — hover ainda
+   mostra tooltip mas o cursor sinaliza "ação indisponível" */
+.node.unspendable {
+  cursor: default;
+}
+.node.locked.unspendable {
+  cursor: not-allowed;
+}
+
+/* Talent ativo (rank > 0) */
+.node.active {
+  background: var(--surface);
+  border-color: var(--brass);
+}
+.node.active .nodeName { color: var(--brass-deep); }
+.node.active .nodeRank { color: var(--brass-bright); }
+
+/* Talent maximizado */
+.node.maxed {
+  background: var(--surface-deep);
+  border-color: var(--brass-bright);
+  cursor: default;
+}
+.node.maxed .nodeName { color: var(--brass-bright); }
+.node.maxed .nodeRank { color: var(--brass-bright); }
+
+/* Talent bloqueado por prereq */
+.node.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.node.locked:hover { background: var(--bg); border-color: var(--border); }
+
+.nodeName {
+  font: 500 11px/1.2 var(--mono);
+  color: var(--ink-soft);
+  letter-spacing: 0.01em;
+  word-break: break-word;
+  hyphens: auto;
+  margin-bottom: 8px;
+}
+
+.nodeRank {
+  font: 500 11px/1 var(--mono);
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+
+/* ============================================================
+   Tooltip (portal, position fixed)
+   ============================================================ */
+.tooltip {
+  position: fixed;
+  width: max-content;
+  max-width: 280px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  border-radius: 4px;
+  font: 12px/1.5 var(--mono);
+  color: var(--ink);
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-100%) translateY(-8px);
+  animation: tooltipIn 0.15s ease-out;
+}
+
+@keyframes tooltipIn {
+  from { opacity: 0; transform: translateY(-100%) translateY(-2px); }
+  to   { opacity: 1; transform: translateY(-100%) translateY(-8px); }
+}
+
+.tooltipHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.tooltipName {
+  font: 500 15px/1.2 var(--serif);
+  font-variation-settings: "opsz" 18;
+  color: var(--brass-deep);
+  letter-spacing: -0.005em;
+}
+.tooltipRank {
+  font: 500 12px/1 var(--mono);
+  color: var(--brass-deep);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.tooltipDesc {
+  font: 12px/1.5 var(--mono);
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+}
+
+/* Bloco interno do tooltip — uma seção com label pequena + valor */
+.tooltipBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 8px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border-soft);
+}
+.tooltipBlock:first-of-type {
+  margin-top: 0;
+}
+.tooltipBlockLabel {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.tooltipEffect {
+  font: 500 12px/1.4 var(--mono);
+  color: var(--brass-deep);
+  letter-spacing: 0.01em;
+}
+.tooltipPrereqs {
+  font: 500 12px/1.4 var(--mono);
+  color: var(--vital-vida);
+  letter-spacing: 0.01em;
+}
+
+.tooltipMeta {
+  font: 500 10px/1 var(--mono);
+  color: var(--ink-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding-top: 8px;
+  margin-top: 10px;
+  border-top: 1px solid var(--border-soft);
+}
+
+/* Cores de categoria pra .tooltipEffect (espelha StatLine) */
+.tooltipEffect.fisico    { color: var(--elem-fisico); }
+.tooltipEffect.fogo      { color: var(--elem-fogo); }
+.tooltipEffect.gelo      { color: var(--elem-gelo); }
+.tooltipEffect.raio      { color: var(--elem-raio); }
+.tooltipEffect.caos      { color: var(--elem-caos); }
+.tooltipEffect.vida      { color: var(--vital-vida); }
+.tooltipEffect.mana      { color: var(--vital-mana); }
+.tooltipEffect.forca     { color: var(--stat-forca); }
+.tooltipEffect.agilidade { color: var(--stat-agilidade); }
+.tooltipEffect.intelecto { color: var(--stat-intelecto); }
+.tooltipEffect.defesa    { color: var(--stat-defesa); }
+.tooltipEffect.critico   { color: var(--stat-critico); }

@@ -1,0 +1,100 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+  animation: fadeIn 0.2s;
+}
+.overlay.fullscreen { padding: 10px; }
+
+/* Frame do modal — espelha o pattern da HUD principal: bg escuro
+   atrás, com header / body / footer como cards independentes
+   separados por gap. Padding externo de 8px deixa o bg respirar. */
+.modal {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  max-width: 640px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.2s ease-out;
+}
+.modal.large {
+  max-width: none;
+  max-height: none;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+}
+
+/* Header é um card próprio (paper + border) */
+.header {
+  background: var(--paper);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+.modal.large .header { padding: 14px 24px; }
+
+.title {
+  font: 500 26px/1.2 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--brass-deep);
+  letter-spacing: -0.01em;
+}
+
+.shortcut {
+  font: 500 11px/1 var(--mono);
+  color: var(--ink-faint);
+  letter-spacing: 0.1em;
+}
+
+/* Body é o "espaço dark" entre header e footer — sem padding próprio.
+   O conteúdo dentro deve fornecer seu próprio card (paper + border) ou
+   o layout é flex column de cards. */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+.modal.large .body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  background: transparent;
+}
+
+/* Footer também vira card */
+.footer {
+  background: var(--paper);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.modal.large .footer { display: none; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }

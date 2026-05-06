@@ -1,0 +1,99 @@
+.view {
+  background: var(--bg);
+  min-height: 100vh;
+  padding: 32px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.container {
+  max-width: 1180px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.brand {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border-faint);
+  position: relative;
+}
+.brand::after {
+  content: '✦';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg);
+  color: var(--brass-light);
+  padding: 0 12px;
+  font: 16px var(--mono);
+}
+.brand h1 {
+  font: 500 30px/1 var(--serif);
+  font-variation-settings: "opsz" 60;
+  letter-spacing: -0.02em;
+  color: var(--brass-deep);
+}
+
+.sectionHeader {
+  margin-bottom: 22px;
+  text-align: center;
+}
+.sectionTitle {
+  font: 500 32px/1.1 var(--serif);
+  font-variation-settings: "opsz" 60;
+  letter-spacing: -0.015em;
+  color: var(--brass-deep);
+  margin-bottom: 4px;
+}
+.sectionSubtitle { font: 14px/1.5 var(--mono); color: var(--ink-muted); }
+
+/* Layout sidebar + detail — capped + centralizado */
+.layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 820px);
+  gap: 20px;
+  margin: 0 auto 22px;
+  justify-content: center;
+}
+
+.sidebar {
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  background: var(--paper);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-self: start;
+}
+
+.detail {
+  display: flex;
+}
+.detail > * { flex: 1; }
+
+.actionRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-faint);
+  max-width: 1120px;
+  margin: 0 auto;
+}
+.actionGroup { display: flex; gap: 12px; }
+
+@media (max-width: 880px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .actionRow { flex-direction: column-reverse; align-items: stretch; gap: 10px; }
+  .actionGroup { justify-content: stretch; flex-wrap: wrap; }
+  .actionGroup button { flex: 1; }
+}

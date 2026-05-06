@@ -1,0 +1,2005 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Underdarkness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Fundos — noite */
+  --bg: #050810;
+  --paper: #0a0f1c;
+  --surface: #131a2a;
+  --surface-hover: #1d2640;
+  --surface-deep: #2a3556;
+
+  /* Latão */
+  --brass-light: #5a4d2e;
+  --brass: #8a6f3e;
+  --brass-deep: #d4b378;
+  --brass-bright: #ecd29a;
+
+  /* Folha — textos */
+  --ink: #e8eaf2;
+  --ink-soft: #b8bdce;
+  --ink-muted: #7d869c;
+  --ink-faint: #4d556b;
+
+  /* Acento — destrutivo */
+  --accent: #d44a3d;
+  --accent-deep: #a83426;
+
+  /* Vitais — convenção de jogo (exceção à regra do vermelho) */
+  --vital-vida: #c4493d;
+  --vital-mana: #4a8cc8;
+  --vital-exp: #8a6f3e;
+
+  /* Tipos de Dano — convenção de jogo */
+  --elem-fogo: #e8704a;
+  --elem-gelo: #6ec8d8;
+  --elem-raio: #ecd24a;
+  --elem-caos: #b272c8;
+
+  /* Categorias de Mods — convenção de jogo */
+  --stat-forca: #c47a3d;
+  --stat-agilidade: #7cc47f;
+  --stat-intelecto: #8a8ac4;
+  --stat-defesa: #9aa6b4;
+  --stat-critico: #f0b048;
+
+  /* Bordas */
+  --border: #2a3450;
+  --border-soft: #19223a;
+  --border-faint: #0d1424;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.7);
+
+  /* Tipografia */
+  --serif: 'Fraunces', Georgia, serif;
+  --mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background-color: var(--bg) !important;
+  height: 100%;
+}
+html { color-scheme: dark; }
+
+body {
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+::selection { background: var(--brass); color: var(--paper); }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--brass); }
+
+[hidden] { display: none !important; }
+
+/* ============================================================
+   COMPONENTES BASE (compartilhados)
+   ============================================================ */
+.brand {
+  text-align: center;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-faint);
+  position: relative;
+}
+.brand::after {
+  content: '✦';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg);
+  color: var(--brass-light);
+  padding: 0 12px;
+  font: 16px var(--mono);
+}
+.brand h1 {
+  font: 500 30px/1 var(--serif);
+  font-variation-settings: "opsz" 60;
+  letter-spacing: -0.02em;
+  color: var(--brass-deep);
+}
+
+.section-header { margin-bottom: 22px; }
+.section-title {
+  font: 500 32px/1.1 var(--serif);
+  font-variation-settings: "opsz" 60;
+  letter-spacing: -0.015em;
+  color: var(--brass-deep);
+  margin-bottom: 4px;
+}
+.section-subtitle { font: 14px/1.5 var(--mono); color: var(--ink-muted); }
+
+.minor-label {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.minor-label::after { content: ''; flex: 1; height: 1px; background: var(--border-faint); }
+
+.action-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-faint);
+}
+.action-hint { font: 13px/1.4 var(--mono); color: var(--ink-muted); }
+.action-buttons { display: flex; gap: 12px; }
+
+.btn-primary {
+  background: var(--brass-deep);
+  color: var(--paper);
+  border: none;
+  padding: 11px 26px;
+  font: 500 13px/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.btn-primary:hover:not(:disabled) { background: var(--brass-bright); box-shadow: var(--shadow-md); }
+.btn-primary:disabled { background: var(--ink-faint); cursor: not-allowed; opacity: 0.7; }
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--ink-soft);
+  padding: 10px 18px;
+  font: 500 12px/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.btn-secondary:hover {
+  border-color: var(--brass);
+  color: var(--brass-deep);
+  background: var(--surface-hover);
+}
+.btn-secondary.danger { border-color: var(--accent); color: var(--accent); }
+.btn-secondary.danger:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--paper);
+}
+
+/* ============================================================
+   VIEW: LISTA DE PERSONAGENS
+   ============================================================ */
+.view-create {
+  background: var(--bg);
+  min-height: 100vh;
+  padding: 28px 24px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.create-container {
+  max-width: 1180px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   VIEW: LISTA DE PERSONAGENS — CSS isolado, seletor por ID
+   ============================================================ */
+#view-list {
+  background-color: var(--bg);
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 60px 24px;
+  /* GPU compositing hack — força elemento a render em layer separada */
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+#view-list[hidden] { display: none; }
+
+.select-wrap {
+  width: 100%;
+  max-width: 760px;
+  text-align: center;
+}
+
+.select-brand {
+  font: 500 30px/1 var(--serif);
+  font-variation-settings: "opsz" 60;
+  letter-spacing: -0.02em;
+  color: var(--brass-deep);
+  margin-bottom: 44px;
+}
+
+.select-header { margin-bottom: 28px; }
+.select-title {
+  font: 500 32px/1.1 var(--serif);
+  font-variation-settings: "opsz" 60;
+  letter-spacing: -0.015em;
+  color: var(--brass-deep);
+  margin-bottom: 4px;
+}
+.select-subtitle {
+  font: 14px/1.5 var(--mono);
+  color: var(--ink-muted);
+}
+
+.select-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.select-hint {
+  font: 13px/1.4 var(--mono);
+  color: var(--ink-muted);
+  margin-bottom: 14px;
+  min-height: 1.4em;
+}
+
+.select-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.char-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.char-card {
+  flex: 0 0 320px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 22px 24px 20px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+.char-card:hover {
+  border-color: var(--brass-light);
+  box-shadow: var(--shadow-md);
+}
+.char-card.selected {
+  border-color: var(--brass-deep);
+  background: var(--surface-hover);
+  box-shadow: var(--shadow-md);
+}
+.char-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font: 16px/1 var(--mono);
+  color: var(--brass-deep);
+}
+
+.char-card-name {
+  font: 500 24px/1.1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--brass-deep);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.char-card-class {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.char-card-world {
+  font: 13px/1.3 var(--mono);
+  color: var(--ink-soft);
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.ccw-place { color: var(--brass-deep); }
+.ccw-sep { color: var(--ink-faint); }
+.ccw-time { color: var(--ink-muted); }
+
+/* ============================================================
+   VIEW: CRIAÇÃO DE PERSONAGEM
+   ============================================================ */
+.name-field {
+  background: var(--paper);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 16px 22px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  box-shadow: var(--shadow-sm);
+}
+.name-field label {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.name-field input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font: 15px var(--mono);
+  color: var(--ink);
+  transition: 0.15s;
+}
+.name-field input:focus {
+  outline: none;
+  border-color: var(--brass);
+  background: var(--surface-hover);
+}
+.name-field input::placeholder { color: var(--ink-faint); }
+
+.class-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 22px;
+}
+.class-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 20px 22px;
+  cursor: pointer;
+  transition: 0.15s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+}
+.class-card:hover {
+  border-color: var(--brass-light);
+  box-shadow: var(--shadow-md);
+}
+.class-card.selected {
+  border-color: var(--brass-deep);
+  background: var(--surface-hover);
+  box-shadow: var(--shadow-md);
+}
+.class-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font: 16px/1 var(--mono);
+  color: var(--brass-deep);
+}
+.class-name {
+  font: 500 22px/1.2 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--brass-deep);
+  margin-bottom: 2px;
+}
+.class-tagline {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 14px;
+}
+.class-description { font: 14px/1.6 var(--mono); color: var(--ink-soft); margin-bottom: 16px; }
+.stats-panel {
+  background: var(--paper);
+  border: 1px solid var(--border-faint);
+  border-radius: 4px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+.vitals-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--border-faint);
+}
+.vital { text-align: center; }
+.vital-label {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 4px;
+}
+.vital-value {
+  font: 500 24px/1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--brass-deep);
+}
+.attr-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.attr { text-align: center; }
+.attr-label {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 4px;
+}
+.attr-value {
+  font: 500 18px/1 var(--serif);
+  font-variation-settings: "opsz" 24;
+  color: var(--ink);
+}
+.ability-list {
+  list-style: none;
+  border-top: 1px solid var(--border-faint);
+  padding-top: 12px;
+  margin-top: auto;
+}
+.ability-list li {
+  font: 13px/1.5 var(--mono);
+  color: var(--ink-soft);
+  padding: 3px 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.ability-list li::before { content: '•'; color: var(--brass-light); flex-shrink: 0; }
+.ability-name { font-weight: 500; color: var(--ink); }
+.ability-desc { color: var(--ink-muted); }
+
+/* ============================================================
+   VIEW: HUD DO JOGO
+   ============================================================ */
+.view-hud {
+  background: var(--bg);
+  min-height: 100vh;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.game-topbar {
+  background: var(--paper);
+  border-bottom: 1px solid var(--border-soft);
+  padding: 14px 24px;
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  gap: 32px;
+  align-items: center;
+}
+.gt-character { min-width: 0; }
+.gt-name {
+  font: 500 22px/1.1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gt-class {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.gt-vitals { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.gv-row {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+.gv-label {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.gv-track {
+  height: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border-faint);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.gv-fill { height: 100%; transition: width 0.3s ease-out; }
+.gv-fill.vida { background: var(--vital-vida); }
+.gv-fill.mana { background: var(--vital-mana); }
+.gv-fill.exp { background: var(--vital-exp); }
+.gv-values {
+  font: 500 12px/1 var(--mono);
+  color: var(--ink-soft);
+  white-space: nowrap;
+  min-width: 80px;
+  text-align: right;
+}
+.gt-world {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 18px;
+  align-items: center;
+  text-align: right;
+}
+.gw-place .gw-line1 {
+  font: 500 16px/1.1 var(--serif);
+  font-variation-settings: "opsz" 24;
+  color: var(--brass-deep);
+  margin-bottom: 4px;
+}
+.gw-place .gw-line2 {
+  font: 11px/1 var(--mono);
+  color: var(--ink-muted);
+  letter-spacing: 0.04em;
+}
+.gw-stat {
+  text-align: center;
+  padding-left: 18px;
+  border-left: 1px solid var(--border-faint);
+}
+.gw-stat-label {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+}
+.gw-stat-value {
+  font: 500 18px/1 var(--serif);
+  font-variation-settings: "opsz" 24;
+  color: var(--ink);
+}
+
+.game-body {
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  min-height: 0;
+  overflow: hidden;
+}
+.panel {
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+.panel-left { border-right: 1px solid var(--border-soft); }
+.panel-right { border-left: 1px solid var(--border-soft); }
+.panel-center { background: var(--bg); padding: 0; }
+
+.panel-header {
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-faint);
+  flex-shrink: 0;
+}
+.panel-title {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.panel-meta {
+  font: 11px/1 var(--mono);
+  color: var(--ink-faint);
+  letter-spacing: 0.06em;
+}
+.panel-section { padding: 14px 20px 8px; }
+.panel-section-label {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 10px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border-faint);
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-name { font: 14px/1 var(--mono); color: var(--ink-soft); }
+.stat-value {
+  font: 500 16px/1 var(--serif);
+  font-variation-settings: "opsz" 24;
+  color: var(--ink);
+}
+
+.ability-mini {
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border-faint);
+}
+.ability-mini:last-child { border-bottom: none; }
+.ability-mini-name { font: 500 13px/1.2 var(--mono); color: var(--ink); margin-bottom: 3px; }
+.ability-mini-desc { font: 12px/1.4 var(--mono); color: var(--ink-muted); }
+
+.equip-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px dashed var(--border-faint);
+}
+.equip-row:last-child { border-bottom: none; }
+.equip-label {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.equip-value { font: 13px/1.3 var(--mono); color: var(--ink-soft); }
+.equip-value.empty { color: var(--ink-faint); }
+
+.quick-action {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px dashed var(--border-faint);
+}
+.quick-action:last-child { border-bottom: none; }
+.qa-num { font: 500 11px/1 var(--mono); color: var(--ink-faint); letter-spacing: 0.08em; }
+.qa-name { font: 13px/1.3 var(--mono); color: var(--ink-soft); }
+.qa-name.empty { color: var(--ink-faint); }
+.qa-count { font: 11px/1 var(--mono); color: var(--ink-muted); }
+
+.status-empty {
+  font: italic 13px/1.4 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-faint);
+  padding: 6px 0;
+}
+
+.scene-wrap { max-width: 760px; margin: 0 auto; padding: 36px 32px 40px; }
+.scene-chapter {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 10px;
+}
+.scene-title {
+  font: 500 36px/1.15 var(--serif);
+  font-variation-settings: "opsz" 72;
+  letter-spacing: -0.015em;
+  color: var(--brass-deep);
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.scene-narrative {
+  font: 15px/1.75 var(--mono);
+  color: var(--ink);
+  margin-bottom: 32px;
+}
+.scene-narrative p { margin-bottom: 14px; }
+.scene-narrative p:last-child { margin-bottom: 0; }
+.scene-actions-label {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.scene-actions-label::after { content: ''; flex: 1; height: 1px; background: var(--border-faint); }
+.scene-actions { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.scene-action {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.scene-action:hover {
+  border-color: var(--brass);
+  background: var(--surface-hover);
+  transform: translateX(2px);
+}
+.scene-action:hover .scene-action-text { color: var(--brass-deep); }
+.scene-action-num { font: 500 11px/1 var(--mono); color: var(--ink-faint); letter-spacing: 0.06em; }
+.scene-action-text { font: 14px/1.4 var(--mono); color: var(--ink); transition: 0.15s; }
+.scene-action-meta {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.game-footer {
+  background: var(--paper);
+  border-top: 1px solid var(--border-soft);
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.tab-button {
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border-faint);
+  padding: 16px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.tab-button:last-child { border-right: none; }
+.tab-button:hover { background: var(--surface); }
+.tab-button:hover .tab-label { color: var(--brass-deep); }
+.tab-label {
+  font: 500 14px/1 var(--serif);
+  font-variation-settings: "opsz" 18;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  transition: 0.15s;
+}
+.tab-shortcut { font: 500 10px/1 var(--mono); color: var(--ink-faint); letter-spacing: 0.08em; }
+
+/* ============================================================
+   MODAL (compartilhado)
+   ============================================================ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(3px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+.overlay.show { display: flex; animation: fadeIn 0.2s; }
+.modal {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  max-width: 640px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.2s ease-out;
+}
+.modal-header {
+  padding: 22px 28px 18px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.modal-title {
+  font: 500 26px/1.2 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--brass-deep);
+  letter-spacing: -0.01em;
+}
+.modal-shortcut { font: 500 11px/1 var(--mono); color: var(--ink-faint); letter-spacing: 0.1em; }
+.modal-body { padding: 24px 28px; overflow-y: auto; }
+.modal-footer {
+  padding: 14px 28px;
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.modal-empty { text-align: center; padding: 24px 20px; }
+.modal-empty h3 {
+  font: 500 18px/1.2 var(--serif);
+  font-variation-settings: "opsz" 24;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+.modal-empty p { font: 14px/1.5 var(--mono); color: var(--ink-muted); }
+
+/* Lista de opções (Opções/ESC) */
+.options-list { display: flex; flex-direction: column; gap: 8px; }
+.option-item {
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: 0.15s;
+  font: inherit;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.option-item:hover { border-color: var(--brass-light); background: var(--surface-hover); }
+.option-item:hover .opt-name { color: var(--brass-deep); }
+.option-item.disabled { cursor: not-allowed; opacity: 0.5; }
+.option-item.disabled:hover { border-color: var(--border-soft); background: var(--surface); }
+.opt-name { font: 500 14px/1.2 var(--mono); color: var(--ink); transition: 0.15s; }
+.opt-desc { font: 13px/1.4 var(--mono); color: var(--ink-muted); }
+
+/* Modal grande (ficha do personagem) — fullscreen com 10px de respiro */
+.overlay.fullscreen { padding: 10px; }
+.modal.large {
+  max-width: none;
+  max-height: none;
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+}
+
+/* Modal large (ficha): ajustes de header, body e footer */
+.modal.large .modal-header { padding: 18px 28px; align-items: center; gap: 24px; }
+.modal.large .modal-body { padding: 28px 32px; }
+.modal.large .modal-footer { display: none; }
+
+/* Header da ficha: botão voltar + nome + subtítulo */
+.btn-back-cena {
+  font-size: 11px;
+  padding: 9px 16px;
+  white-space: nowrap;
+}
+.cs-name-block {
+  flex: 1;
+  text-align: left;
+  padding-left: 8px;
+}
+.cs-name {
+  font: 500 28px/1.1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.cs-meta {
+  font: 500 11px/1.4 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* Card único contendo todos os mods */
+.charsheet-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 28px 36px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* 3 colunas explícitas: Recursos / Ofensivo / Defensivo */
+.charsheet-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 44px;
+}
+.col { display: flex; flex-direction: column; min-width: 0; }
+
+/* Título serif grande de cada coluna */
+.col-title {
+  font: 500 26px/1.1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Subseção dentro de uma coluna */
+.col-section { margin-bottom: 22px; }
+.col-section:last-child { margin-bottom: 0; }
+.col-section-title {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+}
+
+/* Stat line com separador entre cada mod */
+.stat-line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.stat-line:last-child { border-bottom: none; }
+
+.stat-line-name { font: 12px/1.3 var(--mono); color: var(--ink-soft); }
+.stat-line-name.fogo { color: var(--elem-fogo); }
+.stat-line-name.gelo { color: var(--elem-gelo); }
+.stat-line-name.raio { color: var(--elem-raio); }
+.stat-line-name.caos { color: var(--elem-caos); }
+.stat-line-name.vida { color: var(--vital-vida); }
+.stat-line-name.mana { color: var(--vital-mana); }
+.stat-line-name.forca { color: var(--stat-forca); }
+.stat-line-name.agilidade { color: var(--stat-agilidade); }
+.stat-line-name.intelecto { color: var(--stat-intelecto); }
+.stat-line-name.defesa { color: var(--stat-defesa); }
+.stat-line-name.critico { color: var(--stat-critico); }
+.stat-line-value {
+  font: 500 12px/1 var(--mono);
+  color: var(--ink);
+  text-align: right;
+  white-space: nowrap;
+}
+.stat-line-value .unit {
+  color: var(--ink-faint);
+  font-weight: 400;
+  font-size: 10px;
+  margin-left: 2px;
+}
+
+/* Vitais como barras horizontais (Vida, Mana, Exp dentro de Recursos) */
+.vital-line {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.vital-line:last-child { border-bottom: none; }
+.vital-line-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+.vital-line-name {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.vital-line-name.vida { color: var(--vital-vida); }
+.vital-line-name.mana { color: var(--vital-mana); }
+.vital-line-name.exp  { color: var(--vital-exp); }
+.vital-line-value { font: 500 12px/1 var(--mono); color: var(--ink); }
+.vital-line-track {
+  height: 6px;
+  background: var(--bg);
+  border: 1px solid var(--border-faint);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.vital-line-fill { height: 100%; transition: width 0.3s ease-out; }
+.vital-line-fill.vida { background: var(--vital-vida); }
+.vital-line-fill.mana { background: var(--vital-mana); }
+.vital-line-fill.exp  { background: var(--vital-exp); }
+
+@media (max-width: 980px) { .charsheet-grid { grid-template-columns: 1fr; gap: 28px; } }
+@media (min-width: 980px) and (max-width: 1300px) { .charsheet-grid { grid-template-columns: 1fr 1fr; } }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ---------- responsivo ---------- */
+@media (max-width: 1100px) {
+  .game-topbar { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .gt-vitals { grid-column: 1 / -1; order: 3; }
+  .game-body { grid-template-columns: 240px 1fr 240px; }
+}
+@media (max-width: 880px) {
+  .view-hud { height: auto; min-height: 100vh; }
+  .game-topbar { grid-template-columns: 1fr; gap: 14px; text-align: left; }
+  .gt-world { text-align: left; grid-template-columns: 1fr 1fr 1fr; }
+  .game-body { grid-template-columns: 1fr; }
+  .panel-left, .panel-right { border-left: none; border-right: none; border-top: 1px solid var(--border-soft); }
+  .game-footer { grid-template-columns: repeat(3, 1fr); }
+  .tab-button { border-right: 1px solid var(--border-faint); border-bottom: 1px solid var(--border-faint); }
+  .class-grid { grid-template-columns: 1fr; }
+  .char-card { flex: 0 0 100%; max-width: 360px; }
+  .name-field { flex-direction: column; align-items: stretch; }
+  .action-row { flex-direction: column; align-items: stretch; }
+  .action-hint { text-align: center; }
+  .action-buttons { justify-content: stretch; }
+  .action-buttons button { flex: 1; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     VIEW: LISTA DE PERSONAGENS (rebuild — CSS Grid, classes únicas)
+     ============================================================ -->
+<section id="view-list" class="view" hidden>
+  <div class="select-wrap">
+    <h1 class="select-brand">Underdarkness</h1>
+
+    <div class="select-header">
+      <h2 class="select-title">Personagens</h2>
+      <p class="select-subtitle">Continue uma aventura ou comece uma nova.</p>
+    </div>
+
+    <div class="select-grid" id="char-grid"></div>
+
+    <p class="select-hint" id="list-hint"></p>
+
+    <div class="select-actions">
+      <button class="btn-secondary danger" id="btn-delete" disabled>Excluir</button>
+      <button class="btn-primary" id="btn-continue" disabled>Continuar</button>
+      <button class="btn-secondary" id="btn-new">Novo Personagem</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     VIEW: CRIAÇÃO DE PERSONAGEM
+     ============================================================ -->
+<div class="view view-create" id="view-create" hidden>
+  <div class="create-container">
+
+    <header class="brand">
+      <h1>Underdarkness</h1>
+    </header>
+
+    <section>
+      <div class="section-header">
+        <h2 class="section-title">Criação de Personagem</h2>
+        <p class="section-subtitle">Escolha um nome e uma classe.</p>
+      </div>
+
+      <div class="name-field">
+        <label for="hero-name">Nome do Personagem</label>
+        <input type="text" id="hero-name" placeholder="Digite o nome do personagem" maxlength="32" autocomplete="off" />
+      </div>
+
+      <div class="minor-label">Classes</div>
+
+      <div class="class-grid">
+
+        <article class="class-card" data-class="guerreiro" tabindex="0" role="button" aria-pressed="false">
+          <h3 class="class-name">Guerreiro</h3>
+          <p class="class-tagline">Combate corpo a corpo</p>
+          <p class="class-description">Alta defesa e dano físico. Forte em combate direto, ideal para absorver dano e segurar a linha de frente.</p>
+          <div class="stats-panel">
+            <div class="vitals-row">
+              <div class="vital"><div class="vital-label">Vida</div><div class="vital-value">14</div></div>
+              <div class="vital"><div class="vital-label">Mana</div><div class="vital-value">2</div></div>
+            </div>
+            <div class="attr-row">
+              <div class="attr"><div class="attr-label">Força</div><div class="attr-value">16</div></div>
+              <div class="attr"><div class="attr-label">Agilidade</div><div class="attr-value">11</div></div>
+              <div class="attr"><div class="attr-label">Intelecto</div><div class="attr-value">8</div></div>
+            </div>
+          </div>
+          <ul class="ability-list">
+            <li><div><span class="ability-name">Golpe Devastador</span> <span class="ability-desc">— causa o dobro de dano</span></div></li>
+            <li><div><span class="ability-name">Postura Defensiva</span> <span class="ability-desc">— reduz dano recebido pela metade</span></div></li>
+          </ul>
+        </article>
+
+        <article class="class-card" data-class="ladino" tabindex="0" role="button" aria-pressed="false">
+          <h3 class="class-name">Ladino</h3>
+          <p class="class-tagline">Furtividade e precisão</p>
+          <p class="class-description">Dano alto em ataques únicos com chance crítica. Boa esquiva e mobilidade, mas pouca defesa.</p>
+          <div class="stats-panel">
+            <div class="vitals-row">
+              <div class="vital"><div class="vital-label">Vida</div><div class="vital-value">10</div></div>
+              <div class="vital"><div class="vital-label">Mana</div><div class="vital-value">4</div></div>
+            </div>
+            <div class="attr-row">
+              <div class="attr"><div class="attr-label">Força</div><div class="attr-value">11</div></div>
+              <div class="attr"><div class="attr-label">Agilidade</div><div class="attr-value">17</div></div>
+              <div class="attr"><div class="attr-label">Intelecto</div><div class="attr-value">13</div></div>
+            </div>
+          </div>
+          <ul class="ability-list">
+            <li><div><span class="ability-name">Ataque Furtivo</span> <span class="ability-desc">— crítico se o alvo não te vê</span></div></li>
+            <li><div><span class="ability-name">Esquiva Ágil</span> <span class="ability-desc">— chance de evitar o golpe inteiro</span></div></li>
+          </ul>
+        </article>
+
+        <article class="class-card" data-class="mago" tabindex="0" role="button" aria-pressed="false">
+          <h3 class="class-name">Mago</h3>
+          <p class="class-tagline">Magia arcana</p>
+          <p class="class-description">Magias de dano em área e controle. Frágil em combate corpo a corpo, mas devastador a distância.</p>
+          <div class="stats-panel">
+            <div class="vitals-row">
+              <div class="vital"><div class="vital-label">Vida</div><div class="vital-value">8</div></div>
+              <div class="vital"><div class="vital-label">Mana</div><div class="vital-value">12</div></div>
+            </div>
+            <div class="attr-row">
+              <div class="attr"><div class="attr-label">Força</div><div class="attr-value">8</div></div>
+              <div class="attr"><div class="attr-label">Agilidade</div><div class="attr-value">11</div></div>
+              <div class="attr"><div class="attr-label">Intelecto</div><div class="attr-value">17</div></div>
+            </div>
+          </div>
+          <ul class="ability-list">
+            <li><div><span class="ability-name">Bola de Fogo</span> <span class="ability-desc">— dano arcano em área</span></div></li>
+            <li><div><span class="ability-name">Escudo Arcano</span> <span class="ability-desc">— absorve um golpe inteiro</span></div></li>
+          </ul>
+        </article>
+
+      </div>
+
+      <div class="action-row">
+        <p class="action-hint" id="action-hint">Preencha o nome e escolha uma classe.</p>
+        <div class="action-buttons">
+          <button class="btn-secondary" id="back-to-list-btn" hidden>← Personagens</button>
+          <button class="btn-secondary" id="reset-btn">Limpar</button>
+          <button class="btn-primary" id="create-btn" disabled>Criar Personagem</button>
+        </div>
+      </div>
+
+    </section>
+  </div>
+</div>
+
+<!-- ============================================================
+     VIEW: HUD DO JOGO
+     ============================================================ -->
+<div class="view view-hud" id="view-hud" hidden>
+
+  <header class="game-topbar">
+    <div class="gt-character">
+      <div class="gt-name" id="gt-name"></div>
+      <div class="gt-class" id="gt-class"></div>
+    </div>
+
+    <div class="gt-vitals">
+      <div class="gv-row">
+        <span class="gv-label">Vida</span>
+        <div class="gv-track"><div class="gv-fill vida" id="vida-fill" style="width:100%"></div></div>
+        <span class="gv-values" id="vida-text">— / —</span>
+      </div>
+      <div class="gv-row">
+        <span class="gv-label">Mana</span>
+        <div class="gv-track"><div class="gv-fill mana" id="mana-fill" style="width:100%"></div></div>
+        <span class="gv-values" id="mana-text">— / —</span>
+      </div>
+      <div class="gv-row">
+        <span class="gv-label">Exp</span>
+        <div class="gv-track"><div class="gv-fill exp" id="exp-fill" style="width:0%"></div></div>
+        <span class="gv-values" id="exp-text">0 / 100</span>
+      </div>
+    </div>
+
+    <div class="gt-world">
+      <div class="gw-place">
+        <div class="gw-line1" id="gw-location">Origem</div>
+        <div class="gw-line2" id="gw-day">Dia 1 — Aurora</div>
+      </div>
+      <div class="gw-stat">
+        <div class="gw-stat-label">Tempo</div>
+        <div class="gw-stat-value" id="gw-time">06:00</div>
+      </div>
+      <div class="gw-stat">
+        <div class="gw-stat-label">Ouro</div>
+        <div class="gw-stat-value" id="gw-gold">0</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="game-body">
+
+    <aside class="panel panel-left">
+      <div class="panel-header">
+        <span class="panel-title">Ficha</span>
+        <span class="panel-meta" id="ficha-meta">Nv 1</span>
+      </div>
+      <div class="panel-section">
+        <div class="panel-section-label">Atributos</div>
+        <div class="stat-row"><span class="stat-name">Força</span><span class="stat-value" id="ficha-forca">—</span></div>
+        <div class="stat-row"><span class="stat-name">Agilidade</span><span class="stat-value" id="ficha-agilidade">—</span></div>
+        <div class="stat-row"><span class="stat-name">Intelecto</span><span class="stat-value" id="ficha-intelecto">—</span></div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-section-label">Habilidades</div>
+        <div id="ficha-abilities"></div>
+      </div>
+    </aside>
+
+    <main class="panel panel-center">
+      <div class="panel-header">
+        <span class="panel-title">Cena Atual</span>
+        <span class="panel-meta">01 / —</span>
+      </div>
+      <div class="scene-wrap">
+        <div class="scene-chapter">Capítulo I</div>
+        <h1 class="scene-title">O Início</h1>
+        <div class="scene-narrative">
+          <p>Você está numa estrada de terra batida. O sol está baixo no horizonte e o ar carrega o cheiro de uma fogueira distante.</p>
+          <p>Há uma vila à frente, uma floresta densa à direita, e o caminho atrás de você — o que veio percorrendo, sem lembrar exatamente como.</p>
+        </div>
+        <div class="scene-actions-label">Suas Ações</div>
+        <ul class="scene-actions">
+          <li class="scene-action" data-action="vila">
+            <span class="scene-action-num">01</span>
+            <span class="scene-action-text">Seguir em direção à vila.</span>
+            <span class="scene-action-meta">—</span>
+          </li>
+          <li class="scene-action" data-action="floresta">
+            <span class="scene-action-num">02</span>
+            <span class="scene-action-text">Investigar a floresta.</span>
+            <span class="scene-action-meta">Agilidade</span>
+          </li>
+          <li class="scene-action" data-action="voltar">
+            <span class="scene-action-num">03</span>
+            <span class="scene-action-text">Voltar pelo caminho de antes.</span>
+            <span class="scene-action-meta">—</span>
+          </li>
+          <li class="scene-action" data-action="esperar">
+            <span class="scene-action-num">04</span>
+            <span class="scene-action-text">Sentar e esperar a noite cair.</span>
+            <span class="scene-action-meta">Intelecto</span>
+          </li>
+        </ul>
+      </div>
+    </main>
+
+    <aside class="panel panel-right">
+      <div class="panel-header">
+        <span class="panel-title">Equipamento</span>
+        <span class="panel-meta">0 / 4</span>
+      </div>
+      <div class="panel-section">
+        <div class="equip-row"><span class="equip-label">Arma</span><span class="equip-value empty">— vazio —</span></div>
+        <div class="equip-row"><span class="equip-label">Armadura</span><span class="equip-value empty">— vazio —</span></div>
+        <div class="equip-row"><span class="equip-label">Amuleto</span><span class="equip-value empty">— vazio —</span></div>
+        <div class="equip-row"><span class="equip-label">Botas</span><span class="equip-value empty">— vazio —</span></div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-section-label">Ações Rápidas</div>
+        <div class="quick-action"><span class="qa-num">01</span><span class="qa-name empty">— vazio —</span><span class="qa-count"></span></div>
+        <div class="quick-action"><span class="qa-num">02</span><span class="qa-name empty">— vazio —</span><span class="qa-count"></span></div>
+        <div class="quick-action"><span class="qa-num">03</span><span class="qa-name empty">— vazio —</span><span class="qa-count"></span></div>
+        <div class="quick-action"><span class="qa-num">04</span><span class="qa-name empty">— vazio —</span><span class="qa-count"></span></div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-section-label">Status Ativos</div>
+        <div class="status-empty">Nenhum efeito ativo.</div>
+      </div>
+    </aside>
+
+  </div>
+
+  <footer class="game-footer">
+    <button class="tab-button" data-tab="personagem"><span class="tab-label">Personagem</span><span class="tab-shortcut">C</span></button>
+    <button class="tab-button" data-tab="inventario"><span class="tab-label">Inventário</span><span class="tab-shortcut">I</span></button>
+    <button class="tab-button" data-tab="habilidades"><span class="tab-label">Habilidades</span><span class="tab-shortcut">K</span></button>
+    <button class="tab-button" data-tab="magias"><span class="tab-label">Magias</span><span class="tab-shortcut">M</span></button>
+    <button class="tab-button" data-tab="mapa"><span class="tab-label">Mapa</span><span class="tab-shortcut">P</span></button>
+    <button class="tab-button" data-tab="diario"><span class="tab-label">Diário</span><span class="tab-shortcut">J</span></button>
+    <button class="tab-button" data-tab="opcoes"><span class="tab-label">Opções</span><span class="tab-shortcut">ESC</span></button>
+  </footer>
+
+</div>
+
+<!-- Modal compartilhado -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header" id="modal-header"></div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="modal-close">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Persistência (localStorage)
+// ============================================================
+const STORAGE_KEY = 'underdarkness_characters';
+
+function loadCharacters() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.error('Erro ao ler personagens:', e);
+    return [];
+  }
+}
+
+function saveCharacters(chars) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(chars));
+  } catch (e) {
+    console.error('Erro ao salvar personagens:', e);
+  }
+}
+
+function saveCharacter(char) {
+  const chars = loadCharacters();
+  char.updatedAt = new Date().toISOString();
+  const idx = chars.findIndex(c => c.id === char.id);
+  if (idx >= 0) chars[idx] = char;
+  else chars.push(char);
+  saveCharacters(chars);
+}
+
+function deleteCharacterById(id) {
+  saveCharacters(loadCharacters().filter(c => c.id !== id));
+}
+
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+
+// ============================================================
+// Dados das classes
+// ============================================================
+const CLASSES = {
+  guerreiro: {
+    label: 'Guerreiro', tagline: 'Combate corpo a corpo',
+    vida: 14, mana: 2, forca: 16, agilidade: 11, intelecto: 8,
+    abilities: [
+      { name: 'Golpe Devastador', desc: 'causa o dobro de dano' },
+      { name: 'Postura Defensiva', desc: 'reduz dano recebido pela metade' }
+    ]
+  },
+  ladino: {
+    label: 'Ladino', tagline: 'Furtividade e precisão',
+    vida: 10, mana: 4, forca: 11, agilidade: 17, intelecto: 13,
+    abilities: [
+      { name: 'Ataque Furtivo', desc: 'crítico se o alvo não te vê' },
+      { name: 'Esquiva Ágil', desc: 'chance de evitar o golpe inteiro' }
+    ]
+  },
+  mago: {
+    label: 'Mago', tagline: 'Magia arcana',
+    vida: 8, mana: 12, forca: 8, agilidade: 11, intelecto: 17,
+    abilities: [
+      { name: 'Bola de Fogo', desc: 'dano arcano em área' },
+      { name: 'Escudo Arcano', desc: 'absorve um golpe inteiro' }
+    ]
+  }
+};
+
+const TAB_LABEL = {
+  personagem: 'Personagem', inventario: 'Inventário', habilidades: 'Habilidades',
+  magias: 'Magias', mapa: 'Mapa', diario: 'Diário', opcoes: 'Opções'
+};
+const TAB_SHORTCUT = {
+  personagem: 'C', inventario: 'I', habilidades: 'K',
+  magias: 'M', mapa: 'P', diario: 'J', opcoes: 'ESC'
+};
+const TAB_DESC = {
+  personagem: 'Ficha completa, atributos detalhados e progressão de nível.',
+  inventario: 'Itens carregados pelo personagem.',
+  habilidades: 'Habilidades disponíveis e árvore de progressão.',
+  magias: 'Magias conhecidas e custos de mana.',
+  mapa: 'Localização atual e regiões já exploradas.',
+  diario: 'Quests, anotações e fragmentos de lore.',
+  opcoes: 'Preferências do jogo.'
+};
+
+let character = null;
+
+// ============================================================
+// Gerenciamento de views
+// ============================================================
+const viewList = document.getElementById('view-list');
+const viewCreate = document.getElementById('view-create');
+const viewHud = document.getElementById('view-hud');
+
+function showView(name) {
+  viewList.hidden = name !== 'list';
+  viewCreate.hidden = name !== 'create';
+  viewHud.hidden = name !== 'hud';
+  closeModal();
+}
+
+function showList() {
+  selectedCharId = null;
+  renderCharList();
+  showView('list');
+}
+
+function showCreate() {
+  resetCreateForm();
+  document.getElementById('back-to-list-btn').hidden = loadCharacters().length === 0;
+  showView('create');
+}
+
+function enterHud() {
+  renderHud();
+  showView('hud');
+}
+
+function init() {
+  if (loadCharacters().length > 0) showList();
+  else showCreate();
+}
+
+// ============================================================
+// Lista de Personagens
+// ============================================================
+const charGrid = document.getElementById('char-grid');
+const listHint = document.getElementById('list-hint');
+const btnDelete = document.getElementById('btn-delete');
+const btnContinue = document.getElementById('btn-continue');
+const btnNew = document.getElementById('btn-new');
+
+let selectedCharId = null;
+
+function renderCharList() {
+  const chars = loadCharacters();
+  charGrid.innerHTML = '';
+
+  chars.forEach(char => {
+    const card = document.createElement('article');
+    card.className = 'char-card' + (char.id === selectedCharId ? ' selected' : '');
+    card.dataset.id = char.id;
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-pressed', char.id === selectedCharId ? 'true' : 'false');
+    card.innerHTML =
+      '<div>' +
+        '<h3 class="char-card-name">' + escapeHtml(char.name) + '</h3>' +
+        '<div class="char-card-class">' + escapeHtml(char.classLabel) + ' · Nível ' + char.level + '</div>' +
+      '</div>' +
+      '<div class="char-card-world">' +
+        '<span class="ccw-place">' + escapeHtml(char.location) + '</span>' +
+        '<span class="ccw-sep">·</span>' +
+        '<span class="ccw-time">Dia ' + char.day + ' — ' + escapeHtml(char.period) + '</span>' +
+      '</div>';
+    charGrid.appendChild(card);
+  });
+
+  updateListActions();
+}
+
+function selectChar(id) {
+  selectedCharId = id;
+  document.querySelectorAll('.char-card').forEach(c => {
+    const isSel = c.dataset.id === id;
+    c.classList.toggle('selected', isSel);
+    c.setAttribute('aria-pressed', isSel ? 'true' : 'false');
+  });
+  updateListActions();
+}
+
+function updateListActions() {
+  const chars = loadCharacters();
+  const total = chars.length;
+  const hasSelection = selectedCharId !== null;
+  btnDelete.disabled = !hasSelection;
+  btnContinue.disabled = !hasSelection;
+
+  if (total === 0) {
+    listHint.textContent = '';
+    return;
+  }
+
+  if (hasSelection) {
+    const sel = chars.find(c => c.id === selectedCharId);
+    listHint.textContent = sel ? sel.name + ' selecionado.' : '';
+  } else {
+    listHint.textContent = 'Selecione um personagem para continuar (' +
+      total + (total === 1 ? ' salvo' : ' salvos') + ').';
+  }
+}
+
+charGrid.addEventListener('click', (e) => {
+  const card = e.target.closest('.char-card');
+  if (!card) return;
+  selectChar(card.dataset.id);
+});
+
+charGrid.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const card = e.target.closest('.char-card');
+  if (!card) return;
+  e.preventDefault();
+  selectChar(card.dataset.id);
+});
+
+btnDelete.addEventListener('click', () => {
+  if (!selectedCharId) return;
+  const char = loadCharacters().find(c => c.id === selectedCharId);
+  if (!char) return;
+  if (confirm('Excluir "' + char.name + '"? A ação não pode ser desfeita.')) {
+    deleteCharacterById(selectedCharId);
+    selectedCharId = null;
+    if (loadCharacters().length === 0) showCreate();
+    else renderCharList();
+  }
+});
+
+btnContinue.addEventListener('click', () => {
+  if (!selectedCharId) return;
+  const char = loadCharacters().find(c => c.id === selectedCharId);
+  if (char) {
+    character = char;
+    enterHud();
+  }
+});
+
+btnNew.addEventListener('click', showCreate);
+
+// ============================================================
+// Criação de Personagem
+// ============================================================
+const cards = document.querySelectorAll('.class-card');
+const nameInput = document.getElementById('hero-name');
+const createBtn = document.getElementById('create-btn');
+const resetBtn = document.getElementById('reset-btn');
+const backToListBtn = document.getElementById('back-to-list-btn');
+const hint = document.getElementById('action-hint');
+
+let selectedClass = null;
+
+function updateCreateState() {
+  const hasName = nameInput.value.trim().length > 0;
+  const hasClass = selectedClass !== null;
+  createBtn.disabled = !(hasName && hasClass);
+  if (!hasName && !hasClass) hint.textContent = 'Preencha o nome e escolha uma classe.';
+  else if (!hasName) hint.textContent = 'Digite um nome.';
+  else if (!hasClass) hint.textContent = 'Escolha uma classe.';
+  else hint.textContent = '';
+}
+
+function selectClassCard(card) {
+  cards.forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-pressed', 'false'); });
+  card.classList.add('selected');
+  card.setAttribute('aria-pressed', 'true');
+  selectedClass = card.dataset.class;
+  updateCreateState();
+}
+
+function resetCreateForm() {
+  nameInput.value = '';
+  cards.forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-pressed', 'false'); });
+  selectedClass = null;
+  updateCreateState();
+}
+
+cards.forEach(card => {
+  card.addEventListener('click', () => selectClassCard(card));
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectClassCard(card); }
+  });
+});
+
+nameInput.addEventListener('input', updateCreateState);
+
+createBtn.addEventListener('click', () => {
+  const data = CLASSES[selectedClass];
+  character = {
+    id: genId(),
+    name: nameInput.value.trim(),
+    classKey: selectedClass,
+    classLabel: data.label,
+    classTagline: data.tagline,
+    level: 1,
+    xp: 0, xpNext: 100,
+    vidaMax: data.vida, vidaAtual: data.vida,
+    manaMax: data.mana, manaAtual: data.mana,
+    forca: data.forca, agilidade: data.agilidade, intelecto: data.intelecto,
+    abilities: data.abilities,
+    gold: 0, time: '06:00', day: 1, period: 'Aurora', location: 'Origem',
+    createdAt: new Date().toISOString()
+  };
+  saveCharacter(character);
+  enterHud();
+});
+
+resetBtn.addEventListener('click', () => {
+  resetCreateForm();
+  nameInput.focus();
+});
+
+backToListBtn.addEventListener('click', showList);
+
+// ============================================================
+// HUD do Jogo
+// ============================================================
+function renderHud() {
+  document.getElementById('gt-name').textContent = character.name;
+  document.getElementById('gt-class').textContent = character.classLabel + ' · Nv ' + character.level;
+
+  setVital('vida', character.vidaAtual, character.vidaMax);
+  setVital('mana', character.manaAtual, character.manaMax);
+  setVital('exp', character.xp, character.xpNext);
+
+  document.getElementById('gw-location').textContent = character.location;
+  document.getElementById('gw-day').textContent = 'Dia ' + character.day + ' — ' + character.period;
+  document.getElementById('gw-time').textContent = character.time;
+  document.getElementById('gw-gold').textContent = character.gold;
+
+  document.getElementById('ficha-meta').textContent = 'Nv ' + character.level;
+  document.getElementById('ficha-forca').textContent = character.forca;
+  document.getElementById('ficha-agilidade').textContent = character.agilidade;
+  document.getElementById('ficha-intelecto').textContent = character.intelecto;
+
+  const list = document.getElementById('ficha-abilities');
+  list.innerHTML = '';
+  character.abilities.forEach(ab => {
+    const el = document.createElement('div');
+    el.className = 'ability-mini';
+    el.innerHTML =
+      '<div class="ability-mini-name">' + escapeHtml(ab.name) + '</div>' +
+      '<div class="ability-mini-desc">' + escapeHtml(ab.desc) + '</div>';
+    list.appendChild(el);
+  });
+}
+
+function setVital(key, current, max) {
+  const pct = max > 0 ? (current / max) * 100 : 0;
+  document.getElementById(key + '-fill').style.width = pct + '%';
+  document.getElementById(key + '-text').textContent = current + ' / ' + max;
+}
+
+// ============================================================
+// Cálculo de stats derivados (ficha completa)
+// ============================================================
+function computeDerivedStats(c) {
+  const cls = c.classKey;
+  const f = c.forca, a = c.agilidade, i = c.intelecto;
+  const lvl = c.level || 1;
+
+  // Defesa — armadura escala com Força, evasão com Agilidade
+  const armaduraBase = cls === 'guerreiro' ? 8 : cls === 'ladino' ? 4 : 2;
+  const armadura = armaduraBase + Math.floor(f / 2) + lvl;
+
+  const evasaoBase = cls === 'ladino' ? 8 : cls === 'guerreiro' ? 3 : 5;
+  const evasao = evasaoBase + Math.floor(a / 2) + lvl;
+
+  const bloqueio = cls === 'guerreiro' ? 15 : 0;
+
+  // Resistências — todas começam em 0% com cap de 75%
+  const resistMax = 75;
+  const resFogo = 0, resGelo = 0, resRaio = 0, resCaos = 0;
+  const resFisico = cls === 'guerreiro' ? Math.floor(f / 4) : 0;
+
+  // Ofensiva — Físico
+  const danoFisicoBase = cls === 'guerreiro' ? [4, 8] : cls === 'ladino' ? [3, 6] : [1, 3];
+  const bonusForca = Math.floor(f * 0.15);
+  const danoFisicoMin = danoFisicoBase[0] + bonusForca;
+  const danoFisicoMax = danoFisicoBase[1] + bonusForca;
+
+  const velAtaqueBase = cls === 'ladino' ? 1.6 : cls === 'guerreiro' ? 1.0 : 0.8;
+  const velAtaque = velAtaqueBase + (a - 10) * 0.02;
+
+  const chanceCritico = 5 + Math.max(0, a - 10) * 0.4;
+  const multCritico = 1.5 + (cls === 'ladino' ? 0.2 : 0);
+  const danoMedio = (danoFisicoMin + danoFisicoMax) / 2;
+  const dps = danoMedio * velAtaque * (1 + (chanceCritico / 100) * (multCritico - 1));
+
+  // Ofensiva — Elemental
+  const danoFogo = cls === 'mago' ? Math.floor(i * 0.6) : 0;
+  const danoGelo = 0;
+  const danoRaio = cls === 'mago' ? Math.floor(i * 0.4) : 0;
+  const penElemental = 0;
+
+  // Ofensiva — Caos
+  const danoCaos = 0;
+  const penCaos = 0;
+
+  // Magia
+  const bonusMagico = cls === 'mago' ? Math.floor(i * 5) : 0;
+  const velConjuracaoBase = cls === 'mago' ? 1.2 : 0.8;
+  const velConjuracao = velConjuracaoBase + (i - 10) * 0.02;
+  const eficienciaMana = 100 + (cls === 'mago' ? Math.floor(i / 2) : 0);
+
+  // Sustain
+  const regenVida = cls === 'guerreiro' ? 1 : 0;
+  const regenMana = cls === 'mago' ? 2 : (cls === 'ladino' ? 1 : 0);
+  const rouboVida = 0;
+  const rouboMana = 0;
+
+  // Mobilidade
+  const velMovimento = 100;
+  const esquiva = Math.floor(a * 0.5);
+
+  return {
+    armadura, evasao, bloqueio,
+    resistMax, resFogo, resGelo, resRaio, resCaos, resFisico,
+    danoFisicoMin, danoFisicoMax, velAtaque, chanceCritico, multCritico, dps,
+    danoFogo, danoGelo, danoRaio, penElemental,
+    danoCaos, penCaos,
+    bonusMagico, velConjuracao, eficienciaMana,
+    regenVida, regenMana, rouboVida, rouboMana,
+    velMovimento, esquiva
+  };
+}
+
+function unitTag(text) { return '<span class="unit">' + text + '</span>'; }
+
+function statBlock(title, lines) {
+  const linesHtml = lines.map((line) => {
+    const name = line[0];
+    const value = line[1];
+    const nameClass = line[2]; // opcional: classe de cor (fogo/gelo/raio/caos)
+    const cls = 'stat-line-name' + (nameClass ? ' ' + nameClass : '');
+    return '<div class="stat-line">' +
+      '<span class="' + cls + '">' + name + '</span>' +
+      '<span class="stat-line-value">' + value + '</span>' +
+    '</div>';
+  }).join('');
+  return '<div class="col-section">' +
+    '<div class="col-section-title">' + title + '</div>' +
+    linesHtml +
+  '</div>';
+}
+
+function vitalSection(title, vitals) {
+  const linesHtml = vitals.map(v => {
+    const pct = v.max > 0 ? (v.current / v.max * 100) : 0;
+    return '<div class="vital-line">' +
+      '<div class="vital-line-header">' +
+        '<span class="vital-line-name ' + v.cls + '">' + v.name + '</span>' +
+        '<span class="vital-line-value">' + v.current + ' / ' + v.max + '</span>' +
+      '</div>' +
+      '<div class="vital-line-track">' +
+        '<div class="vital-line-fill ' + v.cls + '" style="width:' + pct + '%"></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  return '<div class="col-section">' +
+    '<div class="col-section-title">' + title + '</div>' +
+    linesHtml +
+  '</div>';
+}
+
+function renderColumn(title, sectionsHtml) {
+  return '<div class="col">' +
+    '<h2 class="col-title">' + title + '</h2>' +
+    sectionsHtml +
+  '</div>';
+}
+
+function renderRecursos(c, s) {
+  return statBlock('Atributos', [
+    ['Força', c.forca, 'forca'],
+    ['Agilidade', c.agilidade, 'agilidade'],
+    ['Intelecto', c.intelecto, 'intelecto']
+  ]) +
+  vitalSection('Vitais', [
+    { name: 'Vida', cls: 'vida', current: c.vidaAtual, max: c.vidaMax },
+    { name: 'Mana', cls: 'mana', current: c.manaAtual, max: c.manaMax },
+    { name: 'Exp',  cls: 'exp',  current: c.xp,        max: c.xpNext }
+  ]) +
+  statBlock('Regeneração', [
+    ['Regen Vida', s.regenVida + unitTag(' /turno'), 'vida'],
+    ['Regen Mana', s.regenMana + unitTag(' /turno'), 'mana']
+  ]) +
+  statBlock('Magia', [
+    ['Bônus Mágico', '+' + s.bonusMagico + '%', 'intelecto'],
+    ['Eficiência Mana', s.eficienciaMana + '%', 'mana']
+  ]);
+}
+
+function renderOfensivo(c, s) {
+  return statBlock('Dano Físico', [
+    ['Dano', s.danoFisicoMin + ' — ' + s.danoFisicoMax, 'forca'],
+    ['DPS', s.dps.toFixed(1), 'forca']
+  ]) +
+  statBlock('Dano Elemental', [
+    ['Dano de Fogo', s.danoFogo, 'fogo'],
+    ['Dano de Gelo', s.danoGelo, 'gelo'],
+    ['Dano de Raio', s.danoRaio, 'raio']
+  ]) +
+  statBlock('Dano Caos', [
+    ['Dano de Caos', s.danoCaos, 'caos']
+  ]) +
+  statBlock('Velocidade', [
+    ['Vel. Ataque', s.velAtaque.toFixed(2) + unitTag(' /s'), 'agilidade'],
+    ['Vel. Conjuração', s.velConjuracao.toFixed(2) + unitTag(' /s'), 'agilidade']
+  ]) +
+  statBlock('Crítico', [
+    ['Chance', s.chanceCritico.toFixed(1) + '%', 'critico'],
+    ['Multiplicador', '×' + s.multCritico.toFixed(2), 'critico']
+  ]) +
+  statBlock('Penetração', [
+    ['Elemental', s.penElemental + '%'],
+    ['Caos', s.penCaos + '%']
+  ]);
+}
+
+function renderDefensivo(c, s, resCap) {
+  return statBlock('Mitigação', [
+    ['Armadura', s.armadura, 'defesa'],
+    ['Evasão', s.evasao, 'defesa'],
+    ['Bloqueio', s.bloqueio + '%', 'defesa']
+  ]) +
+  statBlock('Resistências', [
+    ['Resistência ao Fogo', s.resFogo + '%' + resCap, 'fogo'],
+    ['Resistência ao Gelo', s.resGelo + '%' + resCap, 'gelo'],
+    ['Resistência ao Raio', s.resRaio + '%' + resCap, 'raio'],
+    ['Resistência ao Caos', s.resCaos + '%' + resCap, 'caos'],
+    ['Resistência Física', s.resFisico + '%', 'defesa']
+  ]) +
+  statBlock('Roubo', [
+    ['Roubo de Vida', s.rouboVida + '%', 'vida'],
+    ['Roubo de Mana', s.rouboMana + '%', 'mana']
+  ]) +
+  statBlock('Mobilidade', [
+    ['Vel. Movimento', s.velMovimento + '%', 'agilidade'],
+    ['Esquiva', s.esquiva + '%', 'agilidade']
+  ]);
+}
+
+function renderCharSheet() {
+  const c = character;
+  const s = computeDerivedStats(c);
+  const resCap = unitTag(' / ' + s.resistMax + '%');
+
+  return (
+    '<div class="charsheet-card">' +
+      '<div class="charsheet-grid">' +
+        renderColumn('Recursos', renderRecursos(c, s)) +
+        renderColumn('Ofensivo', renderOfensivo(c, s)) +
+        renderColumn('Defensivo', renderDefensivo(c, s, resCap)) +
+      '</div>' +
+    '</div>'
+  );
+}
+
+// ============================================================
+// Modal (compartilhado entre tabs e Opções)
+// ============================================================
+const overlay = document.getElementById('overlay');
+const modalHeader = document.getElementById('modal-header');
+const modalBody = document.getElementById('modal-body');
+
+function renderSimpleHeader(title, shortcut) {
+  return '<span class="modal-title">' + escapeHtml(title) + '</span>' +
+         '<span class="modal-shortcut">' + escapeHtml(shortcut) + '</span>';
+}
+
+function renderCharSheetHeader(c) {
+  return '<button class="btn-secondary btn-back-cena" id="btn-back-cena">← Voltar à Cena</button>' +
+         '<div class="cs-name-block">' +
+           '<div class="cs-name">' + escapeHtml(c.name) + '</div>' +
+           '<div class="cs-meta">' + escapeHtml(c.classLabel) + ' · ' + escapeHtml(c.classTagline) + ' · Nv ' + c.level + '</div>' +
+         '</div>' +
+         '<span class="modal-shortcut">C</span>';
+}
+
+function openTab(tabKey) {
+  if (!TAB_LABEL[tabKey]) return;
+
+  // Modal expande pra ficha do personagem (fullscreen com 10px de margem)
+  const isPersonagem = tabKey === 'personagem';
+  document.querySelector('.modal').classList.toggle('large', isPersonagem);
+  overlay.classList.toggle('fullscreen', isPersonagem);
+
+  if (isPersonagem) {
+    modalHeader.innerHTML = renderCharSheetHeader(character);
+    modalBody.innerHTML = renderCharSheet();
+    const backBtn = document.getElementById('btn-back-cena');
+    if (backBtn) backBtn.addEventListener('click', closeModal);
+  } else if (tabKey === 'opcoes') {
+    modalHeader.innerHTML = renderSimpleHeader(TAB_LABEL[tabKey], TAB_SHORTCUT[tabKey]);
+    modalBody.innerHTML =
+      '<div class="options-list">' +
+        '<button class="option-item" data-opt="back-list">' +
+          '<span class="opt-name">Trocar personagem</span>' +
+          '<span class="opt-desc">Salvar progresso e voltar para a seleção de personagens.</span>' +
+        '</button>' +
+        '<button class="option-item disabled">' +
+          '<span class="opt-name">Configurações</span>' +
+          '<span class="opt-desc">Em desenvolvimento.</span>' +
+        '</button>' +
+      '</div>';
+    modalBody.querySelector('[data-opt="back-list"]').addEventListener('click', () => {
+      if (character) saveCharacter(character);
+      showList();
+    });
+  } else {
+    modalHeader.innerHTML = renderSimpleHeader(TAB_LABEL[tabKey], TAB_SHORTCUT[tabKey]);
+    modalBody.innerHTML =
+      '<div class="modal-empty">' +
+        '<h3>Em desenvolvimento</h3>' +
+        '<p>' + escapeHtml(TAB_DESC[tabKey]) + '</p>' +
+      '</div>';
+  }
+
+  overlay.classList.add('show');
+}
+
+function closeModal() { overlay.classList.remove('show'); }
+
+document.querySelectorAll('.tab-button').forEach(btn => {
+  btn.addEventListener('click', () => openTab(btn.dataset.tab));
+});
+document.getElementById('modal-close').addEventListener('click', closeModal);
+overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+
+// ============================================================
+// Atalhos de teclado (apenas na HUD)
+// ============================================================
+const KEY_TO_TAB = { c: 'personagem', i: 'inventario', k: 'habilidades', m: 'magias', p: 'mapa', j: 'diario' };
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (viewHud.hidden) return;
+
+  if (e.key === 'Escape') {
+    if (overlay.classList.contains('show')) closeModal();
+    else openTab('opcoes');
+    return;
+  }
+
+  const tab = KEY_TO_TAB[e.key.toLowerCase()];
+  if (tab) {
+    e.preventDefault();
+    if (overlay.classList.contains('show')) closeModal();
+    openTab(tab);
+    return;
+  }
+
+  if (/^[1-9]$/.test(e.key)) {
+    if (overlay.classList.contains('show')) return;
+    const idx = parseInt(e.key, 10) - 1;
+    const action = document.querySelectorAll('.scene-action')[idx];
+    if (action) action.click();
+  }
+});
+
+document.addEventListener('click', (e) => {
+  const action = e.target.closest('.scene-action');
+  if (action) console.log('Ação escolhida:', action.dataset.action);
+});
+
+// ============================================================
+// Boot
+// ============================================================
+init();
+</script>
+</body>
+</html>

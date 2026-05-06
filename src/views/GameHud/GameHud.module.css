@@ -1,0 +1,410 @@
+.view {
+  background: var(--bg);
+  min-height: 100vh;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  /* Cada bloco é um card com paper bg + border. O bg escuro mostra entre eles. */
+  gap: 8px;
+  padding: 8px;
+}
+
+/* TOPBAR — card próprio */
+.topbar {
+  background: var(--paper);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 14px 24px;
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  gap: 32px;
+  align-items: center;
+}
+.character { min-width: 0; }
+.charName {
+  font: 500 22px/1.1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.charClass {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.vitals { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.vRow {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+.vLabel {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.vTrack {
+  height: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border-faint);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.vFill { height: 100%; transition: width 0.3s ease-out; }
+.vFill.vida { background: var(--vital-vida); }
+.vFill.mana { background: var(--vital-mana); }
+.vFill.exp  { background: var(--vital-exp); }
+.vValues {
+  font: 500 12px/1 var(--mono);
+  color: var(--brass-deep);
+  white-space: nowrap;
+  min-width: 80px;
+  text-align: right;
+}
+
+.world {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 18px;
+  align-items: center;
+  text-align: right;
+}
+.worldPlaceL1 {
+  font: 500 16px/1.1 var(--serif);
+  font-variation-settings: "opsz" 24;
+  color: var(--brass-deep);
+  margin-bottom: 4px;
+}
+.worldPlaceL2 {
+  font: 11px/1 var(--mono);
+  color: var(--ink-muted);
+  letter-spacing: 0.04em;
+}
+.worldStat {
+  text-align: center;
+  padding-left: 18px;
+  border-left: 1px solid var(--border-faint);
+}
+.worldStatLabel {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+}
+.worldStatValue {
+  font: 500 18px/1 var(--serif);
+  font-variation-settings: "opsz" 24;
+  color: var(--brass-deep);
+}
+
+/* BODY — 3 colunas com gap entre cards */
+.body {
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  gap: 8px;
+  min-height: 0;
+  overflow: hidden;
+}
+/* Cada panel é um card próprio */
+.panel {
+  background: var(--paper);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+/* As bordas laterais agora são parte do card próprio — sem border-right/left manuais */
+.panelLeft, .panelRight { /* placeholder pra hooks futuros se precisar */ }
+.panelCenter { padding: 0; }
+
+.panelHeader {
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-faint);
+  flex-shrink: 0;
+}
+.panelTitle {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.panelMeta {
+  font: 11px/1 var(--mono);
+  color: var(--ink-faint);
+  letter-spacing: 0.06em;
+}
+.panelSection { padding: 14px 20px 8px; }
+.panelSectionLabel {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 10px;
+}
+
+.statRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border-faint);
+}
+.statRow:last-child { border-bottom: none; }
+.statName { font: 12px/1.3 var(--mono); color: var(--ink-soft); }
+.statValue {
+  font: 500 12px/1 var(--mono);
+  color: var(--brass-deep);
+}
+
+.abilityMini { padding: 8px 0; border-bottom: 1px dashed var(--border-faint); }
+.abilityMini:last-child { border-bottom: none; }
+.abilityMiniName { font: 500 13px/1.2 var(--mono); color: var(--ink); margin-bottom: 3px; }
+.abilityMiniDesc { font: 12px/1.4 var(--mono); color: var(--ink-muted); }
+
+.equipRow {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px dashed var(--border-faint);
+}
+.equipRow:last-child { border-bottom: none; }
+.equipLabel {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.equipValue { font: 13px/1.3 var(--mono); color: var(--ink-soft); }
+.equipValue.empty { color: var(--ink-faint); }
+
+.quickAction {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px dashed var(--border-faint);
+}
+.quickAction:last-child { border-bottom: none; }
+.qaNum { font: 500 11px/1 var(--mono); color: var(--brass-deep); letter-spacing: 0.08em; }
+.qaName { font: 13px/1.3 var(--mono); color: var(--ink-soft); }
+.qaName.empty { color: var(--ink-faint); }
+
+.statusEmpty {
+  font: italic 13px/1.4 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-faint);
+  padding: 6px 0;
+}
+
+/* SCENE */
+.sceneWrap { max-width: 760px; margin: 0 auto; padding: 36px 32px 40px; }
+.sceneChapter {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 10px;
+}
+.sceneTitle {
+  font: 500 36px/1.15 var(--serif);
+  font-variation-settings: "opsz" 72;
+  letter-spacing: -0.015em;
+  color: var(--brass-deep);
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.sceneNarrative {
+  font: 15px/1.75 var(--mono);
+  color: var(--ink);
+  margin-bottom: 32px;
+}
+.sceneNarrative p { margin-bottom: 14px; }
+.sceneNarrative p:last-child { margin-bottom: 0; }
+.sceneActionsLabel {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sceneActionsLabel::after { content: ''; flex: 1; height: 1px; background: var(--border-faint); }
+.sceneActions { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.sceneAction {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.sceneAction:hover {
+  border-color: var(--brass);
+  background: var(--surface-hover);
+  transform: translateX(2px);
+}
+.sceneAction:hover .sceneActionText { color: var(--brass-deep); }
+.sceneActionNum { font: 500 11px/1 var(--mono); color: var(--brass-deep); letter-spacing: 0.06em; }
+.sceneActionText { font: 14px/1.4 var(--mono); color: var(--ink); transition: 0.15s; }
+.sceneActionMeta {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* FOOTER (tabs) — card próprio */
+.footer {
+  background: var(--paper);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  overflow: hidden; /* mantém os hovers dos botões dentro do raio do card */
+}
+.tabButton {
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border-faint);
+  padding: 16px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.tabButton:last-child { border-right: none; }
+.tabButton:hover { background: var(--surface); }
+.tabButton:hover .tabLabel { color: var(--brass-deep); }
+.tabLabel {
+  font: 500 14px/1 var(--serif);
+  font-variation-settings: "opsz" 18;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  transition: 0.15s;
+}
+.tabShortcut { font: 500 10px/1 var(--mono); color: var(--ink-faint); letter-spacing: 0.08em; }
+
+/* OPÇÕES (modal content) */
+.optionsList { display: flex; flex-direction: column; gap: 8px; }
+.optionItem {
+  text-align: left;
+  background: var(--paper);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: 0.15s;
+  font: inherit;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.optionItem:hover { border-color: var(--brass-light); background: var(--surface); }
+.optionItem:hover .optName { color: var(--brass-deep); }
+.optionItem.disabled { cursor: not-allowed; opacity: 0.5; }
+.optionItem.disabled:hover { border-color: var(--border-soft); background: var(--paper); }
+.optName { font: 500 14px/1.2 var(--mono); color: var(--ink); transition: 0.15s; }
+.optDesc { font: 13px/1.4 var(--mono); color: var(--ink-muted); }
+
+/* Wrapper de conteúdo do modal "large". Permanece montado enquanto qualquer
+   tab grande estiver ativa (Personagem/Habilidades/Mapa). O `key={activeTab}`
+   no JSX força este wrapper a re-montar quando o usuário troca de tab,
+   disparando o fade-in. O frame do Modal em si não anima — só o conteúdo. */
+.tabBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  animation: tabFadeIn 0.18s ease-out;
+}
+
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Painel unificado Personagem + Inventário.
+   Inventário fica em largura natural (auto), CharacterSheet expande no resto.
+   Ambos retêm o próprio card paper, então cada painel mantém sua identidade
+   visual com um pequeno gap entre eles. */
+.mergedPanel {
+  flex: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  min-height: 0;
+}
+
+/* Em telas mais estreitas, empilha verticalmente com cada painel scrollável */
+@media (max-width: 1280px) {
+  .mergedPanel {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: auto;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .mergedPanel::-webkit-scrollbar { display: none; }
+}
+
+.modalEmpty {
+  background: var(--paper);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  text-align: center;
+  padding: 32px 24px;
+}
+.modalEmpty h3 {
+  font: 500 18px/1.2 var(--serif);
+  font-variation-settings: "opsz" 24;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+.modalEmpty p { font: 14px/1.5 var(--mono); color: var(--ink-muted); }
+
+@media (max-width: 1100px) {
+  .topbar { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .vitals { grid-column: 1 / -1; order: 3; }
+  .body { grid-template-columns: 240px 1fr 240px; }
+}
+@media (max-width: 880px) {
+  .view { height: auto; min-height: 100vh; }
+  .topbar { grid-template-columns: 1fr; gap: 14px; text-align: left; }
+  .world { text-align: left; grid-template-columns: 1fr 1fr 1fr; }
+  .body { grid-template-columns: 1fr; }
+  .panelLeft, .panelRight {
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid var(--border-soft);
+  }
+  .footer { grid-template-columns: repeat(3, 1fr); }
+  .tabButton { border-right: 1px solid var(--border-faint); border-bottom: 1px solid var(--border-faint); }
+}
