@@ -40,8 +40,12 @@ function migrate(c: Character): Character {
     equipped,
     inventory: sized,
     talentRanks: c.talentRanks ?? {},
-    visitedLocations: c.visitedLocations ?? ['origem'],
+    // 'origem' foi renomeada pra 'pedragal' — saves antigos migram automaticamente
+    visitedLocations: (c.visitedLocations ?? ['pedragal']).map((id) =>
+      id === 'origem' ? 'pedragal' : id,
+    ),
     abandonedQuestIds: c.abandonedQuestIds ?? [],
+    location: c.location === 'origem' ? 'pedragal' : (c.location ?? 'pedragal'),
   };
 }
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Character } from '../../types';
 import { CharacterSidebarItem } from '../../components/CharacterSidebarItem/CharacterSidebarItem';
 import { CharacterDetailPanel } from '../../components/CharacterDetailPanel/CharacterDetailPanel';
+import { ConfirmDialog } from '../../components/ConfirmDialog/ConfirmDialog';
 import styles from './CharacterSelect.module.css';
 
 interface CharacterSelectProps {
@@ -15,6 +16,7 @@ export function CharacterSelect({ characters, onContinue, onDelete, onNew }: Cha
   const [selectedId, setSelectedId] = useState<string>(() =>
     characters.length > 0 ? characters[0].id : ''
   );
+  const [pendingDelete, setPendingDelete] = useState<Character | null>(null);
 
   // Mantém uma seleção válida quando a lista muda (ex: após excluir)
   useEffect(() => {
@@ -27,10 +29,12 @@ export function CharacterSelect({ characters, onContinue, onDelete, onNew }: Cha
   const selected = characters.find((c) => c.id === selectedId);
   if (!selected) return null;
 
-  const handleDelete = () => {
-    if (confirm(`Excluir "${selected.name}"? A ação não pode ser desfeita.`)) {
-      onDelete(selected.id);
-    }
+  const requestDelete = () => setPendingDelete(selected);
+  const cancelDelete = () => setPendingDelete(null);
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    onDelete(pendingDelete.id);
+    setPendingDelete(null);
   };
 
   return (
@@ -64,7 +68,7 @@ export function CharacterSelect({ characters, onContinue, onDelete, onNew }: Cha
 
         <div className={styles.actionRow}>
           <div className={styles.actionGroup}>
-            <button className="btn-secondary danger" onClick={handleDelete}>
+            <button className="btn-secondary danger" onClick={requestDelete}>
               Excluir
             </button>
             <button className="btn-secondary" onClick={onNew}>
@@ -76,6 +80,26 @@ export function CharacterSelect({ characters, onContinue, onDelete, onNew }: Cha
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="Excluir personagem"
+        message={
+          pendingDelete ? (
+            <>
+              Tem certeza que quer excluir <strong>{pendingDelete.name}</strong>?
+              {' '}Todo o progresso será perdido. A ação não pode ser desfeita.
+            </>
+          ) : (
+            ''
+          )
+        }
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        danger
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </section>
   );
 }

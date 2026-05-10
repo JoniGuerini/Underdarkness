@@ -1,11 +1,38 @@
 import { useState } from 'react';
-import type { Character, ClassKey } from '../../types';
+import type { Character, ClassKey, Item } from '../../types';
 import { CLASSES } from '../../data/classes';
 import { applyLoadout, getStarterLoadout } from '../../data/items';
+import { makeMaterialStack } from '../../data/materials';
 import { ClassSidebarItem } from '../../components/ClassSidebarItem/ClassSidebarItem';
 import { ClassDetailPanel } from '../../components/ClassDetailPanel/ClassDetailPanel';
 import { genId } from '../../lib/storage';
 import styles from './CharacterCreate.module.css';
+
+/**
+ * Itens iniciais — colocados nos primeiros slots vazios do inventário
+ * pra que o jogador possa testar crafting/loja imediatamente após criar.
+ * Mistura de reagentes da forja (ferro, pedra) + alquimia (ervas, frasco)
+ * + comida básica.
+ */
+const STARTER_KIT: { id: string; count: number }[] = [
+  { id: 'mat-minerio-ferro', count: 3 },
+  { id: 'mat-pedra-afiar', count: 1 },
+  { id: 'erva-vermelha', count: 2 },
+  { id: 'erva-azul', count: 2 },
+  { id: 'frasco-vazio', count: 2 },
+  { id: 'food-pao-duro', count: 2 },
+];
+
+/** Mutates the inventory in-place adding STARTER_KIT items in empty slots. */
+function addStarterKit(inventory: (Item | null)[]) {
+  for (const entry of STARTER_KIT) {
+    const stack = makeMaterialStack(entry.id, entry.count);
+    if (!stack) continue;
+    const emptyIdx = inventory.findIndex((s) => s === null);
+    if (emptyIdx < 0) break;
+    inventory[emptyIdx] = stack;
+  }
+}
 
 interface CharacterCreateProps {
   canGoBack: boolean;
@@ -29,6 +56,8 @@ export function CharacterCreate({ canGoBack, onBack, onCreate }: CharacterCreate
     if (!canCreate) return;
     const data = CLASSES[selectedClass];
     const { equipped, inventory } = applyLoadout(getStarterLoadout(selectedClass));
+    // Kit inicial — alguns reagentes pra testar crafting de imediato + uns frascos
+    addStarterKit(inventory);
     const character: Character = {
       id: genId(),
       name: trimmedName,
@@ -49,13 +78,13 @@ export function CharacterCreate({ canGoBack, onBack, onCreate }: CharacterCreate
       equipped,
       inventory,
       talentRanks: {},
-      visitedLocations: ['origem'],
+      visitedLocations: ['pedragal'],
       abandonedQuestIds: [],
-      gold: 0,
+      gold: 60,
       time: '06:00',
       day: 1,
       period: 'Aurora',
-      location: 'origem',
+      location: 'pedragal',
       createdAt: new Date().toISOString(),
     };
     onCreate(character);

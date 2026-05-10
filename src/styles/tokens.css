@@ -34,7 +34,7 @@
   /* ============================================================
      VITAIS — convenção de jogo
      ============================================================ */
-  --vital-vida: #b85450;       /* Terracota — do mockup de referência (rpg-mockup.html) */
+  --vital-vida: #d97766;       /* Terracota clara — preserva o feel "sangrento" mas legível em texto (contraste AA em --paper) */
   --vital-mana: #5a8aa8;       /* Azul-cinza dessaturado — do mockup de referência */
   --vital-exp: #8a6f3e;
 
@@ -55,7 +55,7 @@
   --stat-agilidade: #22C55E;   /* Verde — atributo de agilidade */
   --stat-intelecto: #3B82F6;   /* Azul — atributo de intelecto */
   --stat-defesa: #9aa6b4;
-  --stat-critico: #4F5934;     /* GD: Special (Tom Thumb — verde-oliva escuro) */
+  --stat-critico: #a3b04c;     /* Verde-oliva clara — GD Special, ajustado pra contraste AA em --paper */
 
   /* ============================================================
      RARIDADE DE ITENS — convenção ARPG (alinhada com Grim Dawn)
@@ -74,11 +74,56 @@
   --border-faint: #14181f;
 
   /* ============================================================
-     SOMBRAS — pretas e densas
+     SOMBRAS — sistema layered (dark mode tuned)
+     Combina 3 camadas pra dar a sensação de objeto sólido sobre
+     superfície: highlight branco no topo (luz vinda de cima),
+     drop shadow tight (contato), e hairline sub-pixel (define
+     a borda contra o fundo escuro sem ocupar espaço de layout).
+
+     Tiers:
+     - --card-edge        : repouso (cards, painéis, footer, etc.)
+     - --card-edge-lg     : elevado/hover (modais, tooltips, lift)
+     - --card-edge-pill   : pequeno (chips, badges, botões redondos)
+     - --card-edge-press  : pressionado (active state — recessed)
+
+     Em dark mode os pretos das sombras precisam ser bem mais
+     opacos que em light mode (referência do tweet) pra serem
+     percebidos contra o fundo já escuro. O highlight branco fica
+     bem sutil pra não criar efeito artificial.
      ============================================================ */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.55);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.7);
+  --card-edge:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    0 0 0 0.5px rgba(0, 0, 0, 0.7);
+
+  --card-edge-lg:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 6px 18px rgba(0, 0, 0, 0.5),
+    0 0 0 0.5px rgba(0, 0, 0, 0.7);
+
+  --card-edge-pill:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 1px 1px rgba(0, 0, 0, 0.4),
+    0 0 0 0.5px rgba(0, 0, 0, 0.7);
+
+  --card-edge-press:
+    inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 0 0.5px rgba(0, 0, 0, 0.7);
+
+  /* Tooltip — precisa "pop" sobre conteúdo escuro. Highlight branco mais
+     forte + drop ambient pesado + hairline brass (em vez de preta) pra
+     dar definição quente que se destaca contra paper/surface por trás. */
+  --tooltip-edge:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 8px 24px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(122, 112, 96, 0.35);
+
+  /* Sombras legadas mantidas como aliases pros tokens novos —
+     componentes que ainda referenciam --shadow-md/--shadow-lg
+     (modais flutuantes, dropdowns, tooltips) recebem a versão
+     elevada do sistema layered automaticamente. */
+  --shadow-md: var(--card-edge-lg);
+  --shadow-lg: var(--card-edge-lg);
 
   /* ============================================================
      TIPOGRAFIA

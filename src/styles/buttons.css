@@ -1,52 +1,69 @@
-.btn-primary {
+﻿.btn-primary {
   background: var(--brass-deep);
   color: var(--paper);
   border: none;
+  box-shadow: var(--card-edge-pill);
   padding: 11px 26px;
   font: 500 13px/1 var(--mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   border-radius: 4px;
   cursor: pointer;
-  transition: 0.15s;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.08s;
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--brass-bright);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--card-edge-lg);
+}
+.btn-primary:active:not(:disabled) {
+  box-shadow: var(--card-edge-press);
+  transform: scale(0.98);
 }
 .btn-primary:disabled {
   background: var(--ink-faint);
   cursor: not-allowed;
   opacity: 0.7;
+  box-shadow: none;
 }
 
 .btn-secondary {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--ink-soft);
+  /* Surface sutil em vez de transparent — sem bg o card-edge-pill não consegue
+     definir o botão claramente contra fundos variados, e o texto fica vulnerável
+     a subpixel fringing. --surface dá corpo, ink fica nítido. */
+  background: var(--surface);
+  border: none;
+  box-shadow: var(--card-edge-pill);
+  color: var(--ink);
   padding: 10px 18px;
   font: 500 12px/1 var(--mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   border-radius: 4px;
   cursor: pointer;
-  transition: 0.15s;
+  transition: background 0.15s, box-shadow 0.15s, color 0.15s, transform 0.08s;
 }
+/* Hover: lift via card-edge-lg (sombra ampliada) + bg + cor — sem ring */
 .btn-secondary:hover:not(:disabled) {
-  border-color: var(--brass);
-  color: var(--brass-deep);
   background: var(--surface-hover);
+  color: var(--brass-deep);
+  box-shadow: var(--card-edge-lg);
+}
+.btn-secondary:active:not(:disabled) {
+  box-shadow: var(--card-edge-press);
+  transform: scale(0.98);
 }
 .btn-secondary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
 }
+/* Variante "danger" — texto vermelho em repouso, sombra padrão sem ring colorido */
 .btn-secondary.danger {
-  border-color: var(--accent);
   color: var(--accent);
 }
+/* Hover: preenche com acento sólido — ação destrutiva fica clara, sem ring */
 .btn-secondary.danger:hover:not(:disabled) {
   background: var(--accent);
-  border-color: var(--accent);
   color: var(--paper);
+  box-shadow: var(--card-edge-lg);
 }

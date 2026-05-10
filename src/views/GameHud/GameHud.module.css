@@ -1,4 +1,4 @@
-.view {
+﻿.view {
   background: var(--bg);
   min-height: 100vh;
   height: 100vh;
@@ -12,11 +12,11 @@
 /* TOPBAR — card próprio */
 .topbar {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 4px;
   padding: 14px 24px;
   display: grid;
-  grid-template-columns: 280px 1fr 280px;
+  grid-template-columns: 1fr auto;
   gap: 32px;
   align-items: center;
 }
@@ -38,36 +38,53 @@
   color: var(--ink-muted);
 }
 
-.vitals { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.vRow {
-  display: grid;
-  grid-template-columns: 48px 1fr auto;
+/* Barras vitais — altura fixa com label + valor dentro do track.
+   Layout em camadas: track é o container, fill é absolute (cresce com %),
+   content é a linha de texto que fica acima do fill. */
+.vitals { display: flex; flex-direction: column; gap: 6px; }
+
+.vTrack {
+  position: relative;
+  width: 100%;
+  height: 24px;
+  background: var(--bg);
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: var(--card-edge-pill);
+}
+.vFill {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  transition: width 0.3s ease-out;
+}
+.vFill.vida { background: var(--vital-vida); }
+.vFill.mana { background: var(--vital-mana); }
+.vFill.exp  { background: var(--vital-exp); }
+
+/* Camada de texto sobre o fill — label à esquerda, valor à direita */
+.vContent {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  padding: 0 10px;
 }
 .vLabel {
   font: 500 10px/1 var(--mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ink-muted);
+  color: var(--ink);
+  /* Sombra leve pra garantir leitura sobre o fill colorido */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
-.vTrack {
-  height: 10px;
-  background: var(--bg);
-  border: 1px solid var(--border-faint);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.vFill { height: 100%; transition: width 0.3s ease-out; }
-.vFill.vida { background: var(--vital-vida); }
-.vFill.mana { background: var(--vital-mana); }
-.vFill.exp  { background: var(--vital-exp); }
 .vValues {
-  font: 500 12px/1 var(--mono);
-  color: var(--brass-deep);
+  font: 500 11px/1 var(--mono);
+  color: var(--ink);
   white-space: nowrap;
-  min-width: 80px;
-  text-align: right;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 .world {
@@ -117,7 +134,7 @@
 /* Cada panel é um card próprio */
 .panel {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 4px;
   display: flex;
   flex-direction: column;
@@ -249,6 +266,78 @@
   gap: 12px;
 }
 .sceneActionsLabel::after { content: ''; flex: 1; height: 1px; background: var(--border-faint); }
+
+/* Descrição da localização — italic serif, abaixo do título */
+.sceneDescription {
+  font: italic 400 14px/1.7 var(--serif);
+  font-variation-settings: "opsz" 18;
+  color: var(--ink-soft);
+  margin: 0 0 24px;
+}
+
+.sceneEmpty {
+  font: italic 400 14px/1.6 var(--serif);
+  color: var(--ink-muted);
+  margin: 0;
+  padding: 16px 0;
+}
+
+/* Lista de NPCs habitantes — cada um vira um card clicável */
+.npcList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+.npcCard {
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 4px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.08s;
+  font: inherit;
+  color: inherit;
+}
+.npcCard:hover {
+  background: var(--surface-hover);
+  box-shadow: var(--card-edge-lg);
+}
+.npcCard:active {
+  box-shadow: var(--card-edge-press);
+  transform: scale(0.99);
+}
+.npcCardHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.npcCardName {
+  font: 500 16px/1.2 var(--serif);
+  font-variation-settings: "opsz" 24;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+.npcCardTitle {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brass-deep);
+}
+.npcCardDesc {
+  font: italic 400 12px/1.5 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-muted);
+  margin: 0;
+}
 .sceneActions { list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .sceneAction {
   display: grid;
@@ -257,7 +346,7 @@
   gap: 14px;
   padding: 14px 16px;
   background: var(--surface);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 4px;
   cursor: pointer;
   transition: 0.15s;
@@ -278,30 +367,38 @@
 }
 
 /* FOOTER (tabs) — card próprio */
+/* Cada tab vira um card próprio separado por gap — espelha o pattern dos
+   outros conjuntos de cards (HUD body, modal large, etc.). O --bg aparece
+   entre os cards no lugar dos divisores internos antigos. */
 .footer {
-  background: var(--paper);
-  border: 1px solid var(--border-soft);
-  border-radius: 4px;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  overflow: hidden; /* mantém os hovers dos botões dentro do raio do card */
-}
-.tabButton {
   background: transparent;
   border: none;
-  border-right: 1px solid var(--border-faint);
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+.tabButton {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 4px;
   padding: 16px 12px 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  transition: 0.15s;
+  transition: background 0.15s, box-shadow 0.15s, color 0.15s, transform 0.08s;
 }
-.tabButton:last-child { border-right: none; }
-.tabButton:hover { background: var(--surface); }
+.tabButton:hover {
+  background: var(--surface);
+  box-shadow: var(--card-edge-lg);
+}
 .tabButton:hover .tabLabel { color: var(--brass-deep); }
+.tabButton:active {
+  box-shadow: var(--card-edge-press);
+  transform: scale(0.99);
+}
 .tabLabel {
   font: 500 14px/1 var(--serif);
   font-variation-settings: "opsz" 18;
@@ -316,7 +413,7 @@
 .optionItem {
   text-align: left;
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 4px;
   padding: 14px 16px;
   cursor: pointer;
@@ -377,7 +474,7 @@
 
 .modalEmpty {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 4px;
   text-align: center;
   padding: 32px 24px;
@@ -391,8 +488,7 @@
 .modalEmpty p { font: 14px/1.5 var(--mono); color: var(--ink-muted); }
 
 @media (max-width: 1100px) {
-  .topbar { grid-template-columns: 1fr 1fr; gap: 16px; }
-  .vitals { grid-column: 1 / -1; order: 3; }
+  .topbar { grid-template-columns: 1fr auto; gap: 16px; }
   .body { grid-template-columns: 240px 1fr 240px; }
 }
 @media (max-width: 880px) {
@@ -406,5 +502,4 @@
     border-top: 1px solid var(--border-soft);
   }
   .footer { grid-template-columns: repeat(4, 1fr); }
-  .tabButton { border-right: 1px solid var(--border-faint); border-bottom: 1px solid var(--border-faint); }
 }

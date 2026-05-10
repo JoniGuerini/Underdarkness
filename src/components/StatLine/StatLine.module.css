@@ -1,4 +1,4 @@
-.line {
+﻿.line {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: baseline;
@@ -18,8 +18,8 @@
   position: fixed;
   width: max-content;
   max-width: 280px;
-  background: var(--paper);
-  border: 1px solid var(--border);
+  background: var(--surface-hover);
+  border: none;
   padding: 10px 14px;
   border-radius: 4px;
   font: 12px/1.5 var(--mono);
@@ -27,7 +27,7 @@
   white-space: normal;
   pointer-events: none;
   z-index: 1000;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--tooltip-edge);
   transform: translateY(-100%) translateY(-6px);
   animation: tooltipIn 0.15s ease-out;
 }

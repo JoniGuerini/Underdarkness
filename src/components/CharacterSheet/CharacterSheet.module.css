@@ -1,4 +1,4 @@
-.header {
+﻿.header {
   display: flex;
   align-items: center;
   gap: 24px;
@@ -50,10 +50,9 @@
 
 .card {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 6px;
   padding: 28px 36px;
-  box-shadow: var(--shadow-sm);
   flex: 1;
   display: flex;
   flex-direction: column;

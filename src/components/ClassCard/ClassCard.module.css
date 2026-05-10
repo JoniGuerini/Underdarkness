@@ -1,6 +1,6 @@
-.card {
+﻿.card {
   background: var(--surface);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 6px;
   padding: 20px 22px;
   cursor: pointer;
@@ -8,7 +8,6 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-sm);
 }
 .card:hover {
   border-color: var(--brass-light);

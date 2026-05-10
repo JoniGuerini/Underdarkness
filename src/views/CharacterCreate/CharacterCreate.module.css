@@ -1,4 +1,4 @@
-.view {
+﻿.view {
   background: var(--bg);
   min-height: 100vh;
   padding: 32px 24px 40px;
@@ -50,14 +50,13 @@
 
 .nameField {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 8px;
   padding: 16px 22px;
   margin-bottom: 22px;
   display: flex;
   align-items: center;
   gap: 18px;
-  box-shadow: var(--shadow-sm);
 }
 .nameField label {
   font: 500 11px/1 var(--mono);
@@ -69,7 +68,7 @@
 .nameField input {
   flex: 1;
   background: var(--surface);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 4px;
   padding: 10px 14px;
   font: 15px var(--mono);
@@ -92,7 +91,7 @@
 }
 
 .sidebar {
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 6px;
   background: var(--paper);
   padding: 8px;

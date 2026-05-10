@@ -1,4 +1,4 @@
-import type { MapLocation } from '../types';
+﻿import type { MapLocation } from '../types';
 
 /**
  * Atlas do mundo — chain estritamente linear.
@@ -16,12 +16,12 @@ import type { MapLocation } from '../types';
 export const LOCATIONS: MapLocation[] = [
   // ════════ Nível 1 — START (top-left) ════════
   {
-    id: 'origem',
-    name: 'Origem',
+    id: 'pedragal',
+    name: 'Pedragal',
     region: 'Vales Centrais',
     level: 1,
     description:
-      'Uma encruzilhada de terra batida onde tudo começa. Há sempre alguém perdido por aqui.',
+      'Vila de pedra do vale — ruas estreitas entre casas baixas de granito cinza, fumaça da forja subindo no fim da praça. Sólida e simples. Aqui se começa.',
     type: 'town',
     x: 180,
     y: 200,
@@ -39,7 +39,7 @@ export const LOCATIONS: MapLocation[] = [
     type: 'wilderness',
     x: 420,
     y: 280,
-    connections: ['origem'],
+    connections: ['pedragal'],
   },
   {
     id: 'corvalho',

@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    Header (modal large) — espelha o pattern dos outros headers
    ============================================================ */
 .header {
@@ -52,37 +52,46 @@
 }
 
 /* ============================================================
-   Abas internas do Códice (Mods de Item / Raridade / ...)
-   Card próprio em paper, alinhadas à esquerda como pill chips.
+   Abas internas do Códice (Mods de Item / Raridade / Forja / ...)
+   Cards quadrados (border-radius 4px) dentro de wrapper paper —
+   distintos das pills de filtro (border-radius 20px). Aba ativa
+   destaca via mudança de bg + cor do texto, sem ring.
    ============================================================ */
 .sectionTabs {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;
+  box-shadow: var(--card-edge);
   border-radius: 6px;
-  padding: 10px 14px;
+  padding: 8px;
   display: flex;
   gap: 6px;
 }
 
 .sectionTab {
-  padding: 8px 18px;
+  padding: 10px 22px;
   background: var(--bg);
-  border: 1px solid var(--border-soft);
-  border-radius: 20px;
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 4px;
   cursor: pointer;
-  transition: 0.15s;
-  font: 500 12px/1 var(--mono);
+  transition: background 0.15s, box-shadow 0.15s, color 0.15s, transform 0.08s;
+  font: 500 13px/1 var(--mono);
   letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--ink-soft);
 }
 .sectionTab:hover {
   background: var(--surface);
-  border-color: var(--brass-light);
+  box-shadow: var(--card-edge-lg);
+  color: var(--ink);
 }
 .sectionTab.sectionTabActive {
-  background: var(--surface);
-  border-color: var(--brass);
+  background: var(--surface-deep);
   color: var(--brass-deep);
+}
+.sectionTab:active {
+  box-shadow: var(--card-edge-press);
+  transform: scale(0.99);
 }
 
 /* Body da seção ativa — flex column reaproveitando padrões existentes */
@@ -101,7 +110,7 @@
 
 .intro {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 6px;
   padding: 18px 24px;
   display: flex;
@@ -138,7 +147,7 @@
 
 .column {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 6px;
   padding: 22px 24px;
   display: flex;
@@ -265,7 +274,7 @@
 
 .rarityCard {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 6px;
   padding: 22px 26px;
   display: flex;
@@ -358,7 +367,7 @@
 /* Rodapé com a regra global de limite (3 prefixos / 3 sufixos) */
 .rarityFooter {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 6px;
   padding: 18px 26px;
   display: flex;
@@ -394,7 +403,7 @@
 
 .forgeConfig {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 6px;
   padding: 22px 24px;
   display: flex;
@@ -409,7 +418,7 @@
 
 .forgePreview {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 6px;
   padding: 22px 24px;
   display: flex;
@@ -469,7 +478,7 @@
 /* Select de base */
 .forgeSelect {
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: none;
   color: var(--ink);
   font: 400 14px/1.4 var(--mono);
   padding: 10px 14px;
@@ -494,7 +503,7 @@
 .forgeRarityChip {
   padding: 8px 18px;
   background: var(--bg);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 20px;
   cursor: pointer;
   transition: 0.15s;
@@ -568,7 +577,7 @@
 .forgeModChip {
   padding: 6px 10px;
   background: var(--bg);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 4px;
   cursor: pointer;
   transition: 0.15s;

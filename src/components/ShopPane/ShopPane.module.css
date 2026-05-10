@@ -1,0 +1,159 @@
+.shop {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Header da loja — saldo de ouro à esquerda, aviso opcional à direita */
+.shopHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-radius: 4px;
+  box-shadow: var(--card-edge-pill);
+}
+.goldLabel {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.goldValue {
+  font: 500 16px/1 var(--mono);
+  color: var(--brass-deep);
+  letter-spacing: 0.04em;
+  flex: 1;
+}
+.warning {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vital-vida);
+}
+
+/* Duas colunas Comprar | Vender */
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.columnHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 4px 8px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.columnTitle {
+  font: 500 13px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brass-deep);
+  margin: 0;
+}
+.columnSub {
+  font: 500 10px/1 var(--mono);
+  color: var(--ink-muted);
+  letter-spacing: 0.04em;
+}
+
+.columnBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.columnBody::-webkit-scrollbar { display: none; }
+
+.empty {
+  font: italic 400 12px/1.5 var(--serif);
+  font-variation-settings: "opsz" 12;
+  color: var(--ink-muted);
+  margin: 8px 4px;
+  padding: 12px 0;
+  text-align: center;
+}
+
+/* Linha clicável de item — nome à esquerda, preço à direita */
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: none;
+  box-shadow: var(--card-edge-pill);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.08s;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+.row:hover:not(:disabled) {
+  background: var(--surface);
+  box-shadow: var(--card-edge-lg);
+}
+.row:active:not(:disabled) {
+  box-shadow: var(--card-edge-press);
+  transform: scale(0.99);
+}
+.row.rowDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.rowName {
+  font: 500 12px/1.3 var(--mono);
+  letter-spacing: 0.01em;
+  word-break: break-word;
+}
+
+/* Cor do nome por raridade — espelha tooltips/inventário */
+.row.rarity_comum    .rowName { color: var(--rarity-comum); }
+.row.rarity_magico   .rowName { color: var(--rarity-magico); }
+.row.rarity_raro     .rowName { color: var(--rarity-raro); }
+.row.rarity_unico    .rowName { color: var(--rarity-unico); }
+.row.rarity_lendario .rowName { color: var(--rarity-lendario); }
+
+.rowStack {
+  font: 500 11px/1 var(--mono);
+  color: var(--ink-muted);
+  letter-spacing: 0.02em;
+}
+
+.rowPrice {
+  font: 500 12px/1 var(--mono);
+  color: var(--brass-deep);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.rowPriceSell {
+  color: var(--vital-exp);
+}
+.rowPriceCoin {
+  margin-left: 1px;
+  color: var(--ink-muted);
+  font-size: 10px;
+}
+
+/* ============================================================
+   Responsivo — empilha colunas em telas estreitas
+   ============================================================ */
+@media (max-width: 600px) {
+  .columns { grid-template-columns: minmax(0, 1fr); }
+}

@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    Header (modal large) — espelha o pattern dos outros headers
    ============================================================ */
 .header {
@@ -49,17 +49,72 @@
   flex-direction: column;
   gap: 8px;
   min-height: 0;
+}
+
+/* ============================================================
+   Tabs internas (Geral / Atalhos / Vídeo) — cards quadrados
+   (border-radius 4px) dentro de wrapper paper, distintos das
+   pills de filtro (que usam border-radius 20px). Aba ativa
+   destaca via mudança de bg + cor do texto, sem ring/borda.
+   ============================================================ */
+.sectionTabs {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.sectionTab {
+  padding: 10px 22px;
+  background: var(--bg);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, color 0.15s, transform 0.08s;
+  font: 500 13px/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.sectionTab:hover {
+  background: var(--surface);
+  box-shadow: var(--card-edge-lg);
+  color: var(--ink);
+}
+.sectionTab.sectionTabActive {
+  background: var(--surface-deep);
+  color: var(--brass-deep);
+}
+.sectionTab:active {
+  box-shadow: var(--card-edge-press);
+  transform: scale(0.99);
+}
+
+.sectionBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  animation: optionsFadeIn 0.18s ease-out;
 }
-.root::-webkit-scrollbar { display: none; }
+.sectionBody::-webkit-scrollbar { display: none; }
+@keyframes optionsFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 .card {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 6px;
-  box-shadow: var(--shadow-sm);
   padding: 24px 28px;
   display: flex;
   flex-direction: column;
@@ -101,7 +156,7 @@
 .shortcutTable {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -158,7 +213,7 @@
   min-width: 44px;
   padding: 6px 12px;
   background: var(--surface-deep);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 4px;
   font: 500 12px/1 var(--mono);
   letter-spacing: 0.08em;
@@ -193,7 +248,7 @@
   gap: 24px;
   padding: 14px 18px;
   background: var(--bg);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 4px;
 }
 .toggleText {
@@ -216,7 +271,7 @@
 .toggle {
   padding: 7px 16px;
   background: transparent;
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 20px;
   cursor: pointer;
   transition: 0.15s;
@@ -250,7 +305,7 @@
   gap: 6px;
   padding: 16px 20px;
   background: var(--bg);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 4px;
   cursor: pointer;
   transition: 0.15s;

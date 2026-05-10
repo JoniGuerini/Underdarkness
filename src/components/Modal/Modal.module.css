@@ -1,4 +1,4 @@
-.overlay {
+﻿.overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.7);
@@ -17,7 +17,7 @@
    separados por gap. Padding externo de 8px deixa o bg respirar. */
 .modal {
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 4px;
   max-width: 640px;
   width: 100%;
@@ -37,10 +37,10 @@
   border-radius: 4px;
 }
 
-/* Header é um card próprio (paper + border) */
+/* Header é um card próprio (paper + edge) */
 .header {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 4px;
   padding: 14px 24px;
   display: flex;
@@ -87,7 +87,7 @@
 /* Footer também vira card */
 .footer {
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 4px;
   padding: 14px 24px;
   display: flex;

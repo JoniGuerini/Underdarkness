@@ -1,5 +1,5 @@
-.panel {
-  border: 1px solid var(--border-soft);
+﻿.panel {
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 6px;
   background: var(--surface);
   padding: 36px 40px;
@@ -7,7 +7,6 @@
   flex-direction: column;
   gap: 28px;
   min-height: 100%;
-  box-shadow: var(--shadow-sm);
 }
 
 .title {

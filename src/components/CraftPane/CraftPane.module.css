@@ -1,0 +1,89 @@
+.craft {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.empty {
+  font: italic 400 13px/1.55 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-muted);
+  padding: 16px 0;
+  text-align: center;
+}
+
+/* Card de receita — header (nome + botão) + descrição + ingredientes */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  background: var(--bg);
+  border-radius: 4px;
+  box-shadow: var(--card-edge-pill);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.resultName {
+  font: 500 14px/1.2 var(--serif);
+  font-variation-settings: "opsz" 18;
+  letter-spacing: -0.005em;
+  cursor: help;
+}
+/* Cor do nome do resultado por raridade — espelha tooltip/inventário */
+.resultName.rarity_comum    { color: var(--rarity-comum); }
+.resultName.rarity_magico   { color: var(--rarity-magico); }
+.resultName.rarity_raro     { color: var(--rarity-raro); }
+.resultName.rarity_unico    { color: var(--rarity-unico); }
+.resultName.rarity_lendario { color: var(--rarity-lendario); }
+
+.btnCraft {
+  font-size: 11px;
+  padding: 7px 16px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.cardDesc {
+  font: italic 400 12px/1.5 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-muted);
+  margin: 0;
+}
+
+/* Lista de reagentes — uma linha por ingrediente, status à direita */
+.ingredients {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ingredient {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font: 400 12px/1.4 var(--mono);
+}
+
+.ingName { color: var(--ink-soft); }
+.ingCount {
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* OK = brass-deep (suficiente); Missing = vital-vida (faltando) */
+.ingredient.ingredientOk .ingCount { color: var(--brass-deep); }
+.ingredient.ingredientMissing .ingCount { color: var(--vital-vida); }
+.ingredient.ingredientMissing .ingName { color: var(--ink-muted); }

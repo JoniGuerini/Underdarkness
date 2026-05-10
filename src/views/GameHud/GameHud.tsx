@@ -9,6 +9,8 @@ import { MapView, MapHeader } from '../../components/MapView/MapView';
 import { JournalView, JournalHeader } from '../../components/JournalView/JournalView';
 import { CodexView, CodexHeader } from '../../components/CodexView/CodexView';
 import { OptionsView, OptionsHeader } from '../../components/OptionsView/OptionsView';
+import { NpcDialog } from '../../components/NpcDialog/NpcDialog';
+import { getNpcsAt, type Npc } from '../../data/npcs';
 import {
   EDITABLE_TABS,
   displayKey,
@@ -40,7 +42,11 @@ export function GameHud({
   onBackToList,
 }: GameHudProps) {
   const [activeTab, setActiveTab] = useState<TabKey | null>(null);
+  const [activeNpc, setActiveNpc] = useState<Npc | null>(null);
   const realTime = useRealTime();
+
+  const currentLocation = getLocationById(character.location);
+  const npcsHere = getNpcsAt(character.location);
 
   const closeTab = () => setActiveTab(null);
 
@@ -92,30 +98,6 @@ export function GameHud({
           <div className={styles.charClass}>{character.classLabel} · Nv {character.level}</div>
         </div>
 
-        <div className={styles.vitals}>
-          <div className={styles.vRow}>
-            <span className={styles.vLabel}>Vida</span>
-            <div className={styles.vTrack}>
-              <div className={`${styles.vFill} ${styles.vida}`} style={{ width: `${vidaPct}%` }} />
-            </div>
-            <span className={styles.vValues}>{character.vidaAtual} / {character.vidaMax}</span>
-          </div>
-          <div className={styles.vRow}>
-            <span className={styles.vLabel}>Mana</span>
-            <div className={styles.vTrack}>
-              <div className={`${styles.vFill} ${styles.mana}`} style={{ width: `${manaPct}%` }} />
-            </div>
-            <span className={styles.vValues}>{character.manaAtual} / {character.manaMax}</span>
-          </div>
-          <div className={styles.vRow}>
-            <span className={styles.vLabel}>Exp</span>
-            <div className={styles.vTrack}>
-              <div className={`${styles.vFill} ${styles.exp}`} style={{ width: `${expPct}%` }} />
-            </div>
-            <span className={styles.vValues}>{character.xp} / {character.xpNext}</span>
-          </div>
-        </div>
-
         <div className={styles.world}>
           <div>
             <div className={styles.worldPlaceL1}>
@@ -139,6 +121,31 @@ export function GameHud({
           <div className={styles.panelHeader}>
             <span className={styles.panelTitle}>Ficha</span>
             <span className={styles.panelMeta}>Nv {character.level}</span>
+          </div>
+          <div className={styles.panelSection}>
+            <div className={styles.vitals}>
+              <div className={styles.vTrack}>
+                <div className={`${styles.vFill} ${styles.vida}`} style={{ width: `${vidaPct}%` }} />
+                <div className={styles.vContent}>
+                  <span className={styles.vLabel}>Vida</span>
+                  <span className={styles.vValues}>{character.vidaAtual} / {character.vidaMax}</span>
+                </div>
+              </div>
+              <div className={styles.vTrack}>
+                <div className={`${styles.vFill} ${styles.mana}`} style={{ width: `${manaPct}%` }} />
+                <div className={styles.vContent}>
+                  <span className={styles.vLabel}>Mana</span>
+                  <span className={styles.vValues}>{character.manaAtual} / {character.manaMax}</span>
+                </div>
+              </div>
+              <div className={styles.vTrack}>
+                <div className={`${styles.vFill} ${styles.exp}`} style={{ width: `${expPct}%` }} />
+                <div className={styles.vContent}>
+                  <span className={styles.vLabel}>Exp</span>
+                  <span className={styles.vValues}>{character.xp} / {character.xpNext}</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div className={styles.panelSection}>
             <div className={styles.panelSectionLabel}>Atributos</div>
@@ -169,38 +176,47 @@ export function GameHud({
         <main className={`${styles.panel} ${styles.panelCenter}`}>
           <div className={styles.panelHeader}>
             <span className={styles.panelTitle}>Cena Atual</span>
-            <span className={styles.panelMeta}>01 / —</span>
+            <span className={styles.panelMeta}>{currentLocation?.region ?? '—'}</span>
           </div>
           <div className={styles.sceneWrap}>
-            <div className={styles.sceneChapter}>Capítulo I</div>
-            <h1 className={styles.sceneTitle}>O Início</h1>
-            <div className={styles.sceneNarrative}>
-              <p>Você está numa estrada de terra batida. O sol está baixo no horizonte e o ar carrega o cheiro de uma fogueira distante.</p>
-              <p>Há uma vila à frente, uma floresta densa à direita, e o caminho atrás de você — o que veio percorrendo, sem lembrar exatamente como.</p>
-            </div>
-            <div className={styles.sceneActionsLabel}>Suas Ações</div>
-            <ul className={styles.sceneActions}>
-              <li className={styles.sceneAction}>
-                <span className={styles.sceneActionNum}>01</span>
-                <span className={styles.sceneActionText}>Seguir em direção à vila.</span>
-                <span className={styles.sceneActionMeta}>—</span>
-              </li>
-              <li className={styles.sceneAction}>
-                <span className={styles.sceneActionNum}>02</span>
-                <span className={styles.sceneActionText}>Investigar a floresta.</span>
-                <span className={styles.sceneActionMeta}>Agilidade</span>
-              </li>
-              <li className={styles.sceneAction}>
-                <span className={styles.sceneActionNum}>03</span>
-                <span className={styles.sceneActionText}>Voltar pelo caminho de antes.</span>
-                <span className={styles.sceneActionMeta}>—</span>
-              </li>
-              <li className={styles.sceneAction}>
-                <span className={styles.sceneActionNum}>04</span>
-                <span className={styles.sceneActionText}>Sentar e esperar a noite cair.</span>
-                <span className={styles.sceneActionMeta}>Intelecto</span>
-              </li>
-            </ul>
+            {currentLocation ? (
+              <>
+                <div className={styles.sceneChapter}>{currentLocation.region}</div>
+                <h1 className={styles.sceneTitle}>{currentLocation.name}</h1>
+                <p className={styles.sceneDescription}>{currentLocation.description}</p>
+
+                {npcsHere.length > 0 && (
+                  <>
+                    <div className={styles.sceneActionsLabel}>Habitantes</div>
+                    <ul className={styles.npcList}>
+                      {npcsHere.map((npc) => (
+                        <li key={npc.id}>
+                          <button
+                            type="button"
+                            className={styles.npcCard}
+                            onClick={() => setActiveNpc(npc)}
+                          >
+                            <div className={styles.npcCardHeader}>
+                              <span className={styles.npcCardName}>{npc.name}</span>
+                              <span className={styles.npcCardTitle}>{npc.title}</span>
+                            </div>
+                            <p className={styles.npcCardDesc}>{npc.description}</p>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+
+                {npcsHere.length === 0 && (
+                  <p className={styles.sceneEmpty}>
+                    Não há ninguém por aqui. Use o Atlas (M) para escolher um destino.
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className={styles.sceneEmpty}>Localização desconhecida.</p>
+            )}
           </div>
         </main>
 
@@ -324,6 +340,14 @@ export function GameHud({
           </div>
         </Modal>
       )}
+
+      {/* Diálogo de NPC — abre ao clicar num habitante na Cena Atual */}
+      <NpcDialog
+        npc={activeNpc}
+        character={character}
+        onUpdate={onUpdate}
+        onClose={() => setActiveNpc(null)}
+      />
 
       {/* Modal stub do Habilidades (única tab grande sem implementação) */}
       {activeTab === 'habilidades' && (

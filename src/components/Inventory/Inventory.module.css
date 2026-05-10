@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    Header — espelha CharacterSheet
    ============================================================ */
 .header {
@@ -57,10 +57,9 @@
   --slot-gap: 8px;
 
   background: var(--paper);
-  border: 1px solid var(--border-soft);
+  border: none;  box-shadow: var(--card-edge);
   border-radius: 6px;
   padding: 24px 28px;
-  box-shadow: var(--shadow-sm);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -116,7 +115,8 @@
   width: var(--slot-size);
   height: var(--slot-size);
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: none;
+  box-shadow: var(--card-edge-pill);
   border-radius: 4px;
   padding: 6px;
   display: flex;
@@ -124,19 +124,19 @@
   justify-content: center;
   text-align: center;
   cursor: default;
-  transition: background 0.12s, border-color 0.12s, transform 0.08s;
+  transition: background 0.12s, box-shadow 0.12s, transform 0.08s;
   user-select: none;
   -webkit-user-select: none;
 }
 
 .slot.filled {
   background: var(--surface);
-  border-color: var(--border);
   cursor: grab;
 }
 .slot.filled:hover {
   background: var(--surface-hover);
-  border-color: var(--brass-light);
+  /* Hover via lift sem ring — sombra wider dá a sensação de "subir" */
+  box-shadow: var(--card-edge-lg);
 }
 .slot.filled:active { cursor: grabbing; }
 
@@ -145,27 +145,31 @@
   transform: scale(0.94);
 }
 
+/* Slot drop-target compatível — dashed brass-light por cima da sombra base.
+   Como box-shadow não suporta dashed, usa border real e zera a sombra. */
 .slot.compatible {
-  border-color: var(--brass-light);
-  border-style: dashed;
   background: var(--surface);
+  border: 1px dashed var(--brass-light);
+  box-shadow: none;
 }
 
-/* Slot incompatível enquanto há um drag — espelha o tratamento de .compatible
-   (borda dashed) só que em vermelho. Usa o mesmo tom da barra de Vida com
+/* Slot incompatível — mesmo padrão (dashed) mas em vermelho terracota com
    transparência pra ficar discreto: avisa sem chamar atenção. */
 .slot.incompatible {
-  border-color: color-mix(in srgb, var(--vital-vida) 50%, transparent);
-  border-style: dashed;
   background: var(--surface);
+  border: 1px dashed color-mix(in srgb, var(--vital-vida) 50%, transparent);
+  box-shadow: none;
   cursor: not-allowed;
 }
 
+/* Slot ativo enquanto o cursor está em cima dele durante um drag — destaca
+   com ring brass-bright + glow interno. */
 .slot.hover {
-  border-color: var(--brass-bright);
-  border-style: solid;
   background: var(--surface-hover);
-  box-shadow: 0 0 0 2px rgba(194, 168, 120, 0.25) inset;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 2px rgba(194, 168, 120, 0.25),
+    0 0 0 1px var(--brass-bright);
 }
 
 /* ============================================================
@@ -218,7 +222,7 @@
   margin: 0;
   padding: 4px;
   background: var(--paper);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 4px;
   box-shadow: var(--shadow-lg);
   min-width: 140px;
