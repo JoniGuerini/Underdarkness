@@ -1,6 +1,5 @@
-import { useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import type { Character } from '../../types';
+import { useMemo, useState } from 'react';
+import type { Character, Item } from '../../types';
 import { getRecipesFor, type Recipe } from '../../data/recipes';
 import { getMaterialName } from '../../data/materials';
 import {
@@ -19,137 +18,165 @@ interface CraftPaneProps {
 }
 
 /**
- * UI de crafting — lista as receitas que o NPC conhece, mostra reagentes
- * disponíveis vs necessários e permite executar a receita se tudo encaixa.
+ * UI de crafting — layout split inspirado no PoE/WoW: lista de receitas à
+ * esquerda (só nome), detalhes do item selecionado à direita (descrição,
+ * reagentes, preview do resultado, botão de craftar).
  */
 export function CraftPane({ npcId, role, character, onUpdate }: CraftPaneProps) {
   const recipes = getRecipesFor(npcId, role);
   const actionLabel = role === 'forjar' ? 'Forjar' : 'Destilar';
 
+  const [selectedId, setSelectedId] = useState<string | null>(
+    recipes[0]?.id ?? null,
+  );
+
+  const selected = useMemo(
+    () => recipes.find((r) => r.id === selectedId) ?? recipes[0] ?? null,
+    [recipes, selectedId],
+  );
+
   const handleCraft = (recipe: Recipe) => {
-    // Consome reagentes em sequência. Se algum falhar, aborta sem mutar.
     let inv = character.inventory;
     for (const ing of recipe.ingredients) {
       const next = consumeItem(inv, ing.itemId, ing.quantity);
-      if (!next) return; // falta reagente — botão deveria estar desabilitado
+      if (!next) return;
       inv = next;
     }
-    // Adiciona o resultado
     const { inventory: finalInv, added } = addItemToInventory(inv, recipe.result);
-    if (!added) return; // inventário cheio
+    if (!added) return;
     onUpdate({ ...character, inventory: finalInv });
   };
 
   if (recipes.length === 0) {
-    return (
-      <div className={styles.empty}>
-        Nenhuma receita disponível.
-      </div>
-    );
+    return <div className={styles.empty}>Nenhuma receita disponível.</div>;
   }
 
   return (
-    <div className={styles.craft}>
-      {recipes.map((recipe) => (
-        <RecipeCard
-          key={recipe.id}
-          recipe={recipe}
+    <div className={styles.split}>
+      <RecipeList
+        recipes={recipes}
+        inventory={character.inventory}
+        selectedId={selected?.id ?? null}
+        onSelect={(id) => setSelectedId(id)}
+      />
+      {selected && (
+        <RecipeDetail
+          recipe={selected}
           inventory={character.inventory}
           actionLabel={actionLabel}
-          onCraft={() => handleCraft(recipe)}
+          onCraft={() => handleCraft(selected)}
         />
-      ))}
+      )}
     </div>
   );
 }
 
 // ============================================================================
-// RecipeCard — uma receita com nome, descrição, lista de reagentes, botão
+// RecipeList — sidebar esquerda com nomes das receitas
 // ============================================================================
-interface RecipeCardProps {
+interface RecipeListProps {
+  recipes: Recipe[];
+  inventory: (Item | null)[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}
+
+function RecipeList({ recipes, inventory, selectedId, onSelect }: RecipeListProps) {
+  return (
+    <aside className={styles.list}>
+      <div className={styles.listHeader}>Receitas</div>
+      {recipes.map((recipe) => {
+        const canCraft = recipe.ingredients.every(
+          (ing) => countItem(inventory, ing.itemId) >= ing.quantity,
+        );
+        const isActive = selectedId === recipe.id;
+        return (
+          <button
+            key={recipe.id}
+            type="button"
+            className={`${styles.listItem} ${isActive ? styles.listItemActive : ''}`}
+            onClick={() => onSelect(recipe.id)}
+          >
+            <span
+              className={`${styles.listItemName} ${styles[`rarity_${recipe.result.rarity}`]}`}
+            >
+              {recipe.name}
+            </span>
+            <span
+              className={`${styles.listItemStatus} ${canCraft ? styles.statusOk : styles.statusMissing}`}
+              aria-label={canCraft ? 'Reagentes prontos' : 'Faltam reagentes'}
+            >
+              {canCraft ? '●' : '○'}
+            </span>
+          </button>
+        );
+      })}
+    </aside>
+  );
+}
+
+// ============================================================================
+// RecipeDetail — pane direita com descrição, reagentes e preview do resultado
+// ============================================================================
+interface RecipeDetailProps {
   recipe: Recipe;
-  inventory: (import('../../types').Item | null)[];
+  inventory: (Item | null)[];
   actionLabel: string;
   onCraft: () => void;
 }
 
-function RecipeCard({ recipe, inventory, actionLabel, onCraft }: RecipeCardProps) {
-  // Checa cada reagente — se algum estiver faltando, desabilita o botão
+function RecipeDetail({ recipe, inventory, actionLabel, onCraft }: RecipeDetailProps) {
   const ingredientStatus = recipe.ingredients.map((ing) => {
     const have = countItem(inventory, ing.itemId);
     return { ...ing, have, ok: have >= ing.quantity };
   });
   const canCraft = ingredientStatus.every((i) => i.ok);
 
-  // Tooltip do item resultante
-  const resultRef = useRef<HTMLSpanElement>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ left: number; top: number } | null>(null);
-
-  const handleEnter = () => {
-    if (!resultRef.current) return;
-    const r = resultRef.current.getBoundingClientRect();
-    const TT_WIDTH = 300;
-    let left = r.right + 12;
-    if (left + TT_WIDTH > window.innerWidth - 8) left = r.left - 12 - TT_WIDTH;
-    if (left < 8) left = 8;
-    setTooltipPos({ left, top: r.top });
-  };
-  const handleLeave = () => setTooltipPos(null);
-
   return (
-    <article className={styles.card}>
-      <header className={styles.cardHeader}>
-        <span
-          ref={resultRef}
-          className={`${styles.resultName} ${styles[`rarity_${recipe.result.rarity}`]}`}
-          onMouseEnter={handleEnter}
-          onMouseLeave={handleLeave}
+    <main className={styles.detail}>
+      <header className={styles.detailHeader}>
+        <h3
+          className={`${styles.detailName} ${styles[`rarity_${recipe.result.rarity}`]}`}
         >
           {recipe.name}
-        </span>
+        </h3>
+        <p className={styles.detailDesc}>{recipe.description}</p>
+      </header>
+
+      <section className={styles.section}>
+        <div className={styles.sectionLabel}>Reagentes</div>
+        <ul className={styles.ingredients}>
+          {ingredientStatus.map((ing) => (
+            <li
+              key={ing.itemId}
+              className={`${styles.ingredient} ${ing.ok ? styles.ingredientOk : styles.ingredientMissing}`}
+            >
+              <span className={styles.ingCount}>
+                {ing.have} / {ing.quantity}
+              </span>
+              <span className={styles.ingName}>{getMaterialName(ing.itemId)}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionLabel}>Resultado</div>
+        <div className={styles.resultPreview}>
+          <ItemTooltipInline item={recipe.result} />
+        </div>
+      </section>
+
+      <footer className={styles.detailFooter}>
         <button
           type="button"
-          className={`btn-secondary ${styles.btnCraft}`}
+          className={`btn-primary ${styles.btnCraft}`}
           onClick={onCraft}
           disabled={!canCraft}
         >
           {actionLabel}
         </button>
-      </header>
-
-      <p className={styles.cardDesc}>{recipe.description}</p>
-
-      <ul className={styles.ingredients}>
-        {ingredientStatus.map((ing) => (
-          <li
-            key={ing.itemId}
-            className={`${styles.ingredient} ${ing.ok ? styles.ingredientOk : styles.ingredientMissing}`}
-          >
-            <span className={styles.ingName}>{getMaterialName(ing.itemId)}</span>
-            <span className={styles.ingCount}>
-              {ing.have} / {ing.quantity}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      {tooltipPos &&
-        createPortal(
-          <div
-            style={{
-              position: 'fixed',
-              left: tooltipPos.left,
-              top: tooltipPos.top,
-              zIndex: 1100,
-              pointerEvents: 'none',
-              maxWidth: 300,
-            }}
-          >
-            <ItemTooltipInline item={recipe.result} />
-          </div>,
-          document.body,
-        )}
-    </article>
+      </footer>
+    </main>
   );
 }
-

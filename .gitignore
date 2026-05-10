@@ -7,3 +7,8 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .claude/
+
+# TypeScript build artifacts (gerados por tsc -b durante build local)
+*.tsbuildinfo
+vite.config.d.ts
+vite.config.js

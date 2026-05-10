@@ -1,43 +1,92 @@
-.body {
+/* ============================================================
+   Header (modal large) — espelha o pattern de CodexHeader, etc.
+   ============================================================ */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+.nameBlock { flex: 1; text-align: left; }
+.title {
+  font: 500 28px/1.1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.subtitle {
+  font: 500 11px/1.4 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brass-deep);
+}
+.btnBack {
+  font-size: 11px;
+  padding: 9px 14px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg);
+}
+.btnBack:hover { background: var(--surface); }
+.btnBackKey {
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+}
+
+/* ============================================================
+   Root — flex column, intro card no topo + pane card embaixo
+   ============================================================ */
+.root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+/* Card de intro: descrição flavor + tabs de role */
+.introCard {
   background: var(--paper);
   border: none;
   box-shadow: var(--card-edge);
-  border-radius: 4px;
-  padding: 18px 22px;
+  border-radius: 6px;
+  padding: 18px 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  animation: npcFadeIn 0.18s ease-out;
-}
-@keyframes npcFadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  gap: 14px;
 }
 
 .intro {
-  font: italic 400 13px/1.6 var(--serif);
-  font-variation-settings: "opsz" 14;
-  color: var(--ink-muted);
+  font: italic 400 14px/1.7 var(--serif);
+  font-variation-settings: "opsz" 18;
+  color: var(--ink-soft);
+  margin: 0;
 }
 
-/* Tabs por role — cards quadrados, mesmo pattern das tabs do Códice/Opções */
+/* Tabs por role — cards quadrados, mesmo pattern do Códice/Opções */
 .roleTabs {
   display: flex;
   gap: 6px;
-  padding-top: 4px;
-  border-top: 1px solid var(--border-soft);
   padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
 }
 
 .roleTab {
-  padding: 8px 18px;
+  padding: 10px 22px;
   background: var(--bg);
   border: none;
   box-shadow: var(--card-edge);
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.15s, box-shadow 0.15s, color 0.15s, transform 0.08s;
-  font: 500 12px/1 var(--mono);
+  font: 500 13px/1 var(--mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-soft);
@@ -56,28 +105,45 @@
   transform: scale(0.99);
 }
 
-/* Pane do conteúdo da role ativa */
-.pane {
-  min-height: 80px;
+/* Card do pane ativo — preenche o resto vertical */
+.paneCard {
+  flex: 1;
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   animation: npcFadeIn 0.18s ease-out;
+}
+@keyframes npcFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* FALAR — fala em italic serif, tom narrativo */
 .dialogue {
-  font: italic 400 14px/1.7 var(--serif);
-  font-variation-settings: "opsz" 18;
+  font: italic 400 16px/1.7 var(--serif);
+  font-variation-settings: "opsz" 24;
   color: var(--ink);
   margin: 0;
+  max-width: 700px;
 }
 
 /* STUB pras roles em desenvolvimento */
 .stub {
-  padding: 18px 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
 }
 .stubMessage {
-  font: italic 400 13px/1.55 var(--serif);
-  font-variation-settings: "opsz" 14;
+  font: italic 400 14px/1.55 var(--serif);
+  font-variation-settings: "opsz" 18;
   color: var(--ink-muted);
   margin: 0;
+  max-width: 480px;
 }

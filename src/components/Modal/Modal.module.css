@@ -37,6 +37,16 @@
   border-radius: 4px;
 }
 
+/* Variante "medium" — tamanho fixo (não cresce nem encolhe com conteúdo)
+   pra modais com tabs onde cada tab pode ter densidade diferente. Frame
+   estável, scroll interno se conteúdo passar. */
+.modal.medium {
+  max-width: 900px;
+  width: 100%;
+  height: 600px;
+  max-height: 85vh;
+}
+
 /* Header é um card próprio (paper + edge) */
 .header {
   background: var(--paper);

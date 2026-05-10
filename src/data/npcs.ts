@@ -43,7 +43,7 @@ export interface Npc {
  * - Solana: alquimia (loja + crafting de poções)
  * - Doroteu: padaria (consumíveis baratos pra regen)
  * - Sirvên: ancião (lore, futuras quests)
- * - Beatris: estalagem (descanso pra recuperar Vida/Mana)
+ * - Madalena: estalagem (descanso pra recuperar Vida/Mana)
  */
 export const NPCS: Npc[] = [
   {
@@ -91,8 +91,8 @@ export const NPCS: Npc[] = [
     roles: ['falar'],
   },
   {
-    id: 'beatris',
-    name: 'Beatris',
+    id: 'madalena',
+    name: 'Madalena',
     title: 'Estalajadeira',
     locationId: 'pedragal',
     description:

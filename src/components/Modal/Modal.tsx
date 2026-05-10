@@ -4,7 +4,12 @@ import styles from './Modal.module.css';
 interface ModalProps {
   open: boolean;
   onClose: () => void;
+  /** Modal full-screen — pra views grandes (Personagem, Diário, Códice...) */
   large?: boolean;
+  /** Modal médio — entre default (640px) e large (full-screen). Tamanho fixo
+   *  pra UIs com múltiplas abas onde o conteúdo varia mas o frame não pode
+   *  redimensionar (ex: NpcDialog com tabs Falar/Loja/Forjar). */
+  medium?: boolean;
   header?: ReactNode;
   title?: string;
   shortcut?: string;
@@ -12,7 +17,7 @@ interface ModalProps {
   children: ReactNode;
 }
 
-export function Modal({ open, onClose, large, header, title, shortcut, footer, children }: ModalProps) {
+export function Modal({ open, onClose, large, medium, header, title, shortcut, footer, children }: ModalProps) {
   useEffect(() => {
     if (!open) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -33,7 +38,11 @@ export function Modal({ open, onClose, large, header, title, shortcut, footer, c
       className={`${styles.overlay} ${large ? styles.fullscreen : ''}`}
       onClick={handleOverlayClick}
     >
-      <div className={`${styles.modal} ${large ? styles.large : ''}`} role="dialog" aria-modal="true">
+      <div
+        className={`${styles.modal} ${large ? styles.large : ''} ${medium ? styles.medium : ''}`}
+        role="dialog"
+        aria-modal="true"
+      >
         <div className={styles.header}>
           {header ?? (
             <>

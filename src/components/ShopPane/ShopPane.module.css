@@ -1,7 +1,9 @@
 .shop {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-height: 0;
 }
 
 /* Header da loja — saldo de ouro à esquerda, aviso opcional à direita */
@@ -33,11 +35,13 @@
   color: var(--vital-vida);
 }
 
-/* Duas colunas Comprar | Vender */
+/* Duas colunas Comprar | Vender — preenchem o resto vertical do shop */
 .columns {
+  flex: 1;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 8px;
+  min-height: 0;
 }
 
 .column {
@@ -45,6 +49,7 @@
   flex-direction: column;
   gap: 8px;
   min-width: 0;
+  min-height: 0;
 }
 
 .columnHeader {
@@ -68,10 +73,11 @@
 }
 
 .columnBody {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 320px;
+  min-height: 0;
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;

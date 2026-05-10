@@ -18,41 +18,40 @@ interface NpcDialogProps {
 }
 
 export function NpcDialog({ npc, character, onUpdate, onClose }: NpcDialogProps) {
-  // Aba ativa do diálogo — começa sempre em "falar" pra mostrar a fala de boas-vindas.
-  // Reseta cada vez que troca de NPC (key={npc.id} no Modal).
+  // Aba ativa do diálogo — começa sempre em "falar". Reseta cada vez que troca
+  // de NPC (o key={npc.id} no root garante remount).
   const [active, setActive] = useState<NpcRole>('falar');
 
   if (!npc) return null;
-
-  const handleRoleClick = (role: NpcRole) => setActive(role);
 
   return (
     <Modal
       open={!!npc}
       onClose={onClose}
-      title={npc.name}
-      shortcut={npc.title.toUpperCase()}
+      large
+      header={<NpcHeader npc={npc} onClose={onClose} />}
     >
-      <div key={npc.id} className={styles.body}>
-        <div className={styles.intro}>{npc.description}</div>
+      <div key={npc.id} className={styles.root}>
+        <section className={styles.introCard}>
+          <p className={styles.intro}>{npc.description}</p>
+          <nav className={styles.roleTabs}>
+            {npc.roles.map((role) => {
+              const isActive = active === role;
+              return (
+                <button
+                  key={role}
+                  type="button"
+                  className={`${styles.roleTab} ${isActive ? styles.roleTabActive : ''}`}
+                  onClick={() => setActive(role)}
+                >
+                  {NPC_ROLE_LABEL[role]}
+                </button>
+              );
+            })}
+          </nav>
+        </section>
 
-        <nav className={styles.roleTabs}>
-          {npc.roles.map((role) => {
-            const isActive = active === role;
-            return (
-              <button
-                key={role}
-                type="button"
-                className={`${styles.roleTab} ${isActive ? styles.roleTabActive : ''}`}
-                onClick={() => handleRoleClick(role)}
-              >
-                {NPC_ROLE_LABEL[role]}
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className={styles.pane} key={active}>
+        <section className={styles.paneCard} key={active}>
           {active === 'falar' && <FalarPane npc={npc} />}
           {active === 'loja' && (
             <ShopPane npcId={npc.id} character={character} onUpdate={onUpdate} />
@@ -63,10 +62,30 @@ export function NpcDialog({ npc, character, onUpdate, onClose }: NpcDialogProps)
           {active === 'destilar' && (
             <CraftPane npcId={npc.id} role="destilar" character={character} onUpdate={onUpdate} />
           )}
-          {active === 'descansar' && <StubPane title="Descansar" message="Em desenvolvimento — pague uma diária para recuperar Vida e Mana ao máximo." />}
-        </div>
+          {active === 'descansar' && (
+            <StubPane message="Em desenvolvimento — pague uma diária para recuperar Vida e Mana ao máximo." />
+          )}
+        </section>
       </div>
     </Modal>
+  );
+}
+
+// ============================================================================
+// Header — espelha o pattern dos outros large headers (CodexHeader, etc.)
+// ============================================================================
+function NpcHeader({ npc, onClose }: { npc: Npc; onClose: () => void }) {
+  return (
+    <div className={styles.header}>
+      <div className={styles.nameBlock}>
+        <div className={styles.title}>{npc.name}</div>
+        <div className={styles.subtitle}>{npc.title}</div>
+      </div>
+      <button className={`btn-secondary ${styles.btnBack}`} onClick={onClose}>
+        <span>← Voltar</span>
+        <span className={styles.btnBackKey}>ESC</span>
+      </button>
+    </div>
   );
 }
 
@@ -80,7 +99,7 @@ function FalarPane({ npc }: { npc: Npc }) {
 // ============================================================================
 // STUB — placeholder pras roles ainda não implementadas
 // ============================================================================
-function StubPane({ title: _title, message }: { title: string; message: string }) {
+function StubPane({ message }: { message: string }) {
   return (
     <div className={styles.stub}>
       <p className={styles.stubMessage}>{message}</p>
