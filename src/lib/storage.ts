@@ -1,13 +1,31 @@
 import type { Character, Item } from '../types';
 import { emptyEquipped, emptyInventory, INVENTORY_SIZE } from '../data/items';
+import { CLASSES } from '../data/classes';
+import { applyLevelUp, xpForLevel } from './leveling';
+import { computeDerivedStats } from './stats';
 
 const STORAGE_KEY = 'underdarkness_characters';
 
-/** Garante que todo Item carregado tem `rarity` (campo novo). */
-function migrateItem<T extends Item | null>(item: T): T {
+/** Garante rarity e migra StatKeys obsoletos em itens salvos. */
+function migrateItem(item: Item | null): Item | null {
   if (!item) return item;
-  if (item.rarity) return item;
-  return { ...item, rarity: 'comum' } as T;
+  const withRarity: Item = item.rarity ? item : { ...item, rarity: 'comum' };
+  if (!withRarity.stats) return withRarity;
+  const REMOVED_KEYS = new Set(['flat-bonus-magico', 'pct-vel-movimento']);
+  const KEY_RENAMES: Record<string, string> = {
+    'pct-vel-conjuracao': 'pct-red-tempo-conjuracao',
+  };
+  const stats = withRarity.stats
+    .map((stat) => {
+      if (!stat.effect) return stat;
+      if (REMOVED_KEYS.has(stat.effect.key)) return null;
+      const renamed = KEY_RENAMES[stat.effect.key];
+      if (!renamed) return stat;
+      return { ...stat, effect: { ...stat.effect, key: renamed as typeof stat.effect.key } };
+    })
+    .filter((s) => s !== null);
+  if (stats.length === withRarity.stats.length) return withRarity;
+  return { ...withRarity, stats };
 }
 
 /**
@@ -35,8 +53,19 @@ function migrate(c: Character): Character {
     sized[i] = migrateItem(rawInventory[i]);
   }
 
-  return {
+  // Re-sincroniza atributos primários com a definição atual da classe.
+  // Durante a fase de balanceamento (atributos base mudam conforme afinamos
+  // o sistema), todo load de personagem pega os valores frescos de CLASSES.
+  // Quando o jogador puder alocar pontos manualmente, esse refresh vira
+  // condicional (manter só o base; deltas alocados ficam em outro campo).
+  const cls = CLASSES[c.classKey];
+  const refreshedAttrs = cls
+    ? { forca: cls.forca, agilidade: cls.agilidade, intelecto: cls.intelecto }
+    : { forca: c.forca, agilidade: c.agilidade, intelecto: c.intelecto };
+
+  const intermediate: Character = {
     ...c,
+    ...refreshedAttrs,
     equipped,
     inventory: sized,
     talentRanks: c.talentRanks ?? {},
@@ -46,6 +75,24 @@ function migrate(c: Character): Character {
     ),
     abandonedQuestIds: c.abandonedQuestIds ?? [],
     location: c.location === 'origem' ? 'pedragal' : (c.location ?? 'pedragal'),
+    // Recomputa xpNext com a curva nova (10*level^1.5) — saves antigos tinham
+    // xpNext: 100 hardcoded, agora é função do nível atual.
+    xpNext: xpForLevel(c.level || 1),
+  };
+  // Aplica level-ups retroativos caso o jogador tenha acumulado XP suficiente
+  // pela curva nova (não cura — heal só acontece em vitória de combate).
+  const leveled = applyLevelUp(intermediate).character;
+
+  // Sincroniza vidaMax/manaMax com os valores derivados (que agora dependem
+  // de atributos e itens). Clampa vidaAtual/manaAtual pro novo cap quando
+  // ele encolhe (ex: jogador desequipou um item +Mana).
+  const derived = computeDerivedStats(leveled);
+  return {
+    ...leveled,
+    vidaMax: derived.vidaMax,
+    manaMax: derived.manaMax,
+    vidaAtual: Math.min(leveled.vidaAtual, derived.vidaMax),
+    manaAtual: Math.min(leveled.manaAtual, derived.manaMax),
   };
 }
 

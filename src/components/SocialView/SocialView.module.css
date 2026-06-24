@@ -1,0 +1,1179 @@
+/* ============================================================
+   Header (modal large) — espelha CodexHeader / OptionsHeader
+   ============================================================ */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+.nameBlock { flex: 1; text-align: left; }
+.title {
+  font: 500 28px/1.1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.subtitle {
+  font: 500 11px/1.4 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.btnBack {
+  font-size: 11px;
+  padding: 9px 14px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg);
+}
+.btnBack:hover { background: var(--surface); }
+.btnBackKey {
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+}
+
+/* ============================================================
+   Root + tabs internas (mesmo pattern de Codex/Options)
+   ============================================================ */
+.root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.sectionTabs {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  gap: 6px;
+}
+.sectionTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: var(--bg);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, color 0.15s, transform 0.08s;
+  font: 500 13px/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.sectionTab:hover { background: var(--surface); box-shadow: var(--card-edge-lg); color: var(--ink); }
+.sectionTab.sectionTabActive { background: var(--surface-deep); color: var(--brass-deep); }
+.sectionTab:active { box-shadow: var(--card-edge-press); transform: scale(0.99); }
+
+.sectionTabBadge {
+  background: var(--brass-deep);
+  color: var(--paper);
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: 0.04em;
+}
+
+.sectionBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  animation: socialFadeIn 0.18s ease-out;
+}
+@keyframes socialFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   ChatPane (Global / Guilda)
+   ============================================================ */
+.chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.chatHeader {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.chatHeaderLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.chatChannelTag {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brass-deep);
+  padding: 4px 10px;
+  background: var(--surface-deep);
+  border-radius: 3px;
+}
+.chatServerName {
+  font: 500 16px/1.2 var(--serif);
+  font-variation-settings: "opsz" 24;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+.chatHeaderMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+.onlineDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--stat-agilidade);
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+}
+
+.guildMotto {
+  font: italic 400 13px/1.4 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-muted);
+  text-align: center;
+  padding: 4px 0;
+}
+
+/* Log scrollável — preenche o vertical */
+.chatLog {
+  flex: 1;
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--brass-light) transparent;
+}
+.chatLog::-webkit-scrollbar { width: 6px; }
+.chatLog::-webkit-scrollbar-thumb { background: var(--brass-light); border-radius: 3px; }
+.chatLog::-webkit-scrollbar-track { background: transparent; }
+
+/* Linha individual de mensagem — flex inline */
+.message {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font: 400 13px/1.55 var(--mono);
+  letter-spacing: 0.005em;
+  padding: 2px 0;
+  color: var(--ink-soft);
+}
+.message.messageMe {
+  background: var(--surface);
+  margin: 0 -10px;
+  padding: 4px 10px;
+  border-radius: 3px;
+}
+
+.messageTime {
+  font: 500 10px/1 var(--mono);
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.authorLevel {
+  font: 500 10px/1 var(--mono);
+  color: var(--ink-muted);
+  letter-spacing: 0.04em;
+}
+
+/* Insígnia de rank de guilda (1 letra + cor) */
+.authorRank {
+  font: 700 10px/1 var(--mono);
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  background: var(--bg);
+  letter-spacing: 0;
+}
+.rank_líder { color: var(--brass-bright); background: var(--surface-deep); }
+.rank_oficial { color: var(--rarity-magico); background: var(--surface-deep); }
+.rank_veterano { color: var(--brass-deep); }
+.rank_membro { color: var(--ink-soft); }
+.rank_iniciado { color: var(--ink-muted); }
+
+.authorName {
+  font-weight: 500;
+  cursor: pointer;
+}
+.authorName:hover { text-decoration: underline; }
+
+.messageBody {
+  color: var(--ink);
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* ============================================================
+   Links coloridos dentro da mensagem
+   ============================================================ */
+.linkItem, .linkQuest, .linkPlayer {
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.005em;
+}
+.linkItem:hover, .linkQuest:hover, .linkPlayer:hover {
+  text-decoration: underline;
+}
+
+/* Cores por raridade (item link) */
+.rarity_comum    { color: var(--rarity-comum); }
+.rarity_magico   { color: var(--rarity-magico); }
+.rarity_raro     { color: var(--rarity-raro); }
+.rarity_unico    { color: var(--rarity-unico); }
+.rarity_lendario { color: var(--rarity-lendario); }
+
+/* Cores por tipo de quest */
+.questType_principal { color: var(--brass-bright); }
+.questType_side      { color: var(--ink); }
+.questType_bounty    { color: var(--vital-vida); }
+.questType_classe    { color: var(--rarity-magico); }
+.questType_evento    { color: var(--stat-agilidade); }
+.questType_faccao    { color: var(--elem-caos); }
+
+.linkPlayer { color: var(--brass-deep); }
+
+/* ============================================================
+   Mensagens especiais — sistema e conquista
+   ============================================================ */
+.messageSystem {
+  background: rgba(122, 112, 96, 0.08);
+  border-left: 2px solid var(--brass-light);
+  padding: 6px 10px;
+  margin: 2px 0;
+  border-radius: 0 3px 3px 0;
+}
+.systemPrefix {
+  font: 500 10px/1 var(--mono);
+  color: var(--brass-light);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.systemText {
+  font: italic 400 13px/1.55 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-soft);
+  flex: 1 1 0;
+}
+
+.messageAchievement {
+  background: linear-gradient(90deg, rgba(194, 168, 120, 0.10), rgba(194, 168, 120, 0));
+  border-left: 2px solid var(--brass-bright);
+  padding: 6px 10px;
+  margin: 2px 0;
+  border-radius: 0 3px 3px 0;
+}
+.achievementPrefix {
+  font: 500 10px/1 var(--mono);
+  color: var(--brass-bright);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.achievementText {
+  font: 400 13px/1.55 var(--mono);
+  color: var(--ink);
+  flex: 1 1 0;
+}
+
+/* ============================================================
+   Chat input (em todas as variantes — global, guilda, dm)
+   ============================================================ */
+.chatInput {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.chatInputPrefix {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.06em;
+  color: var(--brass-deep);
+  background: var(--surface-deep);
+  padding: 6px 10px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.chatInputField {
+  flex: 1;
+  background: var(--bg);
+  border: none;
+  box-shadow: var(--card-edge-pill);
+  border-radius: 4px;
+  padding: 9px 14px;
+  font: 400 13px/1 var(--mono);
+  color: var(--ink);
+}
+.chatInputField:focus { outline: none; box-shadow: var(--card-edge-lg); }
+.chatInputField::placeholder { color: var(--ink-faint); font-style: italic; }
+.chatInputSend {
+  font-size: 11px;
+  padding: 9px 16px;
+  letter-spacing: 0.06em;
+}
+
+/* ============================================================
+   FriendsPane — split: lista + DM
+   ============================================================ */
+.friendsSplit {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 8px;
+  min-height: 0;
+}
+
+.friendsList {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--brass-light) transparent;
+}
+.friendsList::-webkit-scrollbar { width: 6px; }
+.friendsList::-webkit-scrollbar-thumb { background: var(--brass-light); border-radius: 3px; }
+
+.friendsGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.friendsGroupLabel {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  padding: 0 8px 6px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 4px;
+}
+
+.friendRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.12s;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.friendRow:hover { background: var(--surface); }
+.friendRow.friendRowActive { background: var(--surface-deep); }
+
+.friendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status_online .friendDot {
+  background: var(--stat-agilidade);
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+}
+.status_ausente .friendDot {
+  background: var(--vital-exp);
+}
+.status_offline .friendDot {
+  background: var(--ink-faint);
+}
+.status_offline .friendName { opacity: 0.6; }
+
+.friendInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.friendName {
+  font: 500 13px/1.2 var(--mono);
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.friendMeta {
+  font: 400 10px/1.2 var(--mono);
+  color: var(--ink-muted);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
+   DM (chat individual com amigo)
+   ============================================================ */
+.friendsDm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.friendsEmpty {
+  flex: 1;
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: italic 400 14px/1.6 var(--serif);
+  color: var(--ink-muted);
+}
+
+.dm {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.dmHeader {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 14px 20px;
+}
+.dmName {
+  font: 500 18px/1.2 var(--serif);
+  font-variation-settings: "opsz" 24;
+  letter-spacing: -0.005em;
+  margin-bottom: 4px;
+}
+.dmMeta {
+  font: 400 11px/1.4 var(--mono);
+  color: var(--ink-muted);
+  letter-spacing: 0.02em;
+}
+
+.dmLog {
+  flex: 1;
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--brass-light) transparent;
+}
+.dmLog::-webkit-scrollbar { width: 6px; }
+.dmLog::-webkit-scrollbar-thumb { background: var(--brass-light); border-radius: 3px; }
+
+.dmBubble {
+  max-width: 70%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dmBubbleMe {
+  align-self: flex-end;
+  background: var(--surface-deep);
+  box-shadow: var(--card-edge-pill);
+}
+.dmBubbleThem {
+  align-self: flex-start;
+  background: var(--surface);
+  box-shadow: var(--card-edge-pill);
+}
+
+.dmText {
+  font: 400 13px/1.5 var(--mono);
+  color: var(--ink);
+  word-break: break-word;
+}
+.dmTime {
+  font: 500 10px/1 var(--mono);
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+  align-self: flex-end;
+}
+
+/* ============================================================
+   QuestTooltip — preview compacto de missão linkada no chat
+   Espelha o estilo do ItemTooltip (paper, edge, font sizes)
+   ============================================================ */
+.questTooltip {
+  background: var(--surface-hover);
+  border: none;
+  box-shadow: var(--tooltip-edge);
+  border-radius: 4px;
+  padding: 12px 14px;
+  font: 12px/1.5 var(--mono);
+  color: var(--ink);
+  width: max-content;
+  max-width: 320px;
+  pointer-events: none;
+  animation: tooltipIn 0.15s ease-out;
+}
+@keyframes tooltipIn {
+  from { opacity: 0; transform: translateY(-2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.questTooltipHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.questTooltipTitle {
+  font: 500 15px/1.2 var(--serif);
+  font-variation-settings: "opsz" 18;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.questTooltipMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.questTooltipType { font-weight: 500; }
+.questTooltipDot { color: var(--ink-faint); }
+.questTooltipGiver { color: var(--ink-soft); text-transform: none; letter-spacing: 0.02em; }
+
+.questTooltipDesc {
+  font: italic 400 12px/1.5 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.questTooltipExpires {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vital-vida);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-soft);
+}
+
+/* ============================================================
+   LFG — buscador de atividades (3 colunas)
+   ============================================================ */
+.lfg {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.lfgToolbar {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.lfgSearchWrap {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lfgSearchLabel {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  flex-shrink: 0;
+}
+
+.lfgSearch {
+  flex: 1;
+  background: var(--bg);
+  border: none;
+  box-shadow: var(--card-edge-pill);
+  border-radius: 4px;
+  padding: 9px 14px;
+  font: 400 13px/1 var(--mono);
+  color: var(--ink);
+}
+.lfgSearch:focus { outline: none; box-shadow: var(--card-edge-lg); }
+.lfgSearch::placeholder { color: var(--ink-faint); font-style: italic; }
+
+.lfgCompat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.lfgCompatInput {
+  accent-color: var(--brass-deep);
+  width: 14px;
+  height: 14px;
+}
+
+.lfgCreate {
+  white-space: nowrap;
+  padding: 9px 18px;
+  font-size: 12px;
+}
+
+.lfgSplit {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 200px minmax(260px, 320px) minmax(0, 1fr);
+  gap: 8px;
+  min-height: 0;
+}
+
+/* Nav lateral — categorias de atividade */
+.lfgNav {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.lfgNavTitle {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  padding: 0 8px 8px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.lfgNavList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lfgNavItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, color 0.15s;
+  font: 500 12px/1 var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  text-align: left;
+}
+.lfgNavItem:hover {
+  background: var(--surface);
+  box-shadow: var(--card-edge-lg);
+  color: var(--ink);
+}
+.lfgNavItem.lfgNavItemActive {
+  background: var(--surface-deep);
+  color: var(--brass-deep);
+}
+.lfgNavItem.lfgCat_masmorra.lfgNavItemActive { color: var(--elem-fogo); }
+.lfgNavItem.lfgCat_raid.lfgNavItemActive { color: var(--rarity-raro); }
+.lfgNavItem.lfgCat_missao.lfgNavItemActive { color: var(--brass-bright); }
+.lfgNavItem.lfgCat_farm.lfgNavItemActive { color: var(--brass-deep); }
+.lfgNavItem.lfgCat_aberto.lfgNavItemActive { color: var(--ink); }
+
+.lfgNavItemCount {
+  font: 500 10px/1 var(--mono);
+  color: var(--ink-muted);
+  background: var(--surface);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+.lfgNavItemActive .lfgNavItemCount {
+  color: var(--brass-deep);
+  background: var(--bg);
+}
+
+/* Lista compacta de grupos */
+.lfgList {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.lfgListHeader {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.lfgListTitle {
+  font: 500 14px/1.2 var(--mono);
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+.lfgListHint {
+  font: 400 10px/1.3 var(--mono);
+  color: var(--ink-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lfgListEmpty,
+.lfgDetailEmpty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  font: italic 400 13px/1.6 var(--serif);
+  color: var(--ink-muted);
+}
+
+.lfgEntries {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--brass-light) transparent;
+  flex: 1;
+  min-height: 0;
+}
+.lfgEntries::-webkit-scrollbar { width: 6px; }
+.lfgEntries::-webkit-scrollbar-thumb { background: var(--brass-light); border-radius: 3px; }
+
+.lfgRow {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: inherit;
+  color: inherit;
+}
+.lfgRow:hover {
+  background: var(--surface);
+  box-shadow: var(--card-edge-lg);
+}
+.lfgRow.lfgRowActive {
+  background: var(--surface-deep);
+  box-shadow: var(--card-edge-lg);
+}
+.lfgRow.lfgRowFull { opacity: 0.72; }
+
+.lfgRowTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.lfgRowType {
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lfgRowAge {
+  font: 400 10px/1 var(--mono);
+  color: var(--ink-faint);
+  font-style: italic;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.lfgRowActivity {
+  font: 500 13px/1.3 var(--mono);
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+.lfgRowMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  font: 400 10px/1.3 var(--mono);
+  color: var(--ink-muted);
+  letter-spacing: 0.02em;
+}
+
+.lfgRowSlots { color: var(--brass-deep); font-weight: 500; }
+.lfgRowDot { color: var(--ink-faint); }
+.lfgRowLocation {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Painel de detalhe */
+.lfgDetail {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.lfgSheet {
+  flex: 1;
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--brass-light) transparent;
+}
+.lfgSheet::-webkit-scrollbar { width: 6px; }
+.lfgSheet::-webkit-scrollbar-thumb { background: var(--brass-light); border-radius: 3px; }
+
+.lfgSheetHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.lfgSheetHeadings {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.lfgSheetType {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lfgSheetActivity {
+  font: 500 26px/1.1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.lfgSheetLocation {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.lfgSheetTitle {
+  font: italic 400 13px/1.5 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.lfgJoin {
+  flex-shrink: 0;
+  padding: 10px 22px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+.lfgSheetStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.lfgStat {
+  background: var(--bg);
+  box-shadow: var(--card-edge-pill);
+  border-radius: 4px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lfgStatLabel {
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.lfgStatValue {
+  font: 500 13px/1.3 var(--mono);
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lfgStatMeta {
+  font: 400 11px/1 var(--mono);
+  color: var(--ink-muted);
+}
+
+.lfgSlotsBar {
+  display: flex;
+  gap: 3px;
+}
+
+.lfgSlot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--ink-faint);
+  display: inline-block;
+}
+.lfgSlot.lfgSlotFilled {
+  background: var(--brass-deep);
+  box-shadow: 0 0 4px rgba(188, 176, 154, 0.35);
+}
+
+.lfgVoice { color: var(--rarity-magico); }
+
+.lfgRoles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lfgRolesLabel {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.lfgRolesChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lfgRoleChip {
+  padding: 6px 12px;
+  background: var(--bg);
+  box-shadow: var(--card-edge-pill);
+  border-radius: 4px;
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--brass-deep);
+}
+
+.lfgQuestRef {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.lfgQuestLabel {
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.lfgSheetDesc {
+  font: 400 13px/1.65 var(--mono);
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.lfgSheetFooter {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+  margin-top: auto;
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.04em;
+}
+
+.lfgLeaderLabel {
+  color: var(--ink-faint);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lfgLeaderName {
+  font: 500 13px/1 var(--mono);
+  letter-spacing: 0.005em;
+  text-transform: none;
+}
+
+.lfgLeaderMeta { color: var(--ink-muted); }
+
+/* Cores por tipo de grupo */
+.partyType_principal { color: var(--brass-bright); }
+.partyType_side      { color: var(--ink); }
+.partyType_bounty    { color: var(--vital-vida); }
+.partyType_classe    { color: var(--rarity-magico); }
+.partyType_evento    { color: var(--stat-agilidade); }
+.partyType_faccao    { color: var(--elem-caos); }
+.partyType_masmorra  { color: var(--elem-fogo); }
+.partyType_raid      { color: var(--rarity-raro); }
+.partyType_aberto    { color: var(--ink); }
+.partyType_farm      { color: var(--brass-deep); }
+
+/* Notice flutuante quando clica em Criar / Entrar (mockup) */
+.partiesNotice {
+  background: var(--surface-deep);
+  box-shadow: var(--card-edge-pill);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font: italic 400 12px/1.5 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--brass-deep);
+  text-align: center;
+  animation: noticeIn 0.18s ease-out;
+}
+@keyframes noticeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   Responsivo
+   ============================================================ */
+@media (max-width: 1100px) {
+  .lfgSplit {
+    grid-template-columns: 180px minmax(0, 1fr);
+    grid-template-rows: minmax(200px, 1fr) minmax(0, 1fr);
+  }
+  .lfgDetail { grid-column: 1 / -1; }
+}
+
+@media (max-width: 980px) {
+  .friendsSplit { grid-template-columns: minmax(0, 1fr); }
+  .lfgToolbar { flex-direction: column; align-items: stretch; }
+  .lfgCreate { width: 100%; }
+  .lfgSplit {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(180px, 1fr) minmax(0, 1fr);
+  }
+  .lfgNav { max-height: none; }
+  .lfgNavList {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .lfgNavItem { width: auto; flex: 1; min-width: 120px; }
+}

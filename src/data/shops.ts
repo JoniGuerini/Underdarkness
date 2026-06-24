@@ -1,5 +1,5 @@
 import type { Item } from '../types';
-import { ITEM_BASES } from './itemBases';
+import { makeBaseItem } from './itemBases';
 import { MATERIALS } from './materials';
 
 /**
@@ -11,20 +11,9 @@ export interface ShopEntry {
   price: number;
 }
 
-/** Constrói um Item base (rarity = comum, sem afixos) a partir do catálogo
- *  de bases — usado pra popular as lojas de equipamento sem duplicar dados. */
-function fromBase(baseId: string): Item {
-  const base = ITEM_BASES.find((b) => b.id === baseId);
-  if (!base) throw new Error(`Base "${baseId}" não encontrada`);
-  return {
-    id: `shop-${base.id}`,
-    name: base.name,
-    slot: base.slot,
-    rarity: 'comum',
-    stats: base.baseStats.map((s) => ({ ...s, kind: 'base' as const })),
-    description: base.description,
-  };
-}
+/** Atalho local — usa o helper público mas com idPrefix 'shop' pra distinguir
+ *  itens vindos de loja de outros contextos (ex: drops, starter, crafting). */
+const fromBase = (baseId: string) => makeBaseItem(baseId, 'shop');
 
 /** Constrói uma ShopEntry a partir do registro de materiais — preço padrão. */
 function fromMaterial(id: string, priceOverride?: number): ShopEntry {

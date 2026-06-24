@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
+﻿import type { ReactNode } from 'react';
 import type { Character } from '../../types';
-import { computeDerivedStats } from '../../lib/stats';
+import { computeDerivedStatsWithSources } from '../../lib/stats';
 import { StatLine, Unit, Mod, TooltipLine, TooltipMeta } from '../StatLine/StatLine';
 import { VitalBar } from '../VitalBar/VitalBar';
 import styles from './CharacterSheet.module.css';
@@ -39,7 +39,7 @@ function Column({ title, children }: ColumnProps) {
 
 export function CharacterSheet({ character }: CharacterSheetProps) {
   const c = character;
-  const s = computeDerivedStats(c);
+  const { stats: s, sources } = computeDerivedStatsWithSources(c);
   const resCap = <Unit> / {s.resistMax}%</Unit>;
 
   return (
@@ -49,39 +49,42 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
           <Section title="Atributos">
             <StatLine
               name="Força"
-              value={c.forca}
+              value={s.forca}
               color="forca"
+              breakdown={sources.forca}
               tooltip={
                 <>
                   <TooltipLine>Atributo primário.</TooltipLine>
                   <TooltipLine>
-                    Escala o <Mod color="fisico">Dano Físico</Mod> base e a capacidade de carga.
+                    Cada ponto de Força aumenta o <Mod color="fisico">Dano Físico</Mod> em <Mod color="forca">+1% multiplicativo</Mod> (aplicado sobre o min e o max da arma).
                   </TooltipLine>
                 </>
               }
             />
             <StatLine
               name="Agilidade"
-              value={c.agilidade}
+              value={s.agilidade}
               color="agilidade"
+              breakdown={sources.agilidade}
               tooltip={
                 <>
                   <TooltipLine>Atributo primário.</TooltipLine>
                   <TooltipLine>
-                    Escala a <Mod color="agilidade">Velocidade de Ataque</Mod>, <Mod color="agilidade">Esquiva</Mod> e <Mod color="critico">Chance de Crítico</Mod>.
+                    Cada ponto de Agilidade dá <Mod color="agilidade">+2 Esquiva</Mod> e <Mod color="agilidade">+2 Evasão</Mod>.
                   </TooltipLine>
                 </>
               }
             />
             <StatLine
               name="Intelecto"
-              value={c.intelecto}
+              value={s.intelecto}
               color="intelecto"
+              breakdown={sources.intelecto}
               tooltip={
                 <>
                   <TooltipLine>Atributo primário.</TooltipLine>
                   <TooltipLine>
-                    Escala o <Mod color="intelecto">Bônus Mágico</Mod> e a <Mod color="agilidade">Velocidade de Conjuração</Mod>.
+                    Cada ponto de Intelecto dá <Mod color="mana">+5 Mana Máxima</Mod>.
                   </TooltipLine>
                 </>
               }
@@ -97,21 +100,33 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
           <Section title="Regeneração">
             <StatLine
               name="Regeneração de Vida"
-              value={<>{s.regenVida}<Unit> /turno</Unit></>}
+              value={<>{s.regenVida}<Unit> /s</Unit></>}
               color="vida"
+              breakdown={sources.regenVida}
               tooltip={
                 <>
-                  Recupera <Mod color="vida">{s.regenVida} de Vida</Mod> por turno fora de combate.
+                  <TooltipLine>
+                    Recupera <Mod color="vida">{s.regenVida} de Vida</Mod> por segundo — fora e dentro do combate.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Sem contribuição de classe ou atributo — só itens com o afixo correspondente.
+                  </TooltipLine>
                 </>
               }
             />
             <StatLine
               name="Regeneração de Mana"
-              value={<>{s.regenMana}<Unit> /turno</Unit></>}
+              value={<>{s.regenMana}<Unit> /s</Unit></>}
               color="mana"
+              breakdown={sources.regenMana}
               tooltip={
                 <>
-                  Recupera <Mod color="mana">{s.regenMana} de Mana</Mod> por turno.
+                  <TooltipLine>
+                    Recupera <Mod color="mana">{s.regenMana} de Mana</Mod> por segundo — fora e dentro do combate.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Sem contribuição de classe ou atributo — só itens com o afixo correspondente.
+                  </TooltipLine>
                 </>
               }
             />
@@ -119,12 +134,68 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
 
           <Section title="Magia">
             <StatLine
-              name="Bônus Mágico"
-              value={`+${s.bonusMagico}%`}
+              name="Dano de Magias"
+              value={`${s.pctDmgMagia}%`}
               color="intelecto"
+              breakdown={sources.pctDmgMagia}
               tooltip={
                 <>
-                  Aumenta o dano de <Mod color="intelecto">Magias</Mod> em {s.bonusMagico}%.
+                  Aumenta o dano de todas as magias em percentual.
+                </>
+              }
+            />
+            <StatLine
+              name="Dano de Magias de Fogo"
+              value={`${s.pctDmgFogoMagia}%`}
+              color="fogo"
+              breakdown={sources.pctDmgFogoMagia}
+              tooltip={
+                <>
+                  Aumenta o dano de magias de <Mod color="fogo">Fogo</Mod> — soma com Dano de Magias.
+                </>
+              }
+            />
+            <StatLine
+              name="Dano de Magias de Gelo"
+              value={`${s.pctDmgGeloMagia}%`}
+              color="gelo"
+              breakdown={sources.pctDmgGeloMagia}
+              tooltip={
+                <>
+                  Aumenta o dano de magias de <Mod color="gelo">Gelo</Mod> — soma com Dano de Magias.
+                </>
+              }
+            />
+            <StatLine
+              name="Dano de Magias de Raio"
+              value={`${s.pctDmgRaioMagia}%`}
+              color="raio"
+              breakdown={sources.pctDmgRaioMagia}
+              tooltip={
+                <>
+                  Aumenta o dano de magias de <Mod color="raio">Raio</Mod> — soma com Dano de Magias.
+                </>
+              }
+            />
+            <StatLine
+              name="Dano de Magias de Caos"
+              value={`${s.pctDmgCaosMagia}%`}
+              color="caos"
+              breakdown={sources.pctDmgCaosMagia}
+              tooltip={
+                <>
+                  Aumenta o dano de magias de <Mod color="caos">Caos</Mod> — soma com Dano de Magias.
+                </>
+              }
+            />
+            <StatLine
+              name="Dano de Magias Sagradas"
+              value={`${s.pctDmgSagradoMagia}%`}
+              color="sagrado"
+              breakdown={sources.pctDmgSagradoMagia}
+              tooltip={
+                <>
+                  Aumenta o dano de magias <Mod color="sagrado">Sagradas</Mod> — soma com Dano de Magias.
                 </>
               }
             />
@@ -132,14 +203,33 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Eficiência de Mana"
               value={`${s.eficienciaMana}%`}
               color="mana"
+              breakdown={sources.eficienciaMana}
               tooltip={
                 <>
                   <TooltipLine>
-                    Determina o custo de <Mod color="mana">Mana</Mod> das habilidades.
+                    Reduz em % o custo de <Mod color="mana">Mana</Mod> de habilidades e magias.
                   </TooltipLine>
                   <TooltipLine>
-                    Valores acima de 100% reduzem o custo proporcionalmente.
+                    Ex.: 20% em uma magia de 100 mana → custa 80. Zero base — só itens.
                   </TooltipLine>
+                  <TooltipMeta>Limite máximo: 95%</TooltipMeta>
+                </>
+              }
+            />
+            <StatLine
+              name="Redução do Tempo de Conjuração"
+              value={`${s.reducaoTempoConjuracao}%`}
+              color="intelecto"
+              breakdown={sources.reducaoTempoConjuracao}
+              tooltip={
+                <>
+                  <TooltipLine>
+                    Reduz em % o tempo em segundos para conjurar magias — armas e feitiços.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Ex.: magia de 2,0s com 25% → 1,5s. Zero base — só itens.
+                  </TooltipLine>
+                  <TooltipMeta>Limite máximo: 95%</TooltipMeta>
                 </>
               }
             />
@@ -151,6 +241,7 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
             <StatLine
               name="Dano Total"
               value={`${s.danoTotalMin} — ${s.danoTotalMax}`}
+              breakdown={sources.danoTotalMin}
               tooltip={
                 <>
                   Soma de <Mod color="fisico">Físico</Mod>, <Mod color="fogo">Fogo</Mod>, <Mod color="gelo">Gelo</Mod>, <Mod color="raio">Raio</Mod> e <Mod color="caos">Caos</Mod> aplicados por golpe.
@@ -160,6 +251,7 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
             <StatLine
               name="Dano Por Segundo"
               value={s.dps.toFixed(1)}
+              breakdown={sources.dps}
               tooltip={
                 <>
                   Dano por segundo médio considerando o Dano Total, a <Mod color="agilidade">Velocidade de Ataque</Mod> e a <Mod color="critico">Chance de Crítico</Mod>.
@@ -173,31 +265,33 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Dano Físico"
               value={`${s.danoFisicoMin} — ${s.danoFisicoMax}`}
               color="fisico"
+              breakdown={sources.danoFisicoMin}
               tooltip={
                 <>
                   <TooltipLine>
                     Dano de impacto/corte aplicado por golpe corpo a corpo.
                   </TooltipLine>
                   <TooltipLine>
-                    Mitigado por <Mod color="fisico">Armadura</Mod> e <Mod color="fisico">Resistência Física</Mod> do alvo.
+                    A <Mod color="fisico">Armadura</Mod> do alvo reduz esse dano pela fração <em>armadura ÷ (armadura + 10 × dano)</em> — forte contra golpes fracos, fraca contra golpes pesados.
                   </TooltipLine>
                 </>
               }
             />
           </Section>
 
-          <Section title="Dano Elemental">
+          <Section title="Dano no Ataque">
             <StatLine
               name="Dano de Fogo"
               value={s.danoFogo}
               color="fogo"
+              breakdown={sources.danoFogo}
               tooltip={
                 <>
                   <TooltipLine>
-                    Dano elemental de <Mod color="fogo">Fogo</Mod> aplicado por golpe.
+                    <Mod color="fogo">Fogo</Mod> por golpe em ataque básico e habilidade física.
                   </TooltipLine>
                   <TooltipLine>
-                    Mitigado pela <Mod color="fogo">Resistência ao Fogo</Mod> do alvo.
+                    Não afeta magias — para isso use <em>Dano de Magias de Fogo</em>.
                   </TooltipLine>
                 </>
               }
@@ -206,13 +300,11 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Dano de Gelo"
               value={s.danoGelo}
               color="gelo"
+              breakdown={sources.danoGelo}
               tooltip={
                 <>
                   <TooltipLine>
-                    Dano elemental de <Mod color="gelo">Gelo</Mod> aplicado por golpe.
-                  </TooltipLine>
-                  <TooltipLine>
-                    Mitigado pela <Mod color="gelo">Resistência ao Gelo</Mod> do alvo.
+                    <Mod color="gelo">Gelo</Mod> por golpe em ataques que não são magia.
                   </TooltipLine>
                 </>
               }
@@ -221,13 +313,11 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Dano de Raio"
               value={s.danoRaio}
               color="raio"
+              breakdown={sources.danoRaio}
               tooltip={
                 <>
                   <TooltipLine>
-                    Dano elemental de <Mod color="raio">Raio</Mod> aplicado por golpe.
-                  </TooltipLine>
-                  <TooltipLine>
-                    Mitigado pela <Mod color="raio">Resistência ao Raio</Mod> do alvo.
+                    <Mod color="raio">Raio</Mod> por golpe em ataques que não são magia.
                   </TooltipLine>
                 </>
               }
@@ -239,13 +329,11 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Dano de Caos"
               value={s.danoCaos}
               color="caos"
+              breakdown={sources.danoCaos}
               tooltip={
                 <>
                   <TooltipLine>
-                    Dano de <Mod color="caos">Caos</Mod> aplicado por golpe — ignora <Mod color="fisico">Armadura</Mod>.
-                  </TooltipLine>
-                  <TooltipLine>
-                    Mitigado apenas pela <Mod color="caos">Resistência ao Caos</Mod>.
+                    <Mod color="caos">Caos</Mod> por golpe em ataques que não são magia — ignora armadura.
                   </TooltipLine>
                 </>
               }
@@ -257,13 +345,11 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Dano Sagrado"
               value={s.danoSagrado}
               color="sagrado"
+              breakdown={sources.danoSagrado}
               tooltip={
                 <>
                   <TooltipLine>
-                    Dano <Mod color="sagrado">Sagrado</Mod> aplicado por golpe — efetivo contra criaturas profanas e mortos-vivos.
-                  </TooltipLine>
-                  <TooltipLine>
-                    Mitigado pela <Mod color="sagrado">Resistência ao Sagrado</Mod> do alvo.
+                    <Mod color="sagrado">Sagrado</Mod> por golpe em ataques que não são magia.
                   </TooltipLine>
                 </>
               }
@@ -275,28 +361,14 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Velocidade de Ataque"
               value={<>{s.velAtaque.toFixed(2)}<Unit> /s</Unit></>}
               color="agilidade"
+              breakdown={sources.velAtaque}
               tooltip={
                 <>
                   <TooltipLine>
-                    Quantos ataques por segundo o personagem realiza.
+                    Ataques por segundo — define cadência do ataque básico automático no combate.
                   </TooltipLine>
                   <TooltipLine>
-                    Multiplica o <Mod color="fisico">Dano Total</Mod> no cálculo de <Mod color="critico">Dano Por Segundo</Mod>.
-                  </TooltipLine>
-                </>
-              }
-            />
-            <StatLine
-              name="Velocidade de Conjuração"
-              value={<>{s.velConjuracao.toFixed(2)}<Unit> /s</Unit></>}
-              color="agilidade"
-              tooltip={
-                <>
-                  <TooltipLine>
-                    Quantas magias por segundo o personagem conjura.
-                  </TooltipLine>
-                  <TooltipLine>
-                    Multiplica o <Mod color="intelecto">Bônus Mágico</Mod> no dano mágico por segundo.
+                    Também alimenta o <Mod color="critico">Dano Por Segundo</Mod> teórico na ficha.
                   </TooltipLine>
                 </>
               }
@@ -308,13 +380,14 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Acerto"
               value={s.acerto}
               color="agilidade"
+              breakdown={sources.acerto}
               tooltip={
                 <>
                   <TooltipLine>
-                    Determina se um ataque conecta com o alvo.
+                    Chance de conectar um ataque físico contra a <Mod color="agilidade">Evasão</Mod> do alvo.
                   </TooltipLine>
                   <TooltipLine>
-                    Comparado com a <Mod color="agilidade">Evasão</Mod> do alvo — quanto maior o Acerto em relação à Evasão, maior a chance de acertar.
+                    Fórmula: <em>Acerto ÷ (Acerto + Evasão)</em>, entre 5% e 95%. Se conectar, o dano é aplicado.
                   </TooltipLine>
                 </>
               }
@@ -326,9 +399,15 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Chance de Crítico"
               value={`${s.chanceCritico.toFixed(1)}%`}
               color="critico"
+              breakdown={sources.chanceCritico}
               tooltip={
                 <>
-                  Chance de causar um <Mod color="critico">Golpe Crítico</Mod>, multiplicando o dano pelo <Mod color="critico">Multiplicador de Crítico</Mod>.
+                  <TooltipLine>
+                    Chance de um golpe físico que conectou ser <Mod color="critico">Crítico</Mod>.
+                  </TooltipLine>
+                  <TooltipLine>
+                    O <Mod color="critico">Multiplicador</Mod> aplica no dano rolado <em>antes</em> da Armadura do alvo.
+                  </TooltipLine>
                   <TooltipMeta>Limite máximo: 100%</TooltipMeta>
                 </>
               }
@@ -337,9 +416,16 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Multiplicador de Crítico"
               value={`×${s.multCritico.toFixed(2)}`}
               color="critico"
+              breakdown={sources.multCritico}
               tooltip={
                 <>
-                  Multiplicador aplicado ao dano em um <Mod color="critico">Golpe Crítico</Mod>.
+                  <TooltipLine>
+                    Multiplica o dano do golpe inteiro em um <Mod color="critico">Golpe Crítico</Mod> (físico ou magia).
+                  </TooltipLine>
+                  <TooltipLine>
+                    Aplica <em>antes</em> da mitigação do alvo (Armadura / Res. Física).
+                  </TooltipLine>
+                  <TooltipMeta>Base: ×1,5 · Ladino: +0,2</TooltipMeta>
                 </>
               }
             />
@@ -350,9 +436,15 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Penetração de Fogo"
               value={`${s.penFogo}%`}
               color="fogo"
+              breakdown={sources.penFogo}
               tooltip={
                 <>
-                  Ignora {s.penFogo}% da <Mod color="fogo">Resistência ao Fogo</Mod> do alvo.
+                  <TooltipLine>
+                    Ignora parte da <Mod color="fogo">Resistência ao Fogo</Mod> do alvo.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Ex.: 20% de pen. contra 20% de res. do alvo → ele não resiste ao fogo.
+                  </TooltipLine>
                 </>
               }
             />
@@ -360,9 +452,15 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Penetração de Gelo"
               value={`${s.penGelo}%`}
               color="gelo"
+              breakdown={sources.penGelo}
               tooltip={
                 <>
-                  Ignora {s.penGelo}% da <Mod color="gelo">Resistência ao Gelo</Mod> do alvo.
+                  <TooltipLine>
+                    Ignora parte da <Mod color="gelo">Resistência ao Gelo</Mod> do alvo.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Ex.: 20% de pen. contra 20% de res. → res. efetiva zero.
+                  </TooltipLine>
                 </>
               }
             />
@@ -370,9 +468,15 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Penetração de Raio"
               value={`${s.penRaio}%`}
               color="raio"
+              breakdown={sources.penRaio}
               tooltip={
                 <>
-                  Ignora {s.penRaio}% da <Mod color="raio">Resistência ao Raio</Mod> do alvo.
+                  <TooltipLine>
+                    Ignora parte da <Mod color="raio">Resistência ao Raio</Mod> do alvo.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Ex.: 20% de pen. contra 20% de res. → res. efetiva zero.
+                  </TooltipLine>
                 </>
               }
             />
@@ -380,9 +484,15 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Penetração de Caos"
               value={`${s.penCaos}%`}
               color="caos"
+              breakdown={sources.penCaos}
               tooltip={
                 <>
-                  Ignora {s.penCaos}% da <Mod color="caos">Resistência ao Caos</Mod> do alvo.
+                  <TooltipLine>
+                    Ignora parte da <Mod color="caos">Resistência ao Caos</Mod> do alvo.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Ex.: 20% de pen. contra 20% de res. → res. efetiva zero.
+                  </TooltipLine>
                 </>
               }
             />
@@ -390,9 +500,15 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Penetração de Sagrado"
               value={`${s.penSagrado}%`}
               color="sagrado"
+              breakdown={sources.penSagrado}
               tooltip={
                 <>
-                  Ignora {s.penSagrado}% da <Mod color="sagrado">Resistência ao Sagrado</Mod> do alvo.
+                  <TooltipLine>
+                    Ignora parte da <Mod color="sagrado">Resistência ao Sagrado</Mod> do alvo.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Ex.: 20% de pen. contra 20% de res. → res. efetiva zero.
+                  </TooltipLine>
                 </>
               }
             />
@@ -405,13 +521,17 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Armadura"
               value={s.armadura}
               color="fisico"
+              breakdown={sources.armadura}
               tooltip={
                 <>
                   <TooltipLine>
-                    Reduz o <Mod color="fisico">Dano Físico</Mod> recebido.
+                    Reduz o <Mod color="fisico">Dano Físico</Mod> recebido — primeira camada de mitigação.
                   </TooltipLine>
                   <TooltipLine>
                     Eficácia varia conforme o tamanho do golpe — funciona melhor contra muitos ataques pequenos do que contra um único golpe massivo.
+                  </TooltipLine>
+                  <TooltipLine>
+                    <Mod color="fisico">Resistência Física</Mod> % aplica em seguida sobre o restante.
                   </TooltipLine>
                 </>
               }
@@ -420,27 +540,32 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Evasão"
               value={s.evasao}
               color="agilidade"
+              breakdown={sources.evasao}
               tooltip={
                 <>
                   <TooltipLine>
-                    Determina a chance de evitar completamente um ataque inimigo.
+                    Chance de evitar completamente um ataque físico inimigo.
                   </TooltipLine>
                   <TooltipLine>
-                    Comparada ao <Mod color="agilidade">Acerto</Mod> do agressor.
+                    Comparada ao <Mod color="agilidade">Acerto</Mod> do agressor — fórmula: <em>Acerto ÷ (Acerto + Evasão)</em>, entre 5% e 95%.
                   </TooltipLine>
                 </>
               }
             />
             <StatLine
               name="Bloqueio"
-              value={`${s.bloqueio}%`}
+              value={<>{s.bloqueio}%<Unit> / {s.blockMax}%</Unit></>}
               color="fisico"
+              breakdown={sources.bloqueio}
               tooltip={
                 <>
                   <TooltipLine>
-                    Chance de anular completamente um ataque <Mod color="fisico">Físico</Mod>, evitando 100% do dano do golpe.
+                    Chance de anular 100% de um ataque físico que já conectou — após Acerto vs Evasão.
                   </TooltipLine>
-                  <TooltipMeta>Requer escudo equipado</TooltipMeta>
+                  <TooltipLine>
+                    Crítico e mitigação não aplicam se bloquear.
+                  </TooltipLine>
+                  <TooltipMeta>Requer escudo equipado · Limite: {s.blockMax}%</TooltipMeta>
                 </>
               }
             />
@@ -451,9 +576,15 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Resistência ao Fogo"
               value={<>{s.resFogo}%{resCap}</>}
               color="fogo"
+              breakdown={sources.resFogo}
               tooltip={
                 <>
-                  Diminui o <Mod color="fogo">Dano de Fogo</Mod> recebido em {s.resFogo}%.
+                  <TooltipLine>
+                    Reduz dano de <Mod color="fogo">Fogo</Mod> recebido — só itens.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Penetração do atacante ignora parte desta resistência antes do cálculo.
+                  </TooltipLine>
                   <TooltipMeta>Limite máximo: {s.resistMax}%</TooltipMeta>
                 </>
               }
@@ -462,9 +593,15 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Resistência ao Gelo"
               value={<>{s.resGelo}%{resCap}</>}
               color="gelo"
+              breakdown={sources.resGelo}
               tooltip={
                 <>
-                  Diminui o <Mod color="gelo">Dano de Gelo</Mod> recebido em {s.resGelo}%.
+                  <TooltipLine>
+                    Reduz dano de <Mod color="gelo">Gelo</Mod> recebido — só itens.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Penetração do atacante ignora parte desta resistência antes do cálculo.
+                  </TooltipLine>
                   <TooltipMeta>Limite máximo: {s.resistMax}%</TooltipMeta>
                 </>
               }
@@ -473,9 +610,15 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Resistência ao Raio"
               value={<>{s.resRaio}%{resCap}</>}
               color="raio"
+              breakdown={sources.resRaio}
               tooltip={
                 <>
-                  Diminui o <Mod color="raio">Dano de Raio</Mod> recebido em {s.resRaio}%.
+                  <TooltipLine>
+                    Reduz dano de <Mod color="raio">Raio</Mod> recebido — só itens.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Penetração do atacante ignora parte desta resistência antes do cálculo.
+                  </TooltipLine>
                   <TooltipMeta>Limite máximo: {s.resistMax}%</TooltipMeta>
                 </>
               }
@@ -484,9 +627,15 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Resistência ao Caos"
               value={<>{s.resCaos}%{resCap}</>}
               color="caos"
+              breakdown={sources.resCaos}
               tooltip={
                 <>
-                  Diminui o <Mod color="caos">Dano de Caos</Mod> recebido em {s.resCaos}%.
+                  <TooltipLine>
+                    Reduz dano de <Mod color="caos">Caos</Mod> recebido — só itens.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Penetração do atacante ignora parte desta resistência antes do cálculo.
+                  </TooltipLine>
                   <TooltipMeta>Limite máximo: {s.resistMax}%</TooltipMeta>
                 </>
               }
@@ -495,20 +644,33 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Resistência ao Sagrado"
               value={<>{s.resSagrado}%{resCap}</>}
               color="sagrado"
+              breakdown={sources.resSagrado}
               tooltip={
                 <>
-                  Diminui o <Mod color="sagrado">Dano Sagrado</Mod> recebido em {s.resSagrado}%.
+                  <TooltipLine>
+                    Reduz dano de <Mod color="sagrado">Sagrado</Mod> recebido — só itens.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Penetração do atacante ignora parte desta resistência antes do cálculo.
+                  </TooltipLine>
                   <TooltipMeta>Limite máximo: {s.resistMax}%</TooltipMeta>
                 </>
               }
             />
             <StatLine
               name="Resistência Física"
-              value={`${s.resFisico}%`}
+              value={<>{s.resFisico}%{resCap}</>}
               color="fisico"
+              breakdown={sources.resFisico}
               tooltip={
                 <>
-                  Diminui o <Mod color="fisico">Dano Físico</Mod> recebido em {s.resFisico}%.
+                  <TooltipLine>
+                    Diminui o <Mod color="fisico">Dano Físico</Mod> recebido em percentual — só itens.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Aplica <em>depois</em> da <Mod color="fisico">Armadura</Mod> sobre o dano restante.
+                  </TooltipLine>
+                  <TooltipMeta>Limite máximo: {s.resistMax}%</TooltipMeta>
                 </>
               }
             />
@@ -519,9 +681,15 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Roubo de Vida"
               value={`${s.rouboVida}%`}
               color="vida"
+              breakdown={sources.rouboVida}
               tooltip={
                 <>
-                  Recupera {s.rouboVida}% do dano causado como <Mod color="vida">Vida</Mod>.
+                  <TooltipLine>
+                    Recupera % do dano <em>efetivo</em> causado ao alvo (após armadura dele).
+                  </TooltipLine>
+                  <TooltipLine>
+                    Só itens. Sem dano = sem roubo. Overkill não conta.
+                  </TooltipLine>
                 </>
               }
             />
@@ -529,33 +697,15 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               name="Roubo de Mana"
               value={`${s.rouboMana}%`}
               color="mana"
+              breakdown={sources.rouboMana}
               tooltip={
                 <>
-                  Recupera {s.rouboMana}% do dano causado como <Mod color="mana">Mana</Mod>.
-                </>
-              }
-            />
-          </Section>
-
-          <Section title="Mobilidade">
-            <StatLine
-              name="Velocidade de Movimento"
-              value={`${s.velMovimento}%`}
-              color="agilidade"
-              tooltip={
-                <>
-                  Velocidade de deslocamento do personagem fora e durante o combate.
-                  <TooltipMeta>Base: 100%</TooltipMeta>
-                </>
-              }
-            />
-            <StatLine
-              name="Esquiva"
-              value={`${s.esquiva}%`}
-              color="agilidade"
-              tooltip={
-                <>
-                  Chance de evitar dano de armadilhas, efeitos de área e ataques que não dependem de <Mod color="agilidade">Acerto</Mod>.
+                  <TooltipLine>
+                    Recupera % do dano <em>efetivo</em> causado ao alvo (após armadura dele).
+                  </TooltipLine>
+                  <TooltipLine>
+                    Só itens. Sem dano = sem roubo. Overkill não conta.
+                  </TooltipLine>
                 </>
               }
             />

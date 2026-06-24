@@ -388,11 +388,11 @@ interface TalentsHeaderProps {
   shortcut?: string;
 }
 
-export function TalentsHeader({ character, onClose, shortcut = 'T' }: TalentsHeaderProps) {
+export function TalentsHeader({ character, onClose, shortcut = 'A' }: TalentsHeaderProps) {
   return (
     <div className={styles.header}>
       <div className={styles.nameBlock}>
-        <div className={styles.title}>Talentos</div>
+        <div className={styles.title}>Habilidades</div>
         <div className={styles.subtitle}>
           {character.name} · {character.classLabel} · Nv {character.level}
         </div>

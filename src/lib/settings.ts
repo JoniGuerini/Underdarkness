@@ -6,11 +6,12 @@ const STORAGE_KEY = 'underdarkness_settings';
 export type EditableTab = Exclude<TabKey, 'opcoes'>;
 export const EDITABLE_TABS: EditableTab[] = [
   'personagem',
-  'talentos',
   'habilidades',
   'mapa',
   'diario',
+  'registro',
   'codice',
+  'social', // SOCIAL: removível
 ];
 
 export interface Settings {
@@ -22,11 +23,12 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   shortcuts: {
     personagem: 'C',
-    talentos: 'T',
     habilidades: 'A',
     mapa: 'M',
     diario: 'J',
-    codice: 'K',
+    registro: 'K',
+    codice: 'L',
+    social: 'G', // SOCIAL: removível
   },
   startInFullscreen: false,
 };
@@ -34,8 +36,20 @@ export const DEFAULT_SETTINGS: Settings = {
 /** Preenche campos faltantes com defaults — futura adição de settings não quebra saves antigos. */
 function migrate(raw: unknown): Settings {
   const s = (raw ?? {}) as Partial<Settings>;
+  const legacy = (s.shortcuts ?? {}) as Record<string, string>;
+  const shortcuts = { ...DEFAULT_SETTINGS.shortcuts, ...legacy };
+  // Tab talentos unificada em habilidades
+  if (legacy.talentos && legacy.habilidades === undefined) {
+    shortcuts.habilidades = legacy.talentos;
+  }
+  delete (shortcuts as Record<string, string>).talentos;
+  // Códice dividido: dados → registro (preserva atalho K), guias → códice
+  if (legacy.codice && legacy.registro === undefined) {
+    shortcuts.registro = legacy.codice;
+    shortcuts.codice = 'L';
+  }
   return {
-    shortcuts: { ...DEFAULT_SETTINGS.shortcuts, ...(s.shortcuts ?? {}) },
+    shortcuts: shortcuts as Record<EditableTab, string>,
     startInFullscreen: s.startInFullscreen ?? DEFAULT_SETTINGS.startInFullscreen,
   };
 }

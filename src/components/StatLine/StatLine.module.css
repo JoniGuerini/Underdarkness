@@ -55,6 +55,9 @@
 .intelecto { color: var(--stat-intelecto); }
 .defesa { color: var(--stat-defesa); }
 .critico { color: var(--stat-critico); }
+.exp { color: var(--vital-exp); }
+.ouro { color: var(--brass-bright); }
+.comum { color: var(--rarity-comum); }
 
 /* Bloco de texto dentro do tooltip — cada TooltipLine é um pensamento separado */
 .tooltipLine {
@@ -73,6 +76,74 @@
   color: var(--ink-muted);
   font-size: 11px;
   letter-spacing: 0.02em;
+}
+
+/* Breakdown de fontes — sequência de "label ........ +valor" + total final */
+.breakdown {
+  display: block;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-soft);
+}
+.breakdownRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font: 400 11px/1.5 var(--mono);
+  letter-spacing: 0.005em;
+}
+.breakdownLabel {
+  color: var(--ink-soft);
+  /* truncamento sutil pra labels longas */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+.breakdownValue {
+  font-weight: 500;
+  color: var(--brass-deep);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+/* Tons da label por fonte — classe (neutro), atributo específico, raridade do
+   item, base universal. Tone strings vêm sem hífen (item_comum não item-comum). */
+.breakdownRow.tone_class .breakdownLabel { color: var(--ink); }
+.breakdownRow.tone_base .breakdownLabel { color: var(--ink-muted); font-style: italic; }
+
+/* Atributos — cada um na sua cor canônica */
+.breakdownRow.tone_attr_forca .breakdownLabel { color: var(--stat-forca); }
+.breakdownRow.tone_attr_agi   .breakdownLabel { color: var(--stat-agilidade); }
+.breakdownRow.tone_attr_int   .breakdownLabel { color: var(--stat-intelecto); }
+
+/* Itens — cor da raridade do item que contribui */
+.breakdownRow.tone_item_comum    .breakdownLabel { color: var(--rarity-comum); }
+.breakdownRow.tone_item_magico   .breakdownLabel { color: var(--rarity-magico); }
+.breakdownRow.tone_item_raro     .breakdownLabel { color: var(--rarity-raro); }
+.breakdownRow.tone_item_unico    .breakdownLabel { color: var(--rarity-unico); }
+.breakdownRow.tone_item_lendario .breakdownLabel { color: var(--rarity-lendario); }
+
+.breakdownTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-faint);
+  font: 500 12px/1.4 var(--mono);
+}
+.breakdownTotal .breakdownLabel {
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+.breakdownTotal .breakdownValue {
+  color: var(--brass-bright);
+  font-size: 13px;
 }
 
 .value {

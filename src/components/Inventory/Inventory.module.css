@@ -63,7 +63,9 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  /* Gap menor entre paper-doll e inventário — a bag fica visualmente colada
+     aos slots equipados, sem aquele vão grande no meio do card. */
+  gap: 14px;
   min-height: 0;
 }
 
@@ -90,13 +92,20 @@
 /* ============================================================
    Grids — agora com tamanho fixo de slot, sem flexão
    ============================================================ */
-/* Paper-doll: grid 3×3, slots em ordem definida em PAPER_DOLL_ORDER.
-   Centralizado horizontalmente dentro do card. */
+/* Paper-doll: grid 3×4, slots em ordem definida em PAPER_DOLL_ORDER.
+   Centralizado horizontalmente dentro do card. Algumas células podem ser
+   "gaps" (null em PAPER_DOLL_ORDER) — viram .slotGap, ocupam espaço sem
+   borda nem conteúdo. */
 .equippedGrid {
   display: grid;
   grid-template-columns: repeat(3, var(--slot-size));
   gap: var(--slot-gap);
   align-self: center;
+}
+/* Célula vazia — preserva o alinhamento do grid sem desenhar slot */
+.slotGap {
+  width: var(--slot-size);
+  height: var(--slot-size);
 }
 
 /* Inventário 6×4 abaixo do paper-doll, também centralizado */

@@ -8,9 +8,9 @@ export const CLASSES: Record<ClassKey, ClassData> = {
       'Alta defesa e dano físico. Forte em combate direto, ideal para absorver dano e segurar a linha de frente.',
     vida: 14,
     mana: 2,
-    forca: 16,
-    agilidade: 11,
-    intelecto: 8,
+    forca: 8,
+    agilidade: 3,
+    intelecto: 3,
     abilities: [
       { name: 'Golpe Devastador', desc: 'causa o dobro de dano' },
       { name: 'Postura Defensiva', desc: 'reduz dano recebido pela metade' },
@@ -23,9 +23,9 @@ export const CLASSES: Record<ClassKey, ClassData> = {
       'Dano alto em ataques únicos com chance crítica. Boa esquiva e mobilidade, mas pouca defesa.',
     vida: 10,
     mana: 4,
-    forca: 11,
-    agilidade: 17,
-    intelecto: 13,
+    forca: 5,
+    agilidade: 8,
+    intelecto: 5,
     abilities: [
       { name: 'Ataque Furtivo', desc: 'crítico se o alvo não te vê' },
       { name: 'Esquiva Ágil', desc: 'chance de evitar o golpe inteiro' },
@@ -38,9 +38,9 @@ export const CLASSES: Record<ClassKey, ClassData> = {
       'Magias de dano em área e controle. Frágil em combate corpo a corpo, mas devastador a distância.',
     vida: 8,
     mana: 12,
-    forca: 8,
-    agilidade: 11,
-    intelecto: 17,
+    forca: 3,
+    agilidade: 5,
+    intelecto: 8,
     abilities: [
       { name: 'Bola de Fogo', desc: 'dano arcano em área' },
       { name: 'Escudo Arcano', desc: 'absorve um golpe inteiro' },
@@ -50,30 +50,33 @@ export const CLASSES: Record<ClassKey, ClassData> = {
 
 export const TAB_LABEL: Record<string, string> = {
   personagem: 'Personagem',
-  talentos: 'Talentos',
   habilidades: 'Habilidades',
   mapa: 'Mapa',
   diario: 'Diário',
+  registro: 'Registro',
   codice: 'Códice',
+  social: 'Social', // SOCIAL: removível
   opcoes: 'Opções',
 };
 
 export const TAB_SHORTCUT: Record<string, string> = {
   personagem: 'C',
-  talentos: 'T',
   habilidades: 'A',
   mapa: 'M',
   diario: 'J',
-  codice: 'K',
+  registro: 'K',
+  codice: 'L',
+  social: 'G', // SOCIAL: removível
   opcoes: 'ESC',
 };
 
 export const TAB_DESC: Record<string, string> = {
   personagem: 'Ficha completa, atributos detalhados, equipamento e inventário.',
-  talentos: 'Árvore de talentos e progressão por arquétipo.',
-  habilidades: 'Habilidades ativas e magias conhecidas.',
+  habilidades: 'Árvore de habilidades e progressão por arquétipo.',
   mapa: 'Localização atual e regiões já exploradas.',
   diario: 'Quests, anotações e fragmentos de lore.',
-  codice: 'Referência sobre itens, mods, criaturas e lore do mundo.',
+  registro: 'Mods, forja e bestiário — dados do jogo.',
+  codice: 'Guias de mecânica (raridade e regras).',
+  social: 'Chat, guilda, amigos e busca de grupos.', // SOCIAL: removível
   opcoes: 'Preferências do jogo.',
 };

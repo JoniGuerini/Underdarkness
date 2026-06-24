@@ -3,6 +3,7 @@ import type { Character } from '../../types';
 import { Modal } from '../Modal/Modal';
 import { ShopPane } from '../ShopPane/ShopPane';
 import { CraftPane } from '../CraftPane/CraftPane';
+import { RestPane } from '../RestPane/RestPane';
 import {
   NPC_ROLE_LABEL,
   type Npc,
@@ -63,7 +64,7 @@ export function NpcDialog({ npc, character, onUpdate, onClose }: NpcDialogProps)
             <CraftPane npcId={npc.id} role="destilar" character={character} onUpdate={onUpdate} />
           )}
           {active === 'descansar' && (
-            <StubPane message="Em desenvolvimento — pague uma diária para recuperar Vida e Mana ao máximo." />
+            <RestPane character={character} onUpdate={onUpdate} />
           )}
         </section>
       </div>
@@ -96,13 +97,3 @@ function FalarPane({ npc }: { npc: Npc }) {
   return <p className={styles.dialogue}>{npc.dialogue}</p>;
 }
 
-// ============================================================================
-// STUB — placeholder pras roles ainda não implementadas
-// ============================================================================
-function StubPane({ message }: { message: string }) {
-  return (
-    <div className={styles.stub}>
-      <p className={styles.stubMessage}>{message}</p>
-    </div>
-  );
-}

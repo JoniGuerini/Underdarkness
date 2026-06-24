@@ -386,7 +386,7 @@ const L_MOBILIDADE: TalentTree = {
       id: 'l-m-pesleves', name: 'Pés Leves',
       description: 'Movimentos ágeis aprendidos nas ruas.',
       row: 0, col: 1,
-      effect: { perRank: 5, label: 'Velocidade de Movimento', unit: '%', color: 'agilidade' },
+      effect: { perRank: 2, label: 'Evasão', unit: '', color: 'agilidade' },
     }),
   ],
 };

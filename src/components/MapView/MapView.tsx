@@ -8,11 +8,15 @@ import {
   getLocationState,
   type LocationState,
 } from '../../data/world';
+import { getLocationLevelBadge, getEncounterLevelLabel } from '../../lib/locationInfo';
 import styles from './MapView.module.css';
 
 interface MapViewProps {
   character: Character;
   onUpdate: (patch: { location: string; visitedLocations: string[] }) => void;
+  /** Disparado depois de viajar — usado pelo HUD pra fechar o modal do Atlas
+   *  automaticamente. Trocar de região = sair do mapa, comportamento de MMO. */
+  onTravelComplete?: () => void;
 }
 
 /**
@@ -50,7 +54,48 @@ function curvedPath(x1: number, y1: number, x2: number, y2: number, seed: string
   return `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`;
 }
 
-export function MapView({ character, onUpdate }: MapViewProps) {
+/** Raio de recorte das trilhas na borda do nó (unidades do viewBox). */
+function getNodeTrimRadius(loc: MapLocation): number {
+  switch (loc.type) {
+    case 'town': return 34;
+    case 'dungeon': return 28;
+    case 'boss': return 36;
+    case 'wilderness':
+    default: return 30;
+  }
+}
+
+/** Encurta o segmento pra começar/terminar na borda do nó, não no centro. */
+function trimEndpoints(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  r1: number,
+  r2: number,
+): { x1: number; y1: number; x2: number; y2: number } {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.hypot(dx, dy);
+  if (len <= r1 + r2) return { x1, y1, x2, y2 };
+  const ux = dx / len;
+  const uy = dy / len;
+  return {
+    x1: x1 + ux * r1,
+    y1: y1 + uy * r1,
+    x2: x2 - ux * r2,
+    y2: y2 - uy * r2,
+  };
+}
+
+const TYPE_TAG: Record<NonNullable<MapLocation['type']>, string> = {
+  town: 'Vila',
+  wilderness: 'Campo',
+  dungeon: 'Masmorra',
+  boss: 'Chefe',
+};
+
+export function MapView({ character, onUpdate, onTravelComplete }: MapViewProps) {
   const visited = character.visitedLocations ?? ['origem'];
   const current = character.location;
 
@@ -83,9 +128,18 @@ export function MapView({ character, onUpdate }: MapViewProps) {
         (stateA === 'current' || stateA === 'visited') &&
         (stateB === 'current' || stateB === 'visited');
 
+      const trimmed = trimEndpoints(
+        loc.x,
+        loc.y,
+        target.x,
+        target.y,
+        getNodeTrimRadius(loc),
+        getNodeTrimRadius(target),
+      );
+
       return {
         id: key,
-        d: curvedPath(loc.x, loc.y, target.x, target.y, key),
+        d: curvedPath(trimmed.x1, trimmed.y1, trimmed.x2, trimmed.y2, key),
         active,
       };
     }),
@@ -97,29 +151,53 @@ export function MapView({ character, onUpdate }: MapViewProps) {
     if (locationId === current) return;
     const nextVisited = visited.includes(locationId) ? visited : [...visited, locationId];
     onUpdate({ location: locationId, visitedLocations: nextVisited });
+    onTravelComplete?.();
   };
 
   return (
     <div className={styles.card}>
       <div className={styles.canvas}>
-        {/* Camada 1: linhas de conexão (SVG escala via viewBox) */}
+        {/* Grade + vinheta */}
+        <div className={styles.canvasGrid} aria-hidden />
+        <div className={styles.canvasVignette} aria-hidden />
+
+        {/* Camada 1: linhas de conexão */}
         <svg
           className={styles.connections}
           viewBox={`0 0 ${MAP_VIEWPORT.width} ${MAP_VIEWPORT.height}`}
           preserveAspectRatio="none"
         >
+          <defs>
+            <filter id="mapPathGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="2.5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
           {connections.map((c) => (
-            <path
-              key={c.id}
-              d={c.d}
-              fill="none"
-              vectorEffect="non-scaling-stroke"
-              className={`${styles.connection} ${c.active ? styles.connectionActive : ''}`}
-            />
+            <g key={c.id}>
+              {c.active && (
+                <path
+                  d={c.d}
+                  fill="none"
+                  vectorEffect="non-scaling-stroke"
+                  className={styles.connectionGlow}
+                />
+              )}
+              <path
+                d={c.d}
+                fill="none"
+                vectorEffect="non-scaling-stroke"
+                className={`${styles.connection} ${c.active ? styles.connectionActive : ''}`}
+                filter={c.active ? 'url(#mapPathGlow)' : undefined}
+              />
+            </g>
           ))}
         </svg>
 
-        {/* Camada 2: nodes posicionados via percentage do canvas */}
+        {/* Camada 2: nodes */}
         {LOCATIONS.map((loc) => {
           const state = stateById.get(loc.id);
           if (!state) return null;
@@ -135,6 +213,39 @@ export function MapView({ character, onUpdate }: MapViewProps) {
           );
         })}
       </div>
+
+      <footer className={styles.mapLegend} aria-label="Legenda do atlas">
+        <span className={styles.legendItem}>
+          <span className={`${styles.legendDot} ${styles.legendDot_current}`} />
+          Atual
+        </span>
+        <span className={styles.legendItem}>
+          <span className={`${styles.legendDot} ${styles.legendDot_visited}`} />
+          Visitado
+        </span>
+        <span className={styles.legendItem}>
+          <span className={`${styles.legendDot} ${styles.legendDot_available}`} />
+          Disponível
+        </span>
+        <span className={styles.legendItem}>
+          <span className={`${styles.legendDot} ${styles.legendDot_locked}`} />
+          Indisponível
+        </span>
+        <span className={styles.legendDivider} aria-hidden />
+        <span className={styles.legendItem}>
+          <span className={`${styles.legendShape} ${styles.legendShape_town}`} />
+          Vila
+        </span>
+        <span className={styles.legendItem}>
+          <span className={`${styles.legendShape} ${styles.legendShape_wild}`} />
+          Campo
+        </span>
+        <span className={styles.legendItem}>
+          <span className={`${styles.legendShape} ${styles.legendShape_dungeon}`} />
+          Masmorra
+        </span>
+        <span className={styles.legendHint}>Clique num local acessível para viajar</span>
+      </footer>
     </div>
   );
 }
@@ -185,6 +296,9 @@ function MapNode({ location, state, xPercent, yPercent, onClick }: MapNodeProps)
   const handleLeave = useCallback(() => setTooltipPos(null), []);
 
   const canTravel = state === 'available' || state === 'visited';
+  const levelBadge = getLocationLevelBadge(location);
+  const typeTag = location.type ? TYPE_TAG[location.type] : 'Campo';
+  const isDungeon = location.type === 'dungeon';
 
   const classes = [
     styles.node,
@@ -210,12 +324,26 @@ function MapNode({ location, state, xPercent, yPercent, onClick }: MapNodeProps)
           onClick={canTravel ? onClick : undefined}
           onMouseEnter={handleEnter}
           onMouseLeave={handleLeave}
-          aria-label={location.name}
+          aria-label={`${location.name} — ${levelBadge}`}
         >
-          {/* círculo interno (decorativo) */}
-          <span className={styles.nodeCore} />
+          <span className={styles.nodeRing} aria-hidden />
+          {isDungeon ? (
+            <span className={styles.nodeInner}>
+              <span className={styles.nodeCore} aria-hidden />
+              <span className={styles.nodeTypeTag}>{typeTag}</span>
+            </span>
+          ) : (
+            <>
+              <span className={styles.nodeCore} aria-hidden />
+              <span className={styles.nodeTypeTag}>{typeTag}</span>
+            </>
+          )}
         </button>
         <span className={styles.nodeLabel}>{location.name}</span>
+        <span className={`${styles.nodeBadge} ${styles[`badge_${state}`]}`}>{levelBadge}</span>
+        {canTravel && (
+          <span className={styles.nodeTravelHint}>Viajar</span>
+        )}
       </div>
 
       {tooltipPos && (
@@ -242,13 +370,18 @@ const STATE_LABEL: Record<LocationState, string> = {
 };
 
 function MapTooltip({ location, state, position }: MapTooltipProps) {
+  const encounterLabel = getEncounterLevelLabel(location);
+
   return createPortal(
     <div className={styles.tooltip} style={{ left: position.left, top: position.top }}>
       <div className={styles.tooltipHeader}>
         <div className={styles.tooltipName}>{location.name}</div>
-        <div className={styles.tooltipLevel}>Nv {location.level}</div>
+        <div className={styles.tooltipLevel}>{getLocationLevelBadge(location)}</div>
       </div>
       <div className={styles.tooltipRegion}>{location.region}</div>
+      {encounterLabel && (
+        <div className={styles.tooltipEncounter}>{encounterLabel}</div>
+      )}
       <div className={styles.tooltipDesc}>{location.description}</div>
       <div className={`${styles.tooltipState} ${styles[`state_${state}`]}`}>
         {STATE_LABEL[state]}

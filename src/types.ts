@@ -9,6 +9,7 @@ export type EquipSlot =
   | 'peito'
   | 'maos'
   | 'pes'
+  | 'cinto'
   | 'amuleto'
   | 'anel1'
   | 'anel2'
@@ -24,12 +25,57 @@ export type ItemSlot =
   | 'peito'
   | 'maos'
   | 'pes'
+  | 'cinto'
   | 'amuleto'
   | 'anel'
   | 'arma'
   | 'escudo';
 
 export type Rarity = 'comum' | 'magico' | 'raro' | 'unico' | 'lendario';
+
+/**
+ * Chave de stat afetada por um efeito de item — define COMO o valor entra
+ * no cálculo de derivados (substitui default, soma flat, soma percentual).
+ *
+ * Convenções:
+ * - `weapon-*`     — base de arma; SUBSTITUI default da classe se arma equipada
+ * - `flat-*`       — soma cumulativa entre todos os slots
+ * - `pct-*`        — soma cumulativa como percentual (aplicado conforme stat)
+ *
+ * Pra mods de range (ex: "+ X a Y de Dano Físico"), `value` é o min e `max`
+ * é o max — sumarizados separadamente.
+ */
+export type StatKey =
+  // ── Base de arma (só armas setam; substitui default de classe) ──
+  | 'weapon-speed'        // ataques/s
+  | 'weapon-crit-base'    // % de crit base (substitui default 5%)
+  // ── Flat (somam entre slots) ──
+  | 'flat-vida' | 'flat-mana'
+  | 'flat-armadura' | 'flat-evasao'
+  | 'flat-regen-vida' | 'flat-regen-mana' | 'flat-acerto'
+  | 'flat-forca' | 'flat-agilidade' | 'flat-intelecto'
+  | 'flat-dmg-fis'
+  | 'flat-dmg-fogo' | 'flat-dmg-gelo' | 'flat-dmg-raio' | 'flat-dmg-caos' | 'flat-dmg-sagrado'
+  // ── Magias (%) ──
+  | 'pct-dmg-magia'
+  | 'pct-dmg-fogo-magia' | 'pct-dmg-gelo-magia' | 'pct-dmg-raio-magia'
+  | 'pct-dmg-caos-magia' | 'pct-dmg-sagrado-magia'
+  // ── Percentual (somam como %) ──
+  | 'pct-res-fogo' | 'pct-res-gelo' | 'pct-res-raio' | 'pct-res-caos' | 'pct-res-sagrado' | 'pct-res-fisica'
+  | 'pct-pen-fogo' | 'pct-pen-gelo' | 'pct-pen-raio' | 'pct-pen-caos' | 'pct-pen-sagrado'
+  | 'pct-vel-ataque' | 'pct-red-tempo-conjuracao'
+  | 'pct-crit-chance' | 'pct-crit-mult'
+  | 'pct-eficiencia-mana'
+  | 'pct-roubo-vida' | 'pct-roubo-mana'
+  | 'pct-bloqueio';
+
+export interface ItemStatEffect {
+  key: StatKey;
+  value: number;
+  /** Pra ranges (ex: "+X a Y"), `max` carrega o segundo valor. Quando ausente,
+   *  trata-se como flat puro (min = max = value). */
+  max?: number;
+}
 
 export interface ItemStat {
   /** texto exibido — ex: "+5 Dano Físico" */
@@ -42,6 +88,9 @@ export interface ItemStat {
    * sem `kind` renderizam como linha plana.
    */
   kind?: 'base' | 'prefix' | 'suffix';
+  /** Efeito numérico — alimenta `computeDerivedStats`. Stat sem effect só
+   *  exibe no tooltip (não afeta a ficha). */
+  effect?: ItemStatEffect;
 }
 
 export interface Item {
@@ -61,7 +110,7 @@ export interface Item {
 
 export type ModColor =
   | 'fisico' | 'fogo' | 'gelo' | 'raio' | 'caos' | 'sagrado'
-  | 'vida' | 'mana'
+  | 'vida' | 'mana' | 'exp' | 'ouro' | 'comum'
   | 'forca' | 'agilidade' | 'intelecto'
   | 'defesa' | 'critico';
 
@@ -117,9 +166,18 @@ export interface Character {
 }
 
 export interface DerivedStats {
+  /** Atributos finais (base + bônus de equipamento) — diferente de Character.forca etc. */
+  forca: number;
+  agilidade: number;
+  intelecto: number;
+  /** Vida e Mana máximas finais — class base + atributo + itens. Character.vidaMax
+   *  e Character.manaMax são sincronizados a partir desses valores na migração. */
+  vidaMax: number;
+  manaMax: number;
   armadura: number;
   evasao: number;
   bloqueio: number;
+  blockMax: number;
   resistMax: number;
   resFogo: number;
   resGelo: number;
@@ -145,19 +203,23 @@ export interface DerivedStats {
   danoSagrado: number;
   resSagrado: number;
   penSagrado: number;
-  bonusMagico: number;
-  velConjuracao: number;
+  pctDmgMagia: number;
+  pctDmgFogoMagia: number;
+  pctDmgGeloMagia: number;
+  pctDmgRaioMagia: number;
+  pctDmgCaosMagia: number;
+  pctDmgSagradoMagia: number;
+  reducaoTempoConjuracao: number;
   eficienciaMana: number;
   regenVida: number;
   regenMana: number;
   rouboVida: number;
   rouboMana: number;
-  velMovimento: number;
-  esquiva: number;
   acerto: number;
 }
 
-export type TabKey = 'personagem' | 'talentos' | 'habilidades' | 'mapa' | 'diario' | 'codice' | 'opcoes';
+// SOCIAL: 'social' adicionado pra mockup de chat multiplayer (removível)
+export type TabKey = 'personagem' | 'habilidades' | 'mapa' | 'diario' | 'registro' | 'codice' | 'social' | 'opcoes';
 
 // ============================================================================
 // Árvore de Talentos (estilo Diablo 2)

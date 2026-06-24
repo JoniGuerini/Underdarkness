@@ -45,20 +45,18 @@
    ============================================================ */
 .card {
   background: var(--paper);
-  border: none;  box-shadow: var(--card-edge);
+  border: none;
+  box-shadow: var(--card-edge);
   border-radius: 6px;
   padding: 12px;
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
   min-height: 0;
   overflow: hidden;
 }
 
-/* Canvas ocupa o máximo possível mantendo o aspect-ratio do design space.
-   Largura/altura limitadas por max-width/max-height — browser escolhe
-   a maior dimensão que cabe no container preservando a proporção. */
 .canvas {
   position: relative;
   aspect-ratio: 1180 / 680;
@@ -66,12 +64,38 @@
   height: auto;
   max-width: 100%;
   max-height: 100%;
+  flex: 1;
+  min-height: 0;
   background:
-    radial-gradient(ellipse at 50% 40%, rgba(36, 42, 60, 0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 22% 28%, rgba(90, 80, 64, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 78% 32%, rgba(52, 72, 96, 0.1) 0%, transparent 68%),
+    radial-gradient(ellipse 45% 38% at 68% 72%, rgba(120, 72, 96, 0.08) 0%, transparent 65%),
+    radial-gradient(ellipse at 50% 42%, rgba(36, 42, 60, 0.4) 0%, transparent 62%),
     var(--bg);
   border: 1px solid var(--border-faint);
   border-radius: 4px;
+  overflow: hidden;
 }
+
+.canvasGrid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(circle, rgba(139, 150, 163, 0.22) 0.6px, transparent 0.6px);
+  background-size: 28px 28px;
+  opacity: 0.35;
+  mask-image: radial-gradient(ellipse 85% 80% at 50% 50%, black 30%, transparent 100%);
+}
+
+.canvasVignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse 90% 85% at 50% 50%, transparent 45%, rgba(8, 10, 14, 0.55) 100%);
+}
+
 
 /* ============================================================
    Linhas de conexão (SVG overlay)
@@ -85,20 +109,23 @@
   z-index: 0;
 }
 
-/* Default: rota não-percorrida (só uma das pontas é visited/current).
-   Tracejada e discreta. */
-.connection {
-  stroke: var(--border);
-  stroke-width: 1.5;
-  stroke-dasharray: 4 6;
+.connectionGlow {
+  stroke: rgba(194, 168, 120, 0.22);
+  stroke-width: 6;
   stroke-linecap: round;
-  transition: stroke 0.3s, stroke-dasharray 0.3s, stroke-width 0.3s;
 }
 
-/* Rota percorrida: ambas pontas já foram visitadas. Sólida e em latão. */
+.connection {
+  stroke: rgba(84, 93, 110, 0.55);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 7;
+  stroke-linecap: round;
+  transition: stroke 0.2s, stroke-dasharray 0.2s, stroke-width 0.2s;
+}
+
 .connection.connectionActive {
-  stroke: var(--brass-light);
-  stroke-width: 2;
+  stroke: var(--brass-bright);
+  stroke-width: 2.5;
   stroke-dasharray: none;
 }
 
@@ -107,32 +134,64 @@
    ============================================================ */
 .nodeWrapper {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  /* left/top vêm inline em %; este transform centra o conjunto na coordenada */
+  gap: 4px;
   transform: translate(-50%, -50%);
+  isolation: isolate;
+}
+
+.nodeWrapper:hover .nodeLabel {
+  color: var(--ink);
 }
 
 .nodeLabel {
   font: 500 11px/1.2 var(--mono);
   color: var(--ink-soft);
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
   text-align: center;
   white-space: nowrap;
   pointer-events: none;
-  /* halo discreto pra legibilidade sobre fundo escuro */
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+  transition: color 0.15s;
 }
 
-/* ============================================================
-   Node — círculo clicável
-   ============================================================ */
+.nodeBadge {
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  pointer-events: none;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+}
+
+.badge_current { color: var(--brass-bright); }
+.badge_visited { color: var(--brass); }
+.badge_available { color: var(--brass-light); }
+.badge_locked { color: var(--vital-vida); opacity: 0.75; }
+
+.nodeTravelHint {
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brass-bright);
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity 0.15s, transform 0.15s;
+  pointer-events: none;
+}
+
+.nodeWrapper:hover .nodeTravelHint {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .node {
-  width: 44px;
-  height: 44px;
+  position: relative;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   border: 2px solid var(--border);
   background: var(--bg);
@@ -144,14 +203,43 @@
   transition: transform 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
   font: inherit;
   color: inherit;
+  box-shadow: var(--card-edge-pill);
+  isolation: isolate;
+  z-index: 1;
+}
+
+.nodeRing {
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  pointer-events: none;
 }
 
 .nodeCore {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--ink-faint);
   transition: background 0.15s, transform 0.15s;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.nodeTypeTag {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  font: 500 7px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  background: var(--bg);
+  padding: 2px 4px;
+  border-radius: 2px;
+  box-shadow: var(--card-edge-pill);
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 /* ============================================================
@@ -163,23 +251,20 @@
   border-color: var(--brass-bright);
   background: var(--surface);
   box-shadow:
-    0 0 0 4px rgba(194, 168, 120, 0.15),
-    0 0 16px rgba(194, 168, 120, 0.4);
-  animation: pulseCurrent 2.4s ease-in-out infinite;
+    0 0 0 3px rgba(194, 168, 120, 0.12),
+    0 0 14px rgba(194, 168, 120, 0.28),
+    var(--card-edge-lg);
   cursor: default;
 }
 .node.state_current .nodeCore {
   background: var(--brass-bright);
-  transform: scale(1.2);
+  transform: scale(1.1);
+  box-shadow: 0 0 6px rgba(194, 168, 120, 0.4);
 }
+.node.state_current .nodeTypeTag { color: var(--brass-deep); }
 .nodeWrapper:has(.state_current) .nodeLabel {
   color: var(--brass-deep);
   font-weight: 500;
-}
-
-@keyframes pulseCurrent {
-  0%, 100% { box-shadow: 0 0 0 4px rgba(194, 168, 120, 0.12), 0 0 14px rgba(194, 168, 120, 0.35); }
-  50%      { box-shadow: 0 0 0 6px rgba(194, 168, 120, 0.18), 0 0 22px rgba(194, 168, 120, 0.55); }
 }
 
 /* Visitado — locais já explorados, clicáveis pra fast-travel */
@@ -188,67 +273,222 @@
   background: var(--surface);
   cursor: pointer;
 }
-.node.state_visited .nodeCore {
-  background: var(--brass);
-}
+.node.state_visited .nodeCore { background: var(--brass); }
 .node.state_visited:hover {
   border-color: var(--brass-bright);
   background: var(--surface-hover);
-  transform: scale(1.08);
+  transform: scale(1.1);
+  box-shadow: var(--card-edge-lg);
 }
 
-/* Disponível — descoberto mas ainda não visitado */
 .node.state_available {
   border-color: var(--brass-light);
   border-style: dashed;
   background: var(--bg);
   cursor: pointer;
-  animation: pulseAvailable 2s ease-in-out infinite;
 }
-.node.state_available .nodeCore {
-  background: var(--brass-light);
-}
+.node.state_available .nodeCore { background: var(--brass-light); }
 .node.state_available:hover {
   border-color: var(--brass-bright);
   border-style: solid;
   background: var(--surface);
   transform: scale(1.08);
-  animation: none;
+  box-shadow: 0 0 0 2px rgba(194, 168, 120, 0.1), var(--card-edge-lg);
 }
 
-@keyframes pulseAvailable {
-  0%, 100% { box-shadow: 0 0 0 2px rgba(122, 112, 96, 0.1); }
-  50%      { box-shadow: 0 0 0 4px rgba(122, 112, 96, 0.25); }
-}
-
-/* Bloqueado — visível mas requer level maior */
 .node.state_locked {
   border-color: var(--vital-vida);
   border-style: dashed;
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
+  filter: grayscale(0.25);
 }
 .node.state_locked .nodeCore {
   background: var(--vital-vida);
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
-/* ============================================================
-   Tipos de local — pequenas variações visuais
-   ============================================================ */
+/* Tipos de local — três formas distintas */
+
+/* Campo — círculo (perigoso / exterior) */
+.node.type_wilderness {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
+
+/* Vila — retângulo com base arredondada (zona segura) */
 .node.type_town {
-  /* cidade — mais "destacada" */
+  width: 50px;
+  height: 44px;
+  border-radius: 6px 6px 14px 14px;
+}
+.node.type_town .nodeRing {
+  border-radius: 4px 4px 12px 12px;
+}
+.node.type_town .nodeCore {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+/* Masmorra — losango (quadrado rotacionado) */
+.node.type_dungeon {
+  width: 38px;
+  height: 38px;
+  border-radius: 4px;
+  transform: rotate(45deg);
+}
+.node.type_dungeon .nodeRing {
+  border-radius: 3px;
+  inset: 2px;
+}
+.node.type_dungeon .nodeInner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-45deg);
 }
 .node.type_dungeon .nodeCore {
-  border-radius: 2px; /* quadrado dentro de círculo — feel de cripta */
+  width: 10px;
+  height: 10px;
+  border-radius: 1px;
 }
+.node.type_dungeon .nodeTypeTag {
+  bottom: auto;
+  top: -10px;
+  transform: translateX(-50%) rotate(0deg);
+}
+.node.type_dungeon.state_visited:hover,
+.node.type_dungeon.state_available:hover {
+  transform: rotate(45deg) scale(1.1);
+}
+
 .node.type_boss {
+  width: 54px;
+  height: 54px;
   border-width: 3px;
+  border-radius: 50%;
 }
 .node.type_boss .nodeCore {
   background: var(--elem-caos);
   width: 16px;
   height: 16px;
+  box-shadow: 0 0 10px rgba(181, 126, 220, 0.45);
+}
+.node.type_boss.state_current,
+.node.type_boss.state_available,
+.node.type_boss.state_visited {
+  border-color: var(--elem-caos);
+}
+.node.type_boss .nodeTypeTag { color: var(--elem-caos); }
+
+/* ============================================================
+   Legenda
+   ============================================================ */
+.mapLegend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+  padding: 8px 10px;
+  background: var(--bg);
+  border-radius: 4px;
+  box-shadow: var(--card-edge-pill);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
+.legendDot_current {
+  border-color: var(--brass-bright);
+  background: var(--brass-bright);
+  box-shadow: 0 0 6px rgba(194, 168, 120, 0.45);
+}
+
+.legendDot_visited {
+  border-color: var(--brass);
+  background: var(--brass);
+}
+
+.legendDot_available {
+  border-color: var(--brass-light);
+  border-style: dashed;
+  background: transparent;
+}
+
+.legendDot_locked {
+  border-color: var(--vital-vida);
+  border-style: dashed;
+  background: transparent;
+  opacity: 0.6;
+}
+
+.legendDivider {
+  width: 1px;
+  height: 14px;
+  background: var(--border-soft);
+  flex-shrink: 0;
+}
+
+.legendShape {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--brass-light);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.legendShape_town {
+  width: 13px;
+  height: 11px;
+  border-radius: 2px 2px 5px 5px;
+  border-color: var(--brass);
+}
+
+.legendShape_wild {
+  border-radius: 50%;
+}
+
+.legendShape_dungeon {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  transform: rotate(45deg);
+  border-color: var(--ink-muted);
+}
+
+.legendHint {
+  margin-left: auto;
+  font: 400 10px/1.3 var(--mono);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--ink-faint);
+}
+
+@media (max-width: 720px) {
+  .legendHint {
+    margin-left: 0;
+    width: 100%;
+  }
 }
 
 /* ============================================================
@@ -300,6 +540,13 @@
   color: var(--ink-muted);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.tooltipEncounter {
+  font: 500 10px/1.2 var(--mono);
+  color: var(--brass);
+  letter-spacing: 0.06em;
   margin-bottom: 8px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border-soft);

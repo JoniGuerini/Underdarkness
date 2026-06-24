@@ -90,9 +90,11 @@ Versão otimizada em `dist/`.
 
 ## Documentação
 
-- **[`design-system.md`](./design-system.md)** — sistema visual completo: cores, tipografia, padrões de layout, anti-patterns
-- **[`AGENTS.md`](./AGENTS.md)** — contexto pra agentes de IA continuarem o desenvolvimento sem refazer descobertas
+Apenas dois documentos, com papéis distintos:
+
+- **[`AGENTS.md`](./AGENTS.md)** — documento mestre **técnico/geral**: visão, stack, arquitetura, modelo de dados, todas as fórmulas de stats, status de validação de cada atributo/mod, anti-patterns e roadmap. Fonte única de verdade técnica.
+- **[`design-system.md`](./design-system.md)** — sistema **visual**: cores, tipografia, padrões de layout em detalhe.
 
 ## Estado do projeto
 
-Mockup denso que estabelece linguagem visual, padrões de componente e arquitetura de dados. As mecânicas de jogo (combate, eventos, dano real) ainda não estão implementadas — descrições de stats, mods de itens e talents são puramente apresentadas mas não afetam cálculos. Próxima grande fase é wirar as derivações reais (item bonuses → derived stats, talent ranks → bonuses).
+Em desenvolvimento ativo. Itemização real (equipamento afeta a ficha via `computeDerivedStats`), combate por turnos, leveling e crafting já funcionam. Em curso: um questionário guiado de balanceamento revisando cada um dos 39 stats da ficha (ver `AGENTS.md` § 9). Pendentes principais: efeitos de talento plugados nos stats, sistema de habilidades/feitiços e dano elemental no combate.

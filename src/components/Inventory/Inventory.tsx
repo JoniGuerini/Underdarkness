@@ -1,5 +1,4 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import type { Character, EquipSlot, Item } from '../../types';
 import {
   EQUIP_SLOT_LABEL,
@@ -53,14 +52,6 @@ export function Inventory({ character, onUpdate }: InventoryProps) {
   // Tooltip — mantemos posição e item ativo. Hide durante drag.
   const [tooltip, setTooltip] = useState<{ item: Item; left: number; top: number } | null>(null);
 
-  // Context menu — right-click pra descartar
-  const [contextMenu, setContextMenu] = useState<{
-    loc: Location;
-    item: Item;
-    x: number;
-    y: number;
-  } | null>(null);
-
   // Refs por slot — pro tooltip ler a posição
   const slotRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
@@ -69,18 +60,6 @@ export function Inventory({ character, onUpdate }: InventoryProps) {
     onUpdate({ equipped, inventory });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [equipped, inventory]);
-
-  // Fecha context menu em clique global
-  useEffect(() => {
-    if (!contextMenu) return;
-    const close = () => setContextMenu(null);
-    window.addEventListener('mousedown', close);
-    window.addEventListener('keydown', close);
-    return () => {
-      window.removeEventListener('mousedown', close);
-      window.removeEventListener('keydown', close);
-    };
-  }, [contextMenu]);
 
   // ===== Helpers de leitura/escrita =====
   const getItem = useCallback(
@@ -186,21 +165,6 @@ export function Inventory({ character, onUpdate }: InventoryProps) {
     [getItem, equipped, inventory, swap],
   );
 
-  // ===== Descartar =====
-  const discard = useCallback(
-    (loc: Location) => {
-      if (loc.kind === 'inventory') {
-        const next = [...inventory];
-        next[loc.index] = null;
-        setInventory(next);
-      } else {
-        setEquipped({ ...equipped, [loc.slot]: null });
-      }
-      setContextMenu(null);
-    },
-    [inventory, equipped],
-  );
-
   // ===== Drag handlers =====
   const handleDragStart = (src: Location) => (e: React.DragEvent) => {
     const item = getItem(src);
@@ -255,11 +219,15 @@ export function Inventory({ character, onUpdate }: InventoryProps) {
     quickToggle(loc);
   };
 
+  /** Botão direito agora replica click-to-equip: equipa item do inventário
+   *  ou desequipa item de slot equipado. Mantém comportamento simétrico com
+   *  clique esquerdo — sem menu de contexto. Descartar passou pra drag-out
+   *  (futuro) ou outra interação. */
   const handleContextMenu = (loc: Location, item: Item | null) => (e: React.MouseEvent) => {
     e.preventDefault();
     if (!item) return;
     setTooltip(null);
-    setContextMenu({ loc, item, x: e.clientX, y: e.clientY });
+    quickToggle(loc);
   };
 
   // ===== Render =====
@@ -322,8 +290,10 @@ export function Inventory({ character, onUpdate }: InventoryProps) {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Equipado</h2>
           <div className={styles.equippedGrid}>
-            {PAPER_DOLL_ORDER.map((slot) =>
-              renderSlot(equipped[slot], { kind: 'equipped', slot }, EQUIP_SLOT_LABEL[slot]),
+            {PAPER_DOLL_ORDER.map((slot, i) =>
+              slot
+                ? renderSlot(equipped[slot], { kind: 'equipped', slot }, EQUIP_SLOT_LABEL[slot])
+                : <div key={`gap-${i}`} className={styles.slotGap} aria-hidden />,
             )}
           </div>
         </section>
@@ -342,21 +312,6 @@ export function Inventory({ character, onUpdate }: InventoryProps) {
       {tooltip && !dragSource && (
         <ItemTooltip item={tooltip.item} position={{ left: tooltip.left, top: tooltip.top }} />
       )}
-
-      {/* Context menu (right-click) */}
-      {contextMenu &&
-        createPortal(
-          <ul
-            className={styles.contextMenu}
-            style={{ left: contextMenu.x, top: contextMenu.y }}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <li className={styles.menuItemDanger} onClick={() => discard(contextMenu.loc)}>
-              Descartar
-            </li>
-          </ul>,
-          document.body,
-        )}
     </>
   );
 }

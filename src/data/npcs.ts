@@ -35,6 +35,9 @@ export interface Npc {
   dialogue: string;
   /** Papéis disponíveis — define os botões de ação no diálogo */
   roles: NpcRole[];
+  /** Retrato opcional — imagem quadrada exibida no card da cena. Quando
+   *  presente, preenche o card inteiro e nome/título ficam sobrepostos. */
+  portrait?: string;
 }
 
 /**

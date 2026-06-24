@@ -1,38 +1,13 @@
 import { useState } from 'react';
-import type { Character, ClassKey, Item } from '../../types';
+import type { Character, ClassKey } from '../../types';
 import { CLASSES } from '../../data/classes';
-import { applyLoadout, getStarterLoadout } from '../../data/items';
-import { makeMaterialStack } from '../../data/materials';
+import { emptyEquipped, emptyInventory } from '../../data/items';
+import { makeBaseItem } from '../../data/itemBases';
 import { ClassSidebarItem } from '../../components/ClassSidebarItem/ClassSidebarItem';
 import { ClassDetailPanel } from '../../components/ClassDetailPanel/ClassDetailPanel';
 import { genId } from '../../lib/storage';
+import { xpForLevel } from '../../lib/leveling';
 import styles from './CharacterCreate.module.css';
-
-/**
- * Itens iniciais — colocados nos primeiros slots vazios do inventário
- * pra que o jogador possa testar crafting/loja imediatamente após criar.
- * Mistura de reagentes da forja (ferro, pedra) + alquimia (ervas, frasco)
- * + comida básica.
- */
-const STARTER_KIT: { id: string; count: number }[] = [
-  { id: 'mat-minerio-ferro', count: 3 },
-  { id: 'mat-pedra-afiar', count: 1 },
-  { id: 'erva-vermelha', count: 2 },
-  { id: 'erva-azul', count: 2 },
-  { id: 'frasco-vazio', count: 2 },
-  { id: 'food-pao-duro', count: 2 },
-];
-
-/** Mutates the inventory in-place adding STARTER_KIT items in empty slots. */
-function addStarterKit(inventory: (Item | null)[]) {
-  for (const entry of STARTER_KIT) {
-    const stack = makeMaterialStack(entry.id, entry.count);
-    if (!stack) continue;
-    const emptyIdx = inventory.findIndex((s) => s === null);
-    if (emptyIdx < 0) break;
-    inventory[emptyIdx] = stack;
-  }
-}
 
 interface CharacterCreateProps {
   canGoBack: boolean;
@@ -55,9 +30,15 @@ export function CharacterCreate({ canGoBack, onBack, onCreate }: CharacterCreate
   const handleCreate = () => {
     if (!canCreate) return;
     const data = CLASSES[selectedClass];
-    const { equipped, inventory } = applyLoadout(getStarterLoadout(selectedClass));
-    // Kit inicial — alguns reagentes pra testar crafting de imediato + uns frascos
-    addStarterKit(inventory);
+    // Personagem novo nasce sem inventário — apenas ouro inicial pra comprar
+    // o básico em Pedragal. Equipamento de partida varia por classe:
+    // Guerreiro recebe uma Espada Curta (arma base 1H). Ladino e Mago ainda
+    // sem itens iniciais — a definir.
+    const equipped = emptyEquipped();
+    if (selectedClass === 'guerreiro') {
+      equipped.arma = makeBaseItem('espada-curta', 'starter');
+    }
+    const inventory = emptyInventory();
     const character: Character = {
       id: genId(),
       name: trimmedName,
@@ -66,7 +47,7 @@ export function CharacterCreate({ canGoBack, onBack, onCreate }: CharacterCreate
       classTagline: data.tagline,
       level: 1,
       xp: 0,
-      xpNext: 100,
+      xpNext: xpForLevel(1),
       vidaMax: data.vida,
       vidaAtual: data.vida,
       manaMax: data.mana,
