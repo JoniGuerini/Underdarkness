@@ -281,15 +281,15 @@
   position: fixed;
   width: max-content;
   max-width: 280px;
-  background: var(--surface-hover);
+  background: var(--surface);
   border: none;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border-radius: 4px;
   font: 12px/1.5 var(--mono);
   color: var(--ink);
   pointer-events: none;
   z-index: 1000;
-  box-shadow: var(--tooltip-edge);
+  box-shadow: var(--card-edge);
   transform: translateY(-100%) translateY(-8px);
   animation: tooltipIn 0.15s ease-out;
 }

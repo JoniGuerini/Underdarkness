@@ -46,6 +46,12 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
     <div className={styles.card}>
       <div className={styles.grid}>
         <Column title="Recursos">
+          <Section title="Vitais">
+            <VitalBar label="Vida" current={c.vidaAtual} max={c.vidaMax} kind="vida" />
+            <VitalBar label="Mana" current={c.manaAtual} max={c.manaMax} kind="mana" />
+            <VitalBar label="Exp" current={c.xp} max={c.xpNext} kind="exp" />
+          </Section>
+
           <Section title="Atributos">
             <StatLine
               name="Força"
@@ -89,12 +95,6 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
                 </>
               }
             />
-          </Section>
-
-          <Section title="Vitais">
-            <VitalBar label="Vida" current={c.vidaAtual} max={c.vidaMax} kind="vida" />
-            <VitalBar label="Mana" current={c.manaAtual} max={c.manaMax} kind="mana" />
-            <VitalBar label="Exp" current={c.xp} max={c.xpNext} kind="exp" />
           </Section>
 
           <Section title="Regeneração">

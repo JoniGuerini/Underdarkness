@@ -1,11 +1,10 @@
 import { useState, useMemo } from 'react';
 import type { Character, Quest, QuestStatus, QuestType } from '../../types';
 import {
-  QUESTS,
   QUEST_STATUS_LABEL,
   QUEST_TYPE_LABEL,
-  getQuestsByStatus,
 } from '../../data/quests';
+import { getQuestsForCharacter } from '../../lib/questProgress';
 import { getLocationById } from '../../data/world';
 import { ConfirmDialog } from '../ConfirmDialog/ConfirmDialog';
 import styles from './JournalView.module.css';
@@ -24,19 +23,11 @@ export function JournalView({ character, onUpdate }: JournalViewProps) {
   const [selectedTypes, setSelectedTypes] = useState<Set<QuestType>>(new Set());
   const [pendingAbandon, setPendingAbandon] = useState<Quest | null>(null);
 
-  // Missões abandonadas somem do diário inteiro (qualquer aba).
-  const abandonedSet = useMemo(
-    () => new Set(character.abandonedQuestIds),
-    [character.abandonedQuestIds],
-  );
-
   const questsForTab = useMemo(() => {
-    const base = getQuestsByStatus(activeStatus).filter(
-      (q) => !abandonedSet.has(q.id),
-    );
+    const base = getQuestsForCharacter(character, activeStatus);
     if (selectedTypes.size === 0) return base;
     return base.filter((q) => selectedTypes.has(q.type));
-  }, [activeStatus, abandonedSet, selectedTypes]);
+  }, [character, activeStatus, selectedTypes]);
 
   const toggleType = (type: QuestType) => {
     setSelectedTypes((prev) => {
@@ -65,7 +56,7 @@ export function JournalView({ character, onUpdate }: JournalViewProps) {
   // Quando muda de tab, seleciona a primeira da nova lista
   const handleTabChange = (status: QuestStatus) => {
     setActiveStatus(status);
-    const first = getQuestsByStatus(status)[0];
+    const first = getQuestsForCharacter(character, status)[0];
     setSelectedId(first?.id ?? null);
   };
 
@@ -80,11 +71,8 @@ export function JournalView({ character, onUpdate }: JournalViewProps) {
           <span className={styles.filterLabel}>Status</span>
           <div className={styles.filterChips}>
             {STATUS_ORDER.map((status) => {
-              const count = QUESTS.filter(
-                (q) =>
-                  q.status === status &&
-                  !abandonedSet.has(q.id) &&
-                  (selectedTypes.size === 0 || selectedTypes.has(q.type)),
+              const count = getQuestsForCharacter(character, status).filter(
+                (q) => selectedTypes.size === 0 || selectedTypes.has(q.type),
               ).length;
               const active = activeStatus === status;
               return (
@@ -373,10 +361,7 @@ interface JournalHeaderProps {
 }
 
 export function JournalHeader({ character, onClose, shortcut = 'J' }: JournalHeaderProps) {
-  const abandoned = new Set(character.abandonedQuestIds);
-  const activeCount = QUESTS.filter(
-    (q) => q.status === 'ativa' && !abandoned.has(q.id),
-  ).length;
+  const activeCount = getQuestsForCharacter(character, 'ativa').length;
   return (
     <div className={styles.header}>
       <div className={styles.nameBlock}>

@@ -7,6 +7,7 @@ import { ClassSidebarItem } from '../../components/ClassSidebarItem/ClassSidebar
 import { ClassDetailPanel } from '../../components/ClassDetailPanel/ClassDetailPanel';
 import { genId } from '../../lib/storage';
 import { xpForLevel } from '../../lib/leveling';
+import { computeDerivedStats } from '../../lib/stats';
 import styles from './CharacterCreate.module.css';
 
 interface CharacterCreateProps {
@@ -20,7 +21,7 @@ export function CharacterCreate({ canGoBack, onBack, onCreate }: CharacterCreate
   const [selectedClass, setSelectedClass] = useState<ClassKey>('guerreiro');
 
   const trimmedName = name.trim();
-  const canCreate = trimmedName.length > 0;
+  const canCreate = trimmedName.length >= 2;
 
   const handleReset = () => {
     setName('');
@@ -39,7 +40,7 @@ export function CharacterCreate({ canGoBack, onBack, onCreate }: CharacterCreate
       equipped.arma = makeBaseItem('espada-curta', 'starter');
     }
     const inventory = emptyInventory();
-    const character: Character = {
+    const draft: Character = {
       id: genId(),
       name: trimmedName,
       classKey: selectedClass,
@@ -50,8 +51,8 @@ export function CharacterCreate({ canGoBack, onBack, onCreate }: CharacterCreate
       xpNext: xpForLevel(1),
       vidaMax: data.vida,
       vidaAtual: data.vida,
-      manaMax: data.mana,
-      manaAtual: data.mana,
+      manaMax: 0,
+      manaAtual: 0,
       forca: data.forca,
       agilidade: data.agilidade,
       intelecto: data.intelecto,
@@ -61,12 +62,22 @@ export function CharacterCreate({ canGoBack, onBack, onCreate }: CharacterCreate
       talentRanks: {},
       visitedLocations: ['pedragal'],
       abandonedQuestIds: [],
+      acceptedQuestIds: [],
+      questStates: {},
       gold: 60,
       time: '06:00',
       day: 1,
       period: 'Aurora',
       location: 'pedragal',
       createdAt: new Date().toISOString(),
+    };
+    const derived = computeDerivedStats(draft);
+    const character: Character = {
+      ...draft,
+      vidaMax: derived.vidaMax,
+      manaMax: derived.manaMax,
+      vidaAtual: derived.vidaMax,
+      manaAtual: derived.manaMax,
     };
     onCreate(character);
   };
@@ -89,6 +100,7 @@ export function CharacterCreate({ canGoBack, onBack, onCreate }: CharacterCreate
             type="text"
             id="hero-name"
             placeholder="Digite o nome do personagem"
+            minLength={2}
             maxLength={32}
             autoComplete="off"
             value={name}

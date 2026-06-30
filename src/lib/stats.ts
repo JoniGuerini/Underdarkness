@@ -143,10 +143,8 @@ export function computeDerivedStatsWithSources(c: Character): DerivedStatsResult
   ];
   const vidaMax = sumSources(sources.vidaMax);
 
-  // Intelecto contribui +5 de Mana Máxima por ponto (mostrado como linha
-  // separada no breakdown pra deixar a origem visível).
+  // Intelecto contribui +5 de Mana Máxima por ponto (+ itens com flat-mana).
   sources.manaMax = [
-    { label: `Classe (${classLabel(cls)})`, value: classDef.mana, tone: 'class' },
     { label: `Intelecto (${i} × 5)`, value: i * 5, tone: 'attr-int', keepZero: true },
     ...itemSources(contribs, 'flat-mana'),
   ];

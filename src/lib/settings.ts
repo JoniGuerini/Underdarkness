@@ -9,8 +9,8 @@ export const EDITABLE_TABS: EditableTab[] = [
   'habilidades',
   'mapa',
   'diario',
-  'registro',
   'codice',
+  'mercado',
   'social', // SOCIAL: removível
 ];
 
@@ -26,8 +26,8 @@ export const DEFAULT_SETTINGS: Settings = {
     habilidades: 'A',
     mapa: 'M',
     diario: 'J',
-    registro: 'K',
-    codice: 'L',
+    codice: 'K',
+    mercado: 'L',
     social: 'G', // SOCIAL: removível
   },
   startInFullscreen: false,
@@ -43,11 +43,14 @@ function migrate(raw: unknown): Settings {
     shortcuts.habilidades = legacy.talentos;
   }
   delete (shortcuts as Record<string, string>).talentos;
-  // Códice dividido: dados → registro (preserva atalho K), guias → códice
-  if (legacy.codice && legacy.registro === undefined) {
-    shortcuts.registro = legacy.codice;
-    shortcuts.codice = 'L';
+  // Registro + Códice unificados em codice — preserva atalho K de quem usava registro
+  const legacyShortcuts = shortcuts as Record<string, string>;
+  if (legacyShortcuts.registro) {
+    shortcuts.codice = legacyShortcuts.registro;
+  } else if (legacyShortcuts.codice) {
+    shortcuts.codice = legacyShortcuts.codice;
   }
+  delete legacyShortcuts.registro;
   return {
     shortcuts: shortcuts as Record<EditableTab, string>,
     startInFullscreen: s.startInFullscreen ?? DEFAULT_SETTINGS.startInFullscreen,

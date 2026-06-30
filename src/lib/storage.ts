@@ -74,6 +74,8 @@ function migrate(c: Character): Character {
       id === 'origem' ? 'pedragal' : id,
     ),
     abandonedQuestIds: c.abandonedQuestIds ?? [],
+    acceptedQuestIds: c.acceptedQuestIds ?? [],
+    questStates: c.questStates ?? {},
     location: c.location === 'origem' ? 'pedragal' : (c.location ?? 'pedragal'),
     // Recomputa xpNext com a curva nova (10*level^1.5) — saves antigos tinham
     // xpNext: 100 hardcoded, agora é função do nível atual.

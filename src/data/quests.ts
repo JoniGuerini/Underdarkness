@@ -129,6 +129,31 @@ export const QUESTS: Quest[] = [
     ],
   },
 
+  {
+    id: 'q-lingotes-perdidos',
+    title: 'Lingotes Perdidos',
+    type: 'side',
+    status: 'ativa',
+    requiresAccept: true,
+    giver: 'Tibério',
+    giverNpcId: 'tiberio',
+    locationId: 'floresta-densa',
+    description:
+      'O ferreiro perdeu ferro na estrada leste. Precisa de três pedaços recuperados na Floresta Densa.',
+    story:
+      'Tibério bate o martelo na bigorna e para no meio do golpe. "Carroça tombou ontem à noite — ferro espalhado na curva antes da floresta. Não posso fechar pedido de espada sem aquele metal. Se trouxer três pedaços inteiros, pago em ouro e não esqueço."',
+    objectives: [
+      { text: 'Falar com Tibério na forja', completed: true },
+      { text: 'Recuperar 3 Pedaços de Ferro na Floresta Densa', current: 0, total: 3, completed: false },
+      { text: 'Entregar os pedaços a Tibério', completed: false },
+    ],
+    rewards: [
+      { type: 'gold', label: '25 Ouro' },
+      { type: 'xp', label: '40 Experiência' },
+    ],
+    journal: [],
+  },
+
   // ════════ CONCLUÍDAS ════════
   {
     id: 'q-mensagem-porto',

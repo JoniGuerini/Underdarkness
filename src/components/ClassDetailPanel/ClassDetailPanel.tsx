@@ -39,7 +39,7 @@ export function ClassDetailPanel({ data }: ClassDetailPanelProps) {
           </div>
           <div className={styles.statRow}>
             <span className={`${styles.statName} ${styles.mana}`}>Mana</span>
-            <span className={styles.statValue}>{data.mana}</span>
+            <span className={styles.statValue}>{data.intelecto * 5}</span>
           </div>
         </div>
       </div>

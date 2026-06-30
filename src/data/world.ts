@@ -28,7 +28,7 @@ export const LOCATIONS: MapLocation[] = [
     description:
       'Pinheiros gigantescos cobrem a luz do dia. Algo se move entre as árvores quando você não está olhando.',
     type: 'wilderness',
-    x: 270,
+    x: 310,
     y: 340,
     connections: ['pedragal'],
   },
@@ -40,8 +40,8 @@ export const LOCATIONS: MapLocation[] = [
     description:
       'Carvalhos antigos sobre casas trancadas. A vila ainda respira, mas quem ronda as ruas não veio negociar.',
     type: 'wilderness',
-    x: 430,
-    y: 340,
+    x: 480,
+    y: 425,
     connections: ['floresta-densa'],
   },
   {
@@ -52,8 +52,8 @@ export const LOCATIONS: MapLocation[] = [
     description:
       'Solo encharcado, vapores que cheiram a metal e uma quietude que não é natural.',
     type: 'wilderness',
-    x: 590,
-    y: 340,
+    x: 640,
+    y: 210,
     connections: ['corvalho'],
   },
   {
@@ -64,8 +64,8 @@ export const LOCATIONS: MapLocation[] = [
     description:
       'Planícies de capim seco até o horizonte. O vento corta. Bandos nômades cruzam aqui.',
     type: 'wilderness',
-    x: 750,
-    y: 340,
+    x: 810,
+    y: 295,
     connections: ['pantano-mortos'],
   },
   {
@@ -76,8 +76,8 @@ export const LOCATIONS: MapLocation[] = [
     description:
       'Cais molhados, lanternas fracas e facas nos cantos. O porto recebe — e cobra caro.',
     type: 'wilderness',
-    x: 910,
-    y: 340,
+    x: 1040,
+    y: 295,
     connections: ['estepe-cinzenta'],
   },
   {
@@ -88,8 +88,8 @@ export const LOCATIONS: MapLocation[] = [
     description:
       'Galerias soterradas que se estendem por quilômetros. Há vozes nas pedras.',
     type: 'dungeon',
-    x: 1040,
-    y: 420,
+    x: 810,
+    y: 480,
     connections: ['porto-lume'],
   },
   {
@@ -100,8 +100,8 @@ export const LOCATIONS: MapLocation[] = [
     description:
       'Baixadas sob as muralhas brancas. O que a capital exibe ao céu esconde o que vive debaixo dela.',
     type: 'dungeon',
-    x: 1040,
-    y: 560,
+    x: 810,
+    y: 610,
     connections: ['catacumbas-profundas'],
   },
   {
@@ -112,8 +112,8 @@ export const LOCATIONS: MapLocation[] = [
     description:
       'O fim de todos os caminhos. Apenas heróis tolos vêm aqui — e nenhum volta.',
     type: 'boss',
-    x: 900,
-    y: 560,
+    x: 1040,
+    y: 550,
     connections: ['cidade-alta'],
   },
 
@@ -126,8 +126,8 @@ export const LOCATIONS: MapLocation[] = [
     description:
       'Uma escada descendo pelo solo. As tochas que alguém deixou ainda queimam — ninguém lembra de tê-las acendido.',
     type: 'dungeon',
-    x: 430,
-    y: 170,
+    x: 480,
+    y: 85,
     connections: ['corvalho'],
   },
   {
@@ -138,8 +138,8 @@ export const LOCATIONS: MapLocation[] = [
     description:
       'Estrada de pedra que serpenteia entre montanhas. Bandidos cobram pedágio. O caminho termina num desfiladeiro.',
     type: 'wilderness',
-    x: 590,
-    y: 510,
+    x: 640,
+    y: 550,
     connections: ['pantano-mortos'],
   },
   {
@@ -150,8 +150,8 @@ export const LOCATIONS: MapLocation[] = [
     description:
       'Túneis escavados há gerações. Algo emergiu lá de dentro — e nunca foi catalogado.',
     type: 'dungeon',
-    x: 750,
-    y: 170,
+    x: 810,
+    y: 85,
     connections: ['estepe-cinzenta'],
   },
   {
@@ -162,13 +162,11 @@ export const LOCATIONS: MapLocation[] = [
     description:
       'Cumes brancos eternos. O ar é fino, o frio mata mais rápido que as feras. Não há passagem além.',
     type: 'wilderness',
-    x: 910,
-    y: 170,
+    x: 1040,
+    y: 85,
     connections: ['porto-lume'],
   },
 ];
-
-export const MAP_VIEWPORT = { width: 1180, height: 680 };
 
 export function getConnections(locationId: string): string[] {
   const explicit = LOCATIONS.find((l) => l.id === locationId)?.connections ?? [];

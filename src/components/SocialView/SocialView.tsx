@@ -10,17 +10,24 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Character, Quest, Rarity } from '../../types';
 import {
-  GLOBAL_MESSAGES,
   GUILD_MESSAGES,
   GUILD,
   ONLINE_COUNT,
   SERVER_NAME,
   FRIENDS,
   CLASS_COLOR_VAR,
+  PUBLIC_CHAT_CHANNELS,
+  PUBLIC_CHAT_VIEWS,
+  PUBLIC_CHANNEL_MESSAGES,
+  getChannelLabel,
+  getMessageChannel,
+  mergePublicMessages,
   makeOwnMessage,
   type ChatMessage,
   type Friend,
   type MessageSegment,
+  type PublicChatChannel,
+  type PublicChatView,
   type SocialChannel,
 } from '../../data/social';
 import { findItemByName, findQuestByName } from '../../data/socialLinks';
@@ -70,7 +77,7 @@ export function SocialView({ character }: SocialViewProps) {
       </nav>
 
       <div className={styles.sectionBody} key={active}>
-        {active === 'global' && <ChatPane channel="global" character={character} />}
+        {active === 'global' && <PublicChatPane character={character} />}
         {active === 'guilda' && <ChatPane channel="guilda" character={character} />}
         {active === 'amigos' && <FriendsPane />}
         {active === 'grupos' && <PartiesPane character={character} />}
@@ -80,7 +87,195 @@ export function SocialView({ character }: SocialViewProps) {
 }
 
 // ============================================================================
-// ChatPane — Global e Guilda compartilham o layout (header + log + input)
+// PublicChatPane — Geral (feed unificado) + canais filtrados
+// ============================================================================
+
+interface PublicChatPaneProps {
+  character: Character;
+}
+
+function PublicChatPane({ character }: PublicChatPaneProps) {
+  const [view, setView] = useState<PublicChatView>('geral');
+  const [sendChannel, setSendChannel] = useState<PublicChatChannel>('global');
+  const [messagesByChannel, setMessagesByChannel] = useState<Record<PublicChatChannel, ChatMessage[]>>(() => ({
+    ...PUBLIC_CHANNEL_MESSAGES,
+  }));
+  const [input, setInput] = useState('');
+  const [viewMenuOpen, setViewMenuOpen] = useState(false);
+  const [sendMenuOpen, setSendMenuOpen] = useState(false);
+  const logRef = useRef<HTMLDivElement>(null);
+  const viewPickerRef = useRef<HTMLDivElement>(null);
+  const sendPickerRef = useRef<HTMLDivElement>(null);
+
+  const viewDef = PUBLIC_CHAT_VIEWS.find((c) => c.id === view)!;
+  const messages = useMemo(
+    () => (view === 'geral' ? mergePublicMessages(messagesByChannel) : messagesByChannel[view]),
+    [view, messagesByChannel],
+  );
+  const activeSendChannel = view === 'geral' ? sendChannel : view;
+
+  useEffect(() => {
+    if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
+  }, [messages.length, view]);
+
+  useEffect(() => {
+    if (!viewMenuOpen && !sendMenuOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (viewPickerRef.current?.contains(target) || sendPickerRef.current?.contains(target)) return;
+      setViewMenuOpen(false);
+      setSendMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [viewMenuOpen, sendMenuOpen]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const text = input.trim();
+    if (!text) return;
+    setMessagesByChannel((prev) => ({
+      ...prev,
+      [activeSendChannel]: [...prev[activeSendChannel], makeOwnMessage(text, character, activeSendChannel)],
+    }));
+    setInput('');
+  };
+
+  const handleViewChange = (next: PublicChatView) => {
+    setView(next);
+    if (next !== 'geral') setSendChannel(next);
+    setViewMenuOpen(false);
+  };
+
+  const handleSendChannelChange = (next: PublicChatChannel) => {
+    setSendChannel(next);
+    setSendMenuOpen(false);
+  };
+
+  const viewPickerLabel = view === 'geral' ? 'Geral' : `/${view}`;
+
+  return (
+    <div className={styles.chat}>
+      <header className={styles.chatHeader}>
+        <div className={styles.chatHeaderLeft}>
+          <span className={styles.chatChannelTag}>{viewDef.label}</span>
+          <span className={styles.chatServerName}>{SERVER_NAME}</span>
+        </div>
+        <span className={styles.chatHeaderMeta}>
+          <span className={styles.onlineDot} /> {ONLINE_COUNT.toLocaleString('pt-BR')} online
+        </span>
+      </header>
+
+      <div className={styles.chatChannelHint}>{viewDef.description}</div>
+
+      <div ref={logRef} className={styles.chatLog}>
+        {messages.map((m) => (
+          <MessageRow key={m.id} message={m} showChannelTag={view === 'geral'} />
+        ))}
+      </div>
+
+      <form className={styles.chatInput} onSubmit={handleSubmit}>
+        <div ref={viewPickerRef} className={styles.channelPicker}>
+          <button
+            type="button"
+            className={`${styles.channelPickerBtn} ${viewMenuOpen ? styles.channelPickerBtnOpen : ''}`}
+            onClick={() => {
+              setSendMenuOpen(false);
+              setViewMenuOpen((open) => !open);
+            }}
+            aria-expanded={viewMenuOpen}
+            aria-haspopup="listbox"
+          >
+            <span>{viewPickerLabel}</span>
+            <span className={styles.channelPickerCaret} aria-hidden>▾</span>
+          </button>
+          {viewMenuOpen && (
+            <ul className={styles.channelPickerMenu} role="listbox" aria-label="Visualização do chat">
+              {PUBLIC_CHAT_VIEWS.map((ch) => {
+                const isActive = ch.id === view;
+                return (
+                  <li key={ch.id} role="option" aria-selected={isActive}>
+                    <button
+                      type="button"
+                      className={`${styles.channelPickerItem} ${isActive ? styles.channelPickerItemActive : ''}`}
+                      onClick={() => handleViewChange(ch.id)}
+                    >
+                      <span className={styles.channelPickerSlug}>
+                        {ch.id === 'geral' ? 'Geral' : `/${ch.id}`}
+                      </span>
+                      <span className={styles.channelPickerLabel}>{ch.label}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {view === 'geral' && (
+          <div ref={sendPickerRef} className={styles.channelPicker}>
+            <button
+              type="button"
+              className={`${styles.channelPickerBtn} ${styles.channelPickerBtnSend} ${sendMenuOpen ? styles.channelPickerBtnOpen : ''}`}
+              onClick={() => {
+                setViewMenuOpen(false);
+                setSendMenuOpen((open) => !open);
+              }}
+              aria-expanded={sendMenuOpen}
+              aria-haspopup="listbox"
+              title="Canal de envio"
+            >
+              <span>→ /{sendChannel}</span>
+              <span className={styles.channelPickerCaret} aria-hidden>▾</span>
+            </button>
+            {sendMenuOpen && (
+              <ul className={styles.channelPickerMenu} role="listbox" aria-label="Canal de envio">
+                {PUBLIC_CHAT_CHANNELS.map((ch) => {
+                  const isActive = ch.id === sendChannel;
+                  return (
+                    <li key={ch.id} role="option" aria-selected={isActive}>
+                      <button
+                        type="button"
+                        className={`${styles.channelPickerItem} ${isActive ? styles.channelPickerItemActive : ''}`}
+                        onClick={() => handleSendChannelChange(ch.id)}
+                      >
+                        <span className={styles.channelPickerSlug}>/{ch.id}</span>
+                        <span className={styles.channelPickerLabel}>{ch.label}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        )}
+
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder={
+            view === 'geral'
+              ? `Enviar em /${sendChannel}…`
+              : `Mensagem em /${view}…`
+          }
+          className={styles.chatInputField}
+          maxLength={200}
+        />
+        <button
+          type="submit"
+          className={`btn-secondary ${styles.chatInputSend}`}
+          disabled={input.trim().length === 0}
+        >
+          Enviar
+        </button>
+      </form>
+    </div>
+  );
+}
+
+// ============================================================================
+// ChatPane — Guilda (layout compartilhado: header + log + input)
 // ============================================================================
 
 interface ChatPaneProps {
@@ -89,7 +284,7 @@ interface ChatPaneProps {
 }
 
 function ChatPane({ channel, character }: ChatPaneProps) {
-  const initial = channel === 'global' ? GLOBAL_MESSAGES : GUILD_MESSAGES;
+  const initial = GUILD_MESSAGES;
   const [messages, setMessages] = useState<ChatMessage[]>(initial);
   const [input, setInput] = useState('');
   const logRef = useRef<HTMLDivElement>(null);
@@ -110,32 +305,16 @@ function ChatPane({ channel, character }: ChatPaneProps) {
   return (
     <div className={styles.chat}>
       <header className={styles.chatHeader}>
-        {channel === 'global' ? (
-          <>
-            <div className={styles.chatHeaderLeft}>
-              <span className={styles.chatChannelTag}>Global</span>
-              <span className={styles.chatServerName}>{SERVER_NAME}</span>
-            </div>
-            <span className={styles.chatHeaderMeta}>
-              <span className={styles.onlineDot} /> {ONLINE_COUNT.toLocaleString('pt-BR')} online
-            </span>
-          </>
-        ) : (
-          <>
-            <div className={styles.chatHeaderLeft}>
-              <span className={styles.chatChannelTag}>Guilda</span>
-              <span className={styles.chatServerName}>{GUILD.name}</span>
-            </div>
-            <span className={styles.chatHeaderMeta}>
-              <span className={styles.onlineDot} /> {GUILD.onlineCount} de {GUILD.memberCount}
-            </span>
-          </>
-        )}
+        <div className={styles.chatHeaderLeft}>
+          <span className={styles.chatChannelTag}>Guilda</span>
+          <span className={styles.chatServerName}>{GUILD.name}</span>
+        </div>
+        <span className={styles.chatHeaderMeta}>
+          <span className={styles.onlineDot} /> {GUILD.onlineCount} de {GUILD.memberCount}
+        </span>
       </header>
 
-      {channel === 'guilda' && (
-        <div className={styles.guildMotto}>"{GUILD.motto}"</div>
-      )}
+      <div className={styles.guildMotto}>"{GUILD.motto}"</div>
 
       <div ref={logRef} className={styles.chatLog}>
         {messages.map((m) => (
@@ -322,11 +501,19 @@ const STATUS_LABEL: Record<Friend['status'], string> = {
 // MessageRow — uma linha do log de chat (Global / Guilda)
 // ============================================================================
 
-function MessageRow({ message }: { message: ChatMessage }) {
+function MessageRow({ message, showChannelTag = false }: { message: ChatMessage; showChannelTag?: boolean }) {
+  const sourceChannel = getMessageChannel(message);
+  const channelTag = showChannelTag && sourceChannel ? getChannelLabel(sourceChannel) : null;
+
+  const channelTagEl = channelTag ? (
+    <span className={styles.messageChannelTag}>[{channelTag}]</span>
+  ) : null;
+
   // Mensagens de sistema e conquista têm tratamento especial
   if (message.kind === 'system') {
     return (
       <div className={`${styles.message} ${styles.messageSystem}`}>
+        {channelTagEl}
         <span className={styles.systemPrefix}>✦ Sistema</span>
         <span className={styles.systemText}>
           {message.segments.map((s, i) => renderSegment(s, i))}
@@ -339,6 +526,7 @@ function MessageRow({ message }: { message: ChatMessage }) {
   if (message.kind === 'achievement') {
     return (
       <div className={`${styles.message} ${styles.messageAchievement}`}>
+        {channelTagEl}
         <span className={styles.achievementPrefix}>✦ Conquista</span>
         <span className={styles.achievementText}>
           {message.segments.map((s, i) => renderSegment(s, i))}
@@ -355,12 +543,13 @@ function MessageRow({ message }: { message: ChatMessage }) {
   return (
     <div className={`${styles.message} ${isMe ? styles.messageMe : ''}`}>
       <span className={styles.messageTime}>{message.time}</span>
+      {channelTagEl}
       {author && (
         <>
           <span className={styles.authorLevel}>[Nv {author.level}]</span>
           {author.guildRank && (
             <span className={`${styles.authorRank} ${styles[`rank_${author.guildRank.toLowerCase()}`]}`}>
-              {author.guildRank.charAt(0)}
+              {author.guildRank}
             </span>
           )}
           <span

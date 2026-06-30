@@ -10,7 +10,7 @@ import { TalentsView, TalentsHeader } from '../../components/TalentsView/Talents
 import { MapView, MapHeader } from '../../components/MapView/MapView';
 import { JournalView, JournalHeader } from '../../components/JournalView/JournalView';
 import { CodexView, CodexHeader } from '../../components/CodexView/CodexView';
-import { RegistroView, RegistroHeader } from '../../components/RegistroView/RegistroView';
+import { MercadoView, MercadoHeader } from '../../components/MercadoView/MercadoView';
 import { SocialView, SocialHeader } from '../../components/SocialView/SocialView'; // SOCIAL: removível
 import { OptionsView, OptionsHeader } from '../../components/OptionsView/OptionsView';
 import { NpcDialog } from '../../components/NpcDialog/NpcDialog';
@@ -40,8 +40,7 @@ interface GameHudProps {
   onBackToList: () => void;
 }
 
-// SOCIAL: 'social' adicionado entre codice e opcoes (removível — basta tirar do array)
-const TAB_ORDER: TabKey[] = ['personagem', 'habilidades', 'mapa', 'diario', 'registro', 'codice', 'social', 'opcoes'];
+const TAB_ORDER: TabKey[] = ['personagem', 'habilidades', 'mapa', 'diario', 'codice', 'mercado', 'social', 'opcoes'];
 
 export function GameHud({
   character,
@@ -367,8 +366,8 @@ export function GameHud({
         activeTab === 'habilidades' ||
         activeTab === 'mapa' ||
         activeTab === 'diario' ||
-        activeTab === 'registro' ||
         activeTab === 'codice' ||
+        activeTab === 'mercado' ||
         activeTab === 'social' || // SOCIAL: removível
         activeTab === 'opcoes') && (
         <Modal
@@ -384,10 +383,10 @@ export function GameHud({
               <MapHeader character={character} onClose={closeTab} shortcut={shortcutFor('mapa')} />
             ) : activeTab === 'diario' ? (
               <JournalHeader character={character} onClose={closeTab} shortcut={shortcutFor('diario')} />
-            ) : activeTab === 'registro' ? (
-              <RegistroHeader character={character} onClose={closeTab} shortcut={shortcutFor('registro')} />
             ) : activeTab === 'codice' ? (
               <CodexHeader character={character} onClose={closeTab} shortcut={shortcutFor('codice')} />
+            ) : activeTab === 'mercado' ? (
+              <MercadoHeader character={character} onClose={closeTab} shortcut={shortcutFor('mercado')} />
             ) : activeTab === 'social' ? ( // SOCIAL: removível
               <SocialHeader character={character} onClose={closeTab} shortcut={shortcutFor('social')} />
             ) : (
@@ -441,8 +440,10 @@ export function GameHud({
                 }
               />
             )}
-            {activeTab === 'registro' && <RegistroView character={character} />}
             {activeTab === 'codice' && <CodexView character={character} />}
+            {activeTab === 'mercado' && (
+              <MercadoView character={character} onUpdate={onUpdate} />
+            )}
             {activeTab === 'social' && <SocialView character={character} />}{/* SOCIAL: removível */}
             {activeTab === 'opcoes' && (
               <OptionsView

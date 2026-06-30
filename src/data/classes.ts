@@ -6,8 +6,7 @@ export const CLASSES: Record<ClassKey, ClassData> = {
     tagline: 'Combate corpo a corpo',
     description:
       'Alta defesa e dano físico. Forte em combate direto, ideal para absorver dano e segurar a linha de frente.',
-    vida: 14,
-    mana: 2,
+    vida: 30,
     forca: 8,
     agilidade: 3,
     intelecto: 3,
@@ -21,8 +20,7 @@ export const CLASSES: Record<ClassKey, ClassData> = {
     tagline: 'Furtividade e precisão',
     description:
       'Dano alto em ataques únicos com chance crítica. Boa esquiva e mobilidade, mas pouca defesa.',
-    vida: 10,
-    mana: 4,
+    vida: 20,
     forca: 5,
     agilidade: 8,
     intelecto: 5,
@@ -36,8 +34,7 @@ export const CLASSES: Record<ClassKey, ClassData> = {
     tagline: 'Magia arcana',
     description:
       'Magias de dano em área e controle. Frágil em combate corpo a corpo, mas devastador a distância.',
-    vida: 8,
-    mana: 12,
+    vida: 15,
     forca: 3,
     agilidade: 5,
     intelecto: 8,
@@ -53,8 +50,8 @@ export const TAB_LABEL: Record<string, string> = {
   habilidades: 'Habilidades',
   mapa: 'Mapa',
   diario: 'Diário',
-  registro: 'Registro',
   codice: 'Códice',
+  mercado: 'Mercado',
   social: 'Social', // SOCIAL: removível
   opcoes: 'Opções',
 };
@@ -64,8 +61,8 @@ export const TAB_SHORTCUT: Record<string, string> = {
   habilidades: 'A',
   mapa: 'M',
   diario: 'J',
-  registro: 'K',
-  codice: 'L',
+  codice: 'K',
+  mercado: 'L',
   social: 'G', // SOCIAL: removível
   opcoes: 'ESC',
 };
@@ -75,8 +72,8 @@ export const TAB_DESC: Record<string, string> = {
   habilidades: 'Árvore de habilidades e progressão por arquétipo.',
   mapa: 'Localização atual e regiões já exploradas.',
   diario: 'Quests, anotações e fragmentos de lore.',
-  registro: 'Mods, forja e bestiário — dados do jogo.',
-  codice: 'Guias de mecânica (raridade e regras).',
+  codice: 'Mods, forja, bestiário e guias de mecânica.',
+  mercado: 'Casa de leilões — compra e venda entre jogadores.',
   social: 'Chat, guilda, amigos e busca de grupos.', // SOCIAL: removível
   opcoes: 'Preferências do jogo.',
 };

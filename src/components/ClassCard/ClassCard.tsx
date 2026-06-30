@@ -34,7 +34,7 @@ export function ClassCard({ data, selected, onClick }: ClassCardProps) {
           </div>
           <div className={styles.vital}>
             <div className={styles.vitalLabel}>Mana</div>
-            <div className={styles.vitalValue}>{data.mana}</div>
+            <div className={styles.vitalValue}>{data.intelecto * 5}</div>
           </div>
         </div>
         <div className={styles.attrRow}>

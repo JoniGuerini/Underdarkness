@@ -124,7 +124,6 @@ export interface ClassData {
   tagline: string;
   description: string;
   vida: number;
-  mana: number;
   forca: number;
   agilidade: number;
   intelecto: number;
@@ -156,6 +155,10 @@ export interface Character {
   visitedLocations: string[];
   /** ids de missões abandonadas — somem do diário, podem ser retomadas no futuro */
   abandonedQuestIds: string[];
+  /** Missões aceitas via diálogo com NPC — entram no diário quando `requiresAccept` */
+  acceptedQuestIds: string[];
+  /** Status por missão quando difere do mock global (ex: concluída pelo jogador) */
+  questStates: Record<string, QuestStatus>;
   gold: number;
   time: string;
   day: number;
@@ -219,7 +222,7 @@ export interface DerivedStats {
 }
 
 // SOCIAL: 'social' adicionado pra mockup de chat multiplayer (removível)
-export type TabKey = 'personagem' | 'habilidades' | 'mapa' | 'diario' | 'registro' | 'codice' | 'social' | 'opcoes';
+export type TabKey = 'personagem' | 'habilidades' | 'mapa' | 'diario' | 'codice' | 'mercado' | 'social' | 'opcoes';
 
 // ============================================================================
 // Árvore de Talentos (estilo Diablo 2)
@@ -271,6 +274,10 @@ export interface Quest {
   journal: JournalEntry[];
   /** Pra bounties — texto descritivo de prazo, ex: "2 dias" */
   expiresIn?: string;
+  /** Só aparece no diário depois que o jogador aceita com o NPC */
+  requiresAccept?: boolean;
+  /** id do NPC em npcs.ts que oferece/resolve a missão */
+  giverNpcId?: string;
 }
 
 // ============================================================================
@@ -284,7 +291,7 @@ export interface MapLocation {
   description: string;
   region: string;
   level: number;
-  /** Posição em px no canvas do mapa (~1100×700) */
+  /** Legado — não usado pelo itinerário. */
   x: number;
   y: number;
   /** ids dos locais conectados (bidirecional) */
