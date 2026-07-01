@@ -2,6 +2,7 @@ import { Fragment } from 'react';
 import { createPortal } from 'react-dom';
 import type { Item } from '../../types';
 import { ITEM_SLOT_LABEL, RARITY_LABEL } from '../../data/items';
+import { getMaterialType, MATERIAL_TYPE_SINGULAR, MATERIAL_TYPE_COLOR, REAGENT_GROUP_LABEL } from '../../data/materials';
 import styles from './ItemTooltip.module.css';
 
 interface ItemTooltipProps {
@@ -36,12 +37,23 @@ export function ItemTooltipInline({ item }: { item: Item }) {
 }
 
 function ItemTooltipBody({ item }: { item: Item }) {
+  const materialType = getMaterialType(item.id);
   return (
     <>
       <div className={styles.header}>
         <div className={styles.name}>{item.name}</div>
         <div className={styles.meta}>
           <span className={styles.rarity}>{RARITY_LABEL[item.rarity]}</span>
+          {materialType && (
+            <>
+              <span className={styles.metaSep}>·</span>
+              <span className={styles.reagentGroup}>{REAGENT_GROUP_LABEL}</span>
+              <span className={styles.metaSep}>·</span>
+              <span className={styles.reagentType} style={{ color: MATERIAL_TYPE_COLOR[materialType] }}>
+                {MATERIAL_TYPE_SINGULAR[materialType]}
+              </span>
+            </>
+          )}
           {item.slot && (
             <>
               <span className={styles.metaSep}>·</span>

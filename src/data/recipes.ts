@@ -34,75 +34,10 @@ export interface Recipe {
 const tiberioRecipes: Recipe[] = [];
 
 // ============================================================================
-// SOLANA — Destilar (poções e elixires)
+// SOLANA — Destilar
 // ============================================================================
-const solanaRecipes: Recipe[] = [
-  {
-    id: 'craft-pot-vida-media',
-    name: 'Poção de Vida Média',
-    crafterId: 'solana',
-    role: 'destilar',
-    description:
-      'Carmesim escuro, espessa. Solana destila baixinho, contando algo em voz quase inaudível enquanto mexe.',
-    ingredients: [
-      { itemId: 'erva-vermelha', quantity: 2 },
-      { itemId: 'frasco-vazio', quantity: 1 },
-    ],
-    result: {
-      id: 'pot-vida-media',
-      name: 'Poção de Vida Média',
-      slot: null,
-      rarity: 'magico',
-      stackable: true,
-      stack: 1,
-      description: 'Restaura uma porção média de Vida. Quente ao toque.',
-    },
-  },
-  {
-    id: 'craft-pot-mana-media',
-    name: 'Poção de Mana Média',
-    crafterId: 'solana',
-    role: 'destilar',
-    description:
-      'Azul-elétrico, com brilho próprio. Mantém-se viva por dias antes de esmaecer.',
-    ingredients: [
-      { itemId: 'erva-azul', quantity: 2 },
-      { itemId: 'frasco-vazio', quantity: 1 },
-    ],
-    result: {
-      id: 'pot-mana-media',
-      name: 'Poção de Mana Média',
-      slot: null,
-      rarity: 'magico',
-      stackable: true,
-      stack: 1,
-      description: 'Restaura uma porção média de Mana. O vidro vibra de leve.',
-    },
-  },
-  {
-    id: 'craft-elixir-vale',
-    name: 'Elixir do Vale',
-    crafterId: 'solana',
-    role: 'destilar',
-    description:
-      'Combinação rara de raiz noturna com ervas comuns. Solana só destila quando tem todos os reagentes — cada gota é cara.',
-    ingredients: [
-      { itemId: 'raiz-noturna', quantity: 1 },
-      { itemId: 'erva-vermelha', quantity: 1 },
-      { itemId: 'erva-azul', quantity: 1 },
-      { itemId: 'frasco-vazio', quantity: 1 },
-    ],
-    result: {
-      id: 'pot-elixir-vale',
-      name: 'Elixir do Vale',
-      slot: null,
-      rarity: 'raro',
-      stackable: true,
-      stack: 1,
-      description: 'Restaura Vida e Mana ao máximo. Solana sussurra que o gosto "lembra outra vida".',
-    },
-  },
-];
+// Sem receitas por enquanto — serão redefinidas com o novo sistema de materiais/consumíveis.
+const solanaRecipes: Recipe[] = [];
 
 export const RECIPES: Recipe[] = [...tiberioRecipes, ...solanaRecipes];
 

@@ -16,7 +16,17 @@ import {
   type Enemy,
 } from '../../data/enemies';
 import { ACTS, getLocationById } from '../../data/world';
-import { MATERIALS, getMaterial, getMaterialName } from '../../data/materials';
+import {
+  MATERIALS,
+  MATERIAL_TYPE_LABEL,
+  MATERIAL_TYPE_SINGULAR,
+  MATERIAL_TYPE_COLOR,
+  REAGENT_GROUP_LABEL,
+  getMaterial,
+  getMaterialName,
+  getMaterialType,
+  type MaterialType,
+} from '../../data/materials';
 import { ITEM_SLOT_LABEL } from '../../data/items';
 import { getItemShopSources } from '../../data/shops';
 import {
@@ -268,6 +278,8 @@ const AMULET_TYPE_ORDER: AmuletType[] = [
 
 const ALJAVA_TYPE_ORDER: AljavaType[] = ['dano-fisico', 'critico', 'vel-ataque', 'vida'];
 
+const MATERIAL_TYPE_ORDER: MaterialType[] = ['erva', 'minerio', 'couro', 'tecido', 'carne', 'verdura', 'fruta'];
+
 
 function baseToEntry(b: ItemBase): CatalogEntry {
   const typeLabel = b.weaponType
@@ -437,13 +449,26 @@ function buildCatalog(): CatalogCategory[] {
     cats.push({ id: 'aljava', label: 'Aljavas', group: 'Armaduras', entries });
   }
 
-  // Materiais e consumíveis.
-  const materialEntries: CatalogEntry[] = Object.keys(MATERIALS).map((id) => {
-    const item = getMaterial(id)!;
-    return { id, name: item.name, item, meta: 'Material' };
-  });
-  if (materialEntries.length > 0) {
-    cats.push({ id: 'materiais', label: 'Materiais & Consumíveis', group: 'Materiais', entries: materialEntries });
+  // Materiais — grupo "Materiais", uma categoria por tipo (Ervas, Minérios...).
+  const materialDefs = Object.values(MATERIALS);
+  for (const mt of MATERIAL_TYPE_ORDER) {
+    const defs = materialDefs
+      .filter((d) => d.type === mt)
+      .sort((a, b) => a.tier - b.tier);
+    if (defs.length > 0) {
+      cats.push({
+        id: `mat-${mt}`,
+        label: MATERIAL_TYPE_LABEL[mt],
+        group: 'Reagentes de Criação',
+        entries: defs.map((d) => ({
+          id: d.item.id,
+          name: d.item.name,
+          item: getMaterial(d.item.id)!,
+          meta: MATERIAL_TYPE_LABEL[mt],
+          typeLabel: `${REAGENT_GROUP_LABEL} · ${MATERIAL_TYPE_SINGULAR[mt]}`,
+        })),
+      });
+    }
   }
   return cats;
 }
@@ -577,7 +602,21 @@ function ItemCard({ entry }: { entry: CatalogEntry }) {
       <div className={styles.itemCardHeader}>
         <span className={styles.itemCardName}>{entry.name}</span>
       </div>
-      {entry.typeLabel && <span className={styles.itemCardType}>{entry.typeLabel}</span>}
+      {(() => {
+        const matType = getMaterialType(entry.id);
+        if (matType) {
+          return (
+            <span className={styles.itemCardType}>
+              <span className={styles.itemCardTypeDim}>{REAGENT_GROUP_LABEL}</span>
+              {' · '}
+              <span style={{ color: MATERIAL_TYPE_COLOR[matType] }}>
+                {MATERIAL_TYPE_SINGULAR[matType]}
+              </span>
+            </span>
+          );
+        }
+        return entry.typeLabel ? <span className={styles.itemCardType}>{entry.typeLabel}</span> : null;
+      })()}
 
       {stats.length > 0 ? (
         <ul className={styles.itemCardStats}>

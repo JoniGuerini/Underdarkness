@@ -154,7 +154,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 1.2,
     goldMin: 1,
     goldMax: 2,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.45 }],
     xpFactor: 0.8,
   },
   'lobo-faminto': {
@@ -169,10 +168,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 1.0,
     goldMin: 1,
     goldMax: 2,
-    loot: [
-      { itemId: 'mat-couro-cru', chance: 0.6 },
-      { itemId: 'food-pao-duro', chance: 0.15 },
-    ],
     xpFactor: 0.57,
   },
   'aranha-da-mata': {
@@ -189,7 +184,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     armadura: 1,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.25 }],
   },
   'galho-caminhante': {
     id: 'galho-caminhante',
@@ -204,10 +198,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     armadura: 3,
     goldMin: 0,
     goldMax: 0,
-    loot: [
-      { itemId: 'erva-azul', chance: 0.4 },
-      { itemId: 'raiz-noturna', chance: 0.3 },
-    ],
     xpFactor: 1.0,
   },
 
@@ -224,7 +214,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 1.1,
     goldMin: 2,
     goldMax: 4,
-    loot: [{ itemId: 'food-vinho-fraco', chance: 0.2 }],
   },
   'cervo-bravo': {
     id: 'cervo-bravo',
@@ -238,7 +227,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 1.0,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.4 }],
   },
   'capataz-corrupto': {
     id: 'capataz-corrupto',
@@ -253,7 +241,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     armadura: 1,
     goldMin: 3,
     goldMax: 6,
-    loot: [{ itemId: 'mat-pedra-afiar', chance: 0.25 }],
   },
   'sombra-do-carvalho': {
     id: 'sombra-do-carvalho',
@@ -268,7 +255,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 8,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'erva-vermelha', chance: 0.2 }],
   },
 
   // Pântano dos Mortos
@@ -284,7 +270,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 0.9,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'erva-vermelha', chance: 0.35 }],
   },
   'lodo-vivo': {
     id: 'lodo-vivo',
@@ -300,7 +285,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 10,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'frasco-vazio', chance: 0.2 }],
   },
   'carniceiro-do-pantano': {
     id: 'carniceiro-do-pantano',
@@ -315,7 +299,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 8,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.3 }],
   },
   'bruma-corrosiva': {
     id: 'bruma-corrosiva',
@@ -330,7 +313,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 15,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'erva-azul', chance: 0.25 }],
   },
 
   // Cripta Esquecida
@@ -347,7 +329,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     armadura: 1,
     goldMin: 1,
     goldMax: 3,
-    loot: [{ itemId: 'mat-pedra-afiar', chance: 0.2 }],
   },
   'rato-da-cripta': {
     id: 'rato-da-cripta',
@@ -376,7 +357,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 10,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.3 }],
   },
   'morto-em-decomposicao': {
     id: 'morto-em-decomposicao',
@@ -391,7 +371,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     rouboVida: 5,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'erva-vermelha', chance: 0.2 }],
   },
 
   // Caminho do Norte
@@ -408,10 +387,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     armadura: 1,
     goldMin: 2,
     goldMax: 5,
-    loot: [
-      { itemId: 'mat-pedra-afiar', chance: 0.3 },
-      { itemId: 'food-vinho-fraco', chance: 0.2 },
-    ],
   },
   'salteador-de-estrada': {
     id: 'salteador-de-estrada',
@@ -427,7 +402,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     bloqueio: 8,
     goldMin: 4,
     goldMax: 8,
-    loot: [{ itemId: 'mat-minerio-ferro', chance: 0.25 }],
   },
   'lobo-das-rochas': {
     id: 'lobo-das-rochas',
@@ -441,7 +415,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 1.1,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.5 }],
   },
   'urso-cinzento': {
     id: 'urso-cinzento',
@@ -456,7 +429,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     armadura: 3,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.7 }],
     xpFactor: 1.0,
   },
 
@@ -474,7 +446,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 8,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.35 }],
   },
   'antilope-selvagem': {
     id: 'antilope-selvagem',
@@ -488,7 +459,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 1.4,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'food-queijo-cabra', chance: 0.15 }],
   },
   'lanceiro-nomade': {
     id: 'lanceiro-nomade',
@@ -503,7 +473,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 1.0,
     goldMin: 3,
     goldMax: 7,
-    loot: [{ itemId: 'food-conserva-raiz', chance: 0.2 }],
   },
   'escorpiao-cinzento': {
     id: 'escorpiao-cinzento',
@@ -518,7 +487,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 15,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'erva-vermelha', chance: 0.2 }],
   },
 
   // Mina Abandonada
@@ -534,7 +502,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 1.15,
     goldMin: 1,
     goldMax: 4,
-    loot: [{ itemId: 'mat-minerio-ferro', chance: 0.45 }],
   },
   'morcego-da-mina': {
     id: 'morcego-da-mina',
@@ -575,7 +542,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     armadura: 4,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'mat-minerio-ferro', chance: 0.55 }],
     xpFactor: 0.9,
   },
 
@@ -593,7 +559,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resGelo: 15,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.4 }],
   },
   'yeti-jovem': {
     id: 'yeti-jovem',
@@ -609,7 +574,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resGelo: 10,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'erva-azul', chance: 0.3 }],
     xpFactor: 1.0,
   },
   'harpia-das-neves': {
@@ -625,7 +589,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resGelo: 5,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.2 }],
   },
   'fragmento-de-gelo': {
     id: 'fragmento-de-gelo',
@@ -656,7 +619,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 1.0,
     goldMin: 4,
     goldMax: 8,
-    loot: [{ itemId: 'food-conserva-raiz', chance: 0.2 }],
   },
   'contrabandista': {
     id: 'contrabandista',
@@ -686,7 +648,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     bloqueio: 10,
     goldMin: 2,
     goldMax: 5,
-    loot: [{ itemId: 'mat-minerio-ferro', chance: 0.3 }],
   },
   'cultista-da-mare': {
     id: 'cultista-da-mare',
@@ -701,7 +662,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 10,
     goldMin: 1,
     goldMax: 4,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.25 }],
   },
 
   // Catacumbas Profundas
@@ -718,7 +678,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resFogo: 20,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'erva-vermelha', chance: 0.25 }],
   },
   'necromante-aprendiz': {
     id: 'necromante-aprendiz',
@@ -734,7 +693,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resSagrado: 5,
     goldMin: 2,
     goldMax: 6,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.35 }],
   },
   'gargula-rachada': {
     id: 'gargula-rachada',
@@ -764,7 +722,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     rouboVida: 8,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.2 }],
   },
 
   // Cidade Alta (masmorra)
@@ -796,7 +753,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 10,
     goldMin: 3,
     goldMax: 7,
-    loot: [{ itemId: 'mat-pedra-afiar', chance: 0.2 }],
   },
   'eco-da-capital': {
     id: 'eco-da-capital',
@@ -812,7 +768,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 10,
     goldMin: 0,
     goldMax: 3,
-    loot: [{ itemId: 'erva-azul', chance: 0.3 }],
   },
   'carnificina-do-trono': {
     id: 'carnificina-do-trono',
@@ -863,7 +818,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 10,
     goldMin: 0,
     goldMax: 3,
-    loot: [{ itemId: 'erva-azul', chance: 0.3 }],
     xpFactor: 1.0,
   },
   'forjado-corrompido': {
@@ -880,7 +834,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resFogo: 15,
     goldMin: 2,
     goldMax: 5,
-    loot: [{ itemId: 'mat-minerio-ferro', chance: 0.4 }],
   },
   'emissario-do-caos': {
     id: 'emissario-do-caos',
@@ -916,7 +869,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 1.1,
     goldMin: 1,
     goldMax: 3,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.3 }],
   },
   'verme-das-fendas': {
     id: 'verme-das-fendas',
@@ -931,7 +883,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     armadura: 3,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'mat-minerio-ferro', chance: 0.3 }],
     xpFactor: 0.9,
   },
   'morcego-abissal': {
@@ -978,7 +929,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 10,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.3 }],
   },
   'eco-faminto': {
     id: 'eco-faminto',
@@ -994,7 +944,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resSagrado: 10,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'erva-azul', chance: 0.25 }],
   },
 
   // Veios de Âmbar
@@ -1010,7 +959,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 1.3,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'erva-vermelha', chance: 0.25 }],
   },
   'predador-luminoso': {
     id: 'predador-luminoso',
@@ -1025,7 +973,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 10,
     goldMin: 1,
     goldMax: 3,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.35 }],
     xpFactor: 1.0,
   },
   'casulo-vivo': {
@@ -1041,7 +988,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     armadura: 4,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.3 }],
     xpFactor: 0.9,
   },
 
@@ -1073,7 +1019,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     rouboVida: 8,
     goldMin: 1,
     goldMax: 3,
-    loot: [{ itemId: 'frasco-vazio', chance: 0.2 }],
   },
   'corrente-viva': {
     id: 'corrente-viva',
@@ -1088,7 +1033,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resGelo: 15,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'erva-azul', chance: 0.25 }],
   },
 
   // Necrópole Submersa
@@ -1121,7 +1065,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resSagrado: 10,
     goldMin: 2,
     goldMax: 6,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.35 }],
   },
   'legiao-de-lodo': {
     id: 'legiao-de-lodo',
@@ -1170,7 +1113,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     rouboVida: 6,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'erva-vermelha', chance: 0.3 }],
   },
   'larva-do-caos': {
     id: 'larva-do-caos',
@@ -1186,7 +1128,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 12,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.3 }],
     xpFactor: 1.0,
   },
 
@@ -1239,7 +1180,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     multCritico: 1.7,
     goldMin: 2,
     goldMax: 6,
-    loot: [{ itemId: 'erva-azul', chance: 0.3 }],
     xpFactor: 1.1,
   },
   'aberracao-sem-olhos': {
@@ -1255,7 +1195,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 25,
     goldMin: 0,
     goldMax: 3,
-    loot: [{ itemId: 'mat-minerio-ferro', chance: 0.35 }],
     xpFactor: 1.25,
   },
 
@@ -1273,7 +1212,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     armadura: 4,
     goldMin: 2,
     goldMax: 5,
-    loot: [{ itemId: 'mat-pedra-afiar', chance: 0.25 }],
     xpFactor: 0.9,
   },
   'verme-de-salmoura': {
@@ -1303,7 +1241,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     armadura: 5,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'mat-pedra-afiar', chance: 0.4 }],
   },
 
   // Mata Fungal (paralela)
@@ -1321,7 +1258,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 10,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'erva-azul', chance: 0.45 }],
     xpFactor: 1.0,
   },
   'tampa-andante': {
@@ -1337,7 +1273,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 10,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'erva-vermelha', chance: 0.3 }],
   },
   'enxame-de-esporos': {
     id: 'enxame-de-esporos',
@@ -1369,7 +1304,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     rouboVida: 6,
     goldMin: 2,
     goldMax: 6,
-    loot: [{ itemId: 'mat-minerio-ferro', chance: 0.45 }],
   },
   'gas-grisu': {
     id: 'gas-grisu',
@@ -1398,7 +1332,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 10,
     goldMin: 1,
     goldMax: 3,
-    loot: [{ itemId: 'mat-pedra-afiar', chance: 0.25 }],
   },
 
   // Abismo Ecoante (paralela)
@@ -1415,7 +1348,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resSagrado: 10,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.25 }],
   },
   'sentinela-do-vazio': {
     id: 'sentinela-do-vazio',
@@ -1446,7 +1378,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 15,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'erva-azul', chance: 0.3 }],
     xpFactor: 1.0,
   },
 
@@ -1466,7 +1397,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     armadura: 5,
     goldMin: 1,
     goldMax: 3,
-    loot: [{ itemId: 'mat-pedra-afiar', chance: 0.3 }],
   },
   'nadador-palido': {
     id: 'nadador-palido',
@@ -1495,7 +1425,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resGelo: 10,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'frasco-vazio', chance: 0.2 }],
   },
 
   // Mar Sem Sol
@@ -1512,7 +1441,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 10,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.35 }],
   },
   'agua-viva-abissal': {
     id: 'agua-viva-abissal',
@@ -1559,7 +1487,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 10,
     goldMin: 1,
     goldMax: 3,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.3 }],
   },
   'coral-predador': {
     id: 'coral-predador',
@@ -1619,7 +1546,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 10,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'erva-azul', chance: 0.3 }],
   },
   'polvo-das-ruinas': {
     id: 'polvo-das-ruinas',
@@ -1633,7 +1559,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 1.0,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.3 }],
   },
 
   // Templo das Marés
@@ -1651,7 +1576,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 10,
     goldMin: 3,
     goldMax: 7,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.35 }],
   },
   'estatua-viva': {
     id: 'estatua-viva',
@@ -1698,7 +1622,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 10,
     goldMin: 5,
     goldMax: 11,
-    loot: [{ itemId: 'mat-pedra-afiar', chance: 0.2 }],
   },
   'guarda-real-submerso': {
     id: 'guarda-real-submerso',
@@ -1729,7 +1652,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 12,
     goldMin: 3,
     goldMax: 8,
-    loot: [{ itemId: 'erva-vermelha', chance: 0.3 }],
   },
 
   // Leviatã Adormecido (chefe)
@@ -1761,7 +1683,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 12,
     goldMin: 1,
     goldMax: 4,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.4 }],
     xpFactor: 1.1,
   },
   'olho-das-profundezas': {
@@ -1778,7 +1699,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resGelo: 15,
     goldMin: 0,
     goldMax: 3,
-    loot: [{ itemId: 'erva-azul', chance: 0.3 }],
     xpFactor: 1.2,
   },
   'maelstrom-vivo': {
@@ -1811,7 +1731,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     armadura: 7,
     goldMin: 2,
     goldMax: 6,
-    loot: [{ itemId: 'mat-pedra-afiar', chance: 0.35 }],
     xpFactor: 0.9,
   },
   'verme-de-perola': {
@@ -1840,7 +1759,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 0.9,
     goldMin: 1,
     goldMax: 4,
-    loot: [{ itemId: 'frasco-vazio', chance: 0.2 }],
   },
 
   // Bruma Salgada (paralela)
@@ -1857,7 +1775,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 10,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.25 }],
   },
   'corsario-fantasma': {
     id: 'corsario-fantasma',
@@ -1872,7 +1789,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 10,
     goldMin: 4,
     goldMax: 9,
-    loot: [{ itemId: 'mat-pedra-afiar', chance: 0.2 }],
   },
   'nevoa-salina': {
     id: 'nevoa-salina',
@@ -1904,7 +1820,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     chanceCritico: 10,
     goldMin: 5,
     goldMax: 10,
-    loot: [{ itemId: 'mat-minerio-ferro', chance: 0.3 }],
     xpFactor: 1.0,
   },
   'tripulante-esqueleto': {
@@ -1950,7 +1865,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 15,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'erva-azul', chance: 0.3 }],
     xpFactor: 1.05,
   },
   'peixe-lanterna': {
@@ -2000,7 +1914,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resFogo: 15,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.25 }],
   },
   'abutre-de-brasa': {
     id: 'abutre-de-brasa',
@@ -2048,7 +1961,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resFogo: 30,
     goldMin: 1,
     goldMax: 4,
-    loot: [{ itemId: 'mat-minerio-ferro', chance: 0.3 }],
     xpFactor: 1.0,
   },
   'salamandra-ignea': {
@@ -2064,7 +1976,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resFogo: 25,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.3 }],
   },
   'guardiao-da-ponte': {
     id: 'guardiao-da-ponte',
@@ -2128,7 +2039,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resFogo: 30,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'erva-vermelha', chance: 0.3 }],
   },
 
   // Desfiladeiro de Brasa
@@ -2160,7 +2070,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resFogo: 25,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.3 }],
   },
   'vento-escaldante': {
     id: 'vento-escaldante',
@@ -2209,7 +2118,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resFogo: 20,
     goldMin: 1,
     goldMax: 4,
-    loot: [{ itemId: 'mat-minerio-ferro', chance: 0.4 }],
   },
   'chama-senciente': {
     id: 'chama-senciente',
@@ -2225,7 +2133,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 10,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'erva-vermelha', chance: 0.3 }],
   },
 
   // Cofre de Obsidiana
@@ -2275,7 +2182,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resFogo: 20,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'erva-azul', chance: 0.3 }],
   },
 
   // Coração da Forja (chefe)
@@ -2359,7 +2265,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resFogo: 20,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'mat-minerio-ferro', chance: 0.35 }],
   },
   'nuvem-toxica': {
     id: 'nuvem-toxica',
@@ -2389,7 +2294,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resFogo: 15,
     goldMin: 1,
     goldMax: 4,
-    loot: [{ itemId: 'mat-pedra-afiar', chance: 0.25 }],
   },
 
   // Planalto Calcinado (paralela)
@@ -2407,7 +2311,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resFogo: 20,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.4 }],
   },
   'harpia-de-cinzas': {
     id: 'harpia-de-cinzas',
@@ -2470,7 +2373,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resFogo: 30,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'erva-vermelha', chance: 0.25 }],
   },
   'guardiao-tumular-igneo': {
     id: 'guardiao-tumular-igneo',
@@ -2534,7 +2436,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resFogo: 20,
     goldMin: 1,
     goldMax: 4,
-    loot: [{ itemId: 'mat-couro-cru', chance: 0.35 }],
     xpFactor: 1.0,
   },
 
@@ -2568,7 +2469,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resSagrado: 15,
     goldMin: 0,
     goldMax: 0,
-    loot: [{ itemId: 'erva-azul', chance: 0.3 }],
   },
   'apagado': {
     id: 'apagado',
@@ -2647,7 +2547,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 10,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'erva-vermelha', chance: 0.3 }],
   },
   'jardineiro-morto': {
     id: 'jardineiro-morto',
@@ -2709,7 +2608,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resSagrado: 15,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'erva-azul', chance: 0.3 }],
   },
   'devorador-de-luz': {
     id: 'devorador-de-luz',
@@ -2743,7 +2641,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resSagrado: 20,
     goldMin: 3,
     goldMax: 8,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.35 }],
   },
   'anjo-cego': {
     id: 'anjo-cego',
@@ -2821,7 +2718,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 25,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'erva-vermelha', chance: 0.3 }],
   },
 
   // A Escuridão Primordial (chefe final)
@@ -2934,7 +2830,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     velAtaque: 1.1,
     goldMin: 0,
     goldMax: 1,
-    loot: [{ itemId: 'erva-azul', chance: 0.25 }],
   },
 
   // Planície Sussurrante (paralela)
@@ -3012,7 +2907,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resCaos: 25,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'raiz-noturna', chance: 0.3 }],
   },
   'mao-que-escapa': {
     id: 'mao-que-escapa',
@@ -3057,7 +2951,6 @@ export const ENEMY_DEFS: Record<string, EnemyDef> = {
     resSagrado: 15,
     goldMin: 0,
     goldMax: 2,
-    loot: [{ itemId: 'erva-azul', chance: 0.3 }],
   },
   'inevitavel': {
     id: 'inevitavel',

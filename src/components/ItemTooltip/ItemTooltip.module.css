@@ -82,6 +82,10 @@
   color: var(--ink-muted);
 }
 
+/* Reagente de Criação (azul claro) · Tipo (destaque brass) */
+.reagentGroup { color: var(--reagent-group); }
+.reagentType { color: var(--brass-bright); }
+
 .stackLabel {
   color: var(--brass-deep);
   letter-spacing: 0.04em;

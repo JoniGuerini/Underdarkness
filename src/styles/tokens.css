@@ -68,6 +68,19 @@
   --rarity-lendario: #B57EDC;    /* Lavender — lendário (mesma família do Caos) */
 
   /* ============================================================
+     REAGENTES DE CRIAÇÃO — rótulo-guarda-chuva + cor por tipo
+     (o subtipo é colorido pra ler bem e distinguir a categoria)
+     ============================================================ */
+  --reagent-group: #7fb3e6;      /* Azul claro — rótulo "Reagente de Criação" */
+  --material-erva: #57c96a;      /* Verde vivo — Ervas (alquimia) */
+  --material-minerio: #c98a4b;   /* Cobre/bronze — Minérios (metais de forja) */
+  --material-couro: #b5794e;     /* Marrom-caramelo — Couros (peles/carapaças) */
+  --material-tecido: #c98aa8;    /* Rosa-poeira — Tecidos (fibras/panos tingidos) */
+  --material-carne: #e0806c;     /* Salmão/coral — Carnes (culinária) */
+  --material-verdura: #8fc74e;   /* Verde-limão — Verduras (folhas/talos) */
+  --material-fruta: #b061c9;     /* Roxo-uva — Frutas (frutos) */
+
+  /* ============================================================
      BORDAS — visíveis sobre fundo escuro
      ============================================================ */
   --border: #2a3045;

@@ -7,7 +7,6 @@
 
 import type { ClassKey, Item } from '../types';
 import { makeBaseItem } from './itemBases';
-import { MATERIALS } from './materials';
 
 export type MarketCategory = 'todos' | 'arma' | 'armadura' | 'acessorio' | 'consumivel';
 
@@ -49,23 +48,6 @@ export function getMarketCategory(item: Item): Exclude<MarketCategory, 'todos'> 
   if (slot === 'arma' || slot === 'escudo') return 'arma';
   if (slot === 'amuleto' || slot === 'anel') return 'acessorio';
   return 'armadura';
-}
-
-function matListing(
-  id: string,
-  seller: string,
-  sellerClassKey: ClassKey,
-  materialId: string,
-  price: number,
-  listedMinutesAgo: number,
-  stack = 1,
-): MarketListing {
-  const def = MATERIALS[materialId];
-  const item: Item = {
-    ...def.item,
-    stack: def.item.stackable ? stack : undefined,
-  };
-  return { id, seller, sellerClassKey, item, price, listedMinutesAgo };
 }
 
 function equipListing(
@@ -186,10 +168,6 @@ export const INITIAL_MARKET_LISTINGS: MarketListing[] = [
     55,
     67,
   ),
-  matListing('m7', 'k4t4r1n4', 'mago', 'erva-vermelha', 3, 5, 20),
-  matListing('m8', 'DIABLO2_FOREVER', 'ladino', 'pot-vida-pequena', 8, 18, 5),
-  matListing('m9', 'ProcurandoBuild', 'ladino', 'mat-minerio-ferro', 4, 90, 15),
-  matListing('m10', 'VinhoFracoZé', 'guerreiro', 'mat-pedra-afiar', 5, 34, 10),
   equipListing(
     'm11',
     'TiberioReal',
@@ -232,8 +210,8 @@ export const INITIAL_MARKET_LISTINGS: MarketListing[] = [
 /** Preço sugerido ao listar — acima do valor de venda a NPC. */
 export function suggestListPrice(item: Item): number {
   if (item.stackable) {
-    const mat = Object.values(MATERIALS).find((m) => m.item.id === item.id);
-    return Math.max(2, (mat?.defaultPrice ?? 2) + 1);
+    // Stackables (materiais/consumíveis) — preço base provisório até o novo sistema.
+    return 3;
   }
   switch (item.rarity) {
     case 'comum': return 12;

@@ -1117,6 +1117,9 @@
   text-transform: uppercase;
   color: var(--brass);
 }
+.itemCardTypeDim {
+  color: var(--reagent-group); /* azul claro — distingue "Reagente de Criação" do subtipo */
+}
 .itemCardStats {
   list-style: none;
   margin: 4px 0 0;
