@@ -58,10 +58,9 @@ import {
 import { ItemTooltipInline } from '../ItemTooltip/ItemTooltip';
 import { StatLine, Unit } from '../StatLine/StatLine';
 import { RarityGuide } from './RarityGuide';
-import { AtlasGuide } from './AtlasGuide';
 import styles from './CodexView.module.css';
 
-type CodexSection = 'itens' | 'mods' | 'raridade' | 'forja' | 'bestiario' | 'atlas';
+type CodexSection = 'itens' | 'mods' | 'raridade' | 'forja' | 'bestiario';
 
 const SECTIONS: { id: CodexSection; label: string }[] = [
   { id: 'itens', label: 'Itens' },
@@ -69,7 +68,6 @@ const SECTIONS: { id: CodexSection; label: string }[] = [
   { id: 'raridade', label: 'Raridade' },
   { id: 'forja', label: 'Forja' },
   { id: 'bestiario', label: 'Bestiário' },
-  { id: 'atlas', label: 'Atlas de Mapas' },
 ];
 
 interface CodexViewProps {
@@ -103,7 +101,6 @@ export function CodexView({ character: _character }: CodexViewProps) {
         {active === 'raridade' && <RarityGuide />}
         {active === 'forja' && <ForgeView />}
         {active === 'bestiario' && <BestiaryView />}
-        {active === 'atlas' && <AtlasGuide />}
       </div>
     </div>
   );

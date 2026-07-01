@@ -65,8 +65,6 @@ export function CharacterCreate({ canGoBack, onBack, onCreate }: CharacterCreate
       acceptedQuestIds: [],
       questStates: {},
       gold: 60,
-      maps: [],
-      highestMapTier: 0,
       time: '06:00',
       day: 1,
       period: 'Aurora',

@@ -11,7 +11,6 @@ export const EDITABLE_TABS: EditableTab[] = [
   'diario',
   'codice',
   'mercado',
-  'atlas',
   'social', // SOCIAL: removível
 ];
 
@@ -29,7 +28,6 @@ export const DEFAULT_SETTINGS: Settings = {
     diario: 'J',
     codice: 'K',
     mercado: 'L',
-    atlas: 'N',
     social: 'G', // SOCIAL: removível
   },
   startInFullscreen: false,

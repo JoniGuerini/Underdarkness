@@ -165,10 +165,6 @@ export interface Character {
   day: number;
   period: string;
   location: string;
-  /** Estoque de mapas de endgame (Atlas de Mapas). Fora do inventário de 36 slots. */
-  maps: MapItem[];
-  /** Maior tier de mapa já concluído — controla o topo da progressão de endgame. */
-  highestMapTier: number;
   createdAt: string;
   updatedAt?: string;
 }
@@ -228,7 +224,7 @@ export interface DerivedStats {
 }
 
 // SOCIAL: 'social' adicionado pra mockup de chat multiplayer (removível)
-export type TabKey = 'personagem' | 'habilidades' | 'mapa' | 'diario' | 'codice' | 'mercado' | 'atlas' | 'social' | 'opcoes';
+export type TabKey = 'personagem' | 'habilidades' | 'mapa' | 'diario' | 'codice' | 'mercado' | 'social' | 'opcoes';
 
 // ============================================================================
 // Árvore de Talentos (estilo Diablo 2)
@@ -314,43 +310,6 @@ export interface MapLocation {
   branch?: LocationBranch;
   /** Ato ao qual o local pertence. Default `1` quando ausente. */
   act?: number;
-}
-
-// ============================================================================
-// Atlas de Mapas — Endgame (estilo PoE)
-// ============================================================================
-
-/**
- * Afixo rolado num item-mapa. `id` referencia o `MapAffixDef` do catálogo
- * ([data/mapAffixes.ts]); a expedição resolve o `kind` (dificuldade × recompensa)
- * pela def. `label`/`color` ficam pré-renderizados pro tooltip; `value` é o valor
- * rolado usado no cálculo.
- */
-export interface MapAffix {
-  id: string;
-  label: string;
-  color?: ModColor;
-  value: number;
-}
-
-/**
- * Item-mapa consumível. Não vai no inventário de 36 slots — vive em
- * `Character.maps`. Abrir um mapa inicia uma expedição (ondas + chefe) escalada
- * por `monsterLevel`, com o pool de inimigos derivado de `theme`.
- */
-export interface MapItem {
-  id: string;
-  name: string;
-  tier: number;
-  /** id da location-tema (fonte do pool de inimigos e do sabor). */
-  theme: string;
-  /** Nome legível do tema (região/local). */
-  themeName: string;
-  /** Nível dos inimigos da expedição. */
-  monsterLevel: number;
-  /** Número de ondas antes do chefe final. */
-  waves: number;
-  affixes: MapAffix[];
 }
 
 /**
