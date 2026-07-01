@@ -29,7 +29,8 @@ export type ItemSlot =
   | 'amuleto'
   | 'anel'
   | 'arma'
-  | 'escudo';
+  | 'escudo'
+  | 'aljava';
 
 export type Rarity = 'comum' | 'magico' | 'raro' | 'unico' | 'lendario';
 
@@ -47,13 +48,13 @@ export type Rarity = 'comum' | 'magico' | 'raro' | 'unico' | 'lendario';
  */
 export type StatKey =
   // ── Base de arma (só armas setam; substitui default de classe) ──
-  | 'weapon-speed'        // ataques/s
+  | 'weapon-speed'        // Velocidade de Ataque (ataques por segundo)
   | 'weapon-crit-base'    // % de crit base (substitui default 5%)
   // ── Flat (somam entre slots) ──
   | 'flat-vida' | 'flat-mana'
-  | 'flat-armadura' | 'flat-evasao'
+  | 'flat-armadura' | 'flat-evasao' | 'flat-escudo-energia'
   | 'flat-regen-vida' | 'flat-regen-mana' | 'flat-acerto'
-  | 'flat-forca' | 'flat-agilidade' | 'flat-intelecto'
+  | 'flat-forca' | 'flat-agilidade' | 'flat-intelecto' | 'flat-todos-atributos'
   | 'flat-dmg-fis'
   | 'flat-dmg-fogo' | 'flat-dmg-gelo' | 'flat-dmg-raio' | 'flat-dmg-caos' | 'flat-dmg-sagrado'
   // ── Magias (%) ──
@@ -112,7 +113,7 @@ export type ModColor =
   | 'fisico' | 'fogo' | 'gelo' | 'raio' | 'caos' | 'sagrado'
   | 'vida' | 'mana' | 'exp' | 'ouro' | 'comum'
   | 'forca' | 'agilidade' | 'intelecto'
-  | 'defesa' | 'critico';
+  | 'defesa' | 'critico' | 'energia';
 
 export interface Ability {
   name: string;
@@ -179,6 +180,7 @@ export interface DerivedStats {
   manaMax: number;
   armadura: number;
   evasao: number;
+  escudoEnergia: number;
   bloqueio: number;
   blockMax: number;
   resistMax: number;
@@ -285,6 +287,13 @@ export interface Quest {
 // ============================================================================
 export type LocationType = 'town' | 'wilderness' | 'dungeon' | 'boss';
 
+/**
+ * Posição do local na topologia do atlas:
+ * - `main`: faz parte do tronco principal (rota que avança a história).
+ * - `parallel`: ramo opcional sem saída — o player decide se entra.
+ */
+export type LocationBranch = 'main' | 'parallel';
+
 export interface MapLocation {
   id: string;
   name: string;
@@ -297,6 +306,10 @@ export interface MapLocation {
   /** ids dos locais conectados (bidirecional) */
   connections: string[];
   type?: LocationType;
+  /** Default `main` quando ausente. */
+  branch?: LocationBranch;
+  /** Ato ao qual o local pertence. Default `1` quando ausente. */
+  act?: number;
 }
 
 /**

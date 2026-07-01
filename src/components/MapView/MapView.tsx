@@ -1,7 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { Character, MapLocation } from '../../types';
 import {
+  ACTS,
   LOCATIONS,
+  getLocationAct,
   getLocationById,
   getLocationState,
   type LocationState,
@@ -29,20 +31,55 @@ const STATE_LABEL: Record<LocationState, string> = {
   locked: 'Indisponível',
 };
 
+type AtlasCategory = 'safe' | 'open' | 'dungeon' | 'boss' | 'parallel';
+
+const SECTIONS: { id: AtlasCategory; title: string; desc: string }[] = [
+  { id: 'safe', title: 'Áreas Seguras', desc: 'Sem encontros — descanse e prepare-se.' },
+  { id: 'open', title: 'Áreas Abertas', desc: 'Campo aberto da rota principal, com inimigos.' },
+  { id: 'dungeon', title: 'Masmorras', desc: 'Interiores fechados e perigosos.' },
+  { id: 'boss', title: 'Confronto Final', desc: 'O fim de todos os caminhos.' },
+  { id: 'parallel', title: 'Áreas Paralelas', desc: 'Desvios opcionais — entre por sua conta.' },
+];
+
+function getCategory(loc: MapLocation): AtlasCategory {
+  if (loc.branch === 'parallel') return 'parallel';
+  switch (loc.type) {
+    case 'town':
+      return 'safe';
+    case 'dungeon':
+      return 'dungeon';
+    case 'boss':
+      return 'boss';
+    default:
+      return 'open';
+  }
+}
+
 export function MapView({ character, onUpdate, onTravelComplete }: MapViewProps) {
   const visited = character.visitedLocations ?? ['pedragal'];
   const currentId = character.location;
 
-  const locations = useMemo(
-    () =>
-      [...LOCATIONS]
-        .map((loc) => ({
-          loc,
-          state: getLocationState(loc.id, currentId, visited, character.level),
-        }))
-        .sort((a, b) => a.loc.level - b.loc.level),
-    [currentId, visited, character.level],
-  );
+  const currentAct = useMemo(() => {
+    const here = getLocationById(currentId);
+    return here ? getLocationAct(here) : 1;
+  }, [currentId]);
+
+  const [selectedAct, setSelectedAct] = useState(currentAct);
+
+  const sections = useMemo(() => {
+    const entries = [...LOCATIONS]
+      .filter((loc) => getLocationAct(loc) === selectedAct)
+      .map((loc) => ({
+        loc,
+        state: getLocationState(loc.id, currentId, visited, character.level),
+      }))
+      .sort((a, b) => a.loc.level - b.loc.level);
+
+    return SECTIONS.map((section) => ({
+      ...section,
+      items: entries.filter(({ loc }) => getCategory(loc) === section.id),
+    })).filter((section) => section.items.length > 0);
+  }, [selectedAct, currentId, visited, character.level]);
 
   const handleTravel = (locationId: string) => {
     if (locationId === currentId) return;
@@ -53,19 +90,66 @@ export function MapView({ character, onUpdate, onTravelComplete }: MapViewProps)
     onTravelComplete?.();
   };
 
+  const activeAct = ACTS.find((a) => a.num === selectedAct);
+
   return (
-    <div className={styles.card}>
-      <ul className={styles.locationList} aria-label="Regiões do vale">
-        {locations.map(({ loc, state }) => (
-          <li key={loc.id}>
-            <LocationCard
-              location={loc}
-              state={state}
-              onTravel={() => handleTravel(loc.id)}
-            />
-          </li>
+    <div className={styles.wrapper}>
+      <div className={styles.actSwitcher} role="tablist" aria-label="Atos">
+        {ACTS.map((act) => {
+          const isActive = act.num === selectedAct;
+          const isCurrent = act.num === currentAct;
+          return (
+            <button
+              key={act.num}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              disabled={!act.available}
+              className={`${styles.actTab} ${isActive ? styles.actTabActive : ''}`}
+              onClick={() => act.available && setSelectedAct(act.num)}
+              title={act.available ? act.name : 'Em breve'}
+            >
+              <span className={styles.actTabTitle}>{act.title}</span>
+              <span className={styles.actTabName}>
+                {act.available ? act.name : 'Em breve'}
+              </span>
+              {isCurrent && <span className={styles.actTabHere}>Você</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {activeAct && (
+        <div className={styles.actBanner}>
+          <span className={styles.actBannerName}>{activeAct.name}</span>
+          <span className={styles.actBannerLevel}>
+            Nv {activeAct.levelRange[0]}–{activeAct.levelRange[1]}
+          </span>
+        </div>
+      )}
+
+      <div className={styles.card}>
+        {sections.map((section) => (
+          <section key={section.id} className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h3 className={styles.sectionTitle}>{section.title}</h3>
+              <span className={styles.sectionCount}>{section.items.length}</span>
+              <span className={styles.sectionDesc}>{section.desc}</span>
+            </div>
+            <ul className={styles.locationList} aria-label={section.title}>
+              {section.items.map(({ loc, state }) => (
+                <li key={loc.id}>
+                  <LocationCard
+                    location={loc}
+                    state={state}
+                    onTravel={() => handleTravel(loc.id)}
+                  />
+                </li>
+              ))}
+            </ul>
+          </section>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

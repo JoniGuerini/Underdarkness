@@ -553,7 +553,23 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               }
             />
             <StatLine
-              name="Bloqueio"
+              name="Escudo de Energia"
+              value={s.escudoEnergia}
+              color="energia"
+              breakdown={sources.escudoEnergia}
+              tooltip={
+                <>
+                  <TooltipLine>
+                    Um buffer arcano que absorve dano <em>antes</em> da Vida.
+                  </TooltipLine>
+                  <TooltipLine>
+                    Zero base — vem de itens com <Mod color="energia">Escudo de Energia</Mod>.
+                  </TooltipLine>
+                </>
+              }
+            />
+            <StatLine
+              name="Chance de Bloqueio"
               value={<>{s.bloqueio}%<Unit> / {s.blockMax}%</Unit></>}
               color="fisico"
               breakdown={sources.bloqueio}

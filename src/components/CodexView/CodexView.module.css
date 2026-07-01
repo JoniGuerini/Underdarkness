@@ -256,6 +256,7 @@
 .color_intelecto { color: var(--stat-intelecto); }
 .color_defesa    { color: var(--stat-defesa); }
 .color_critico   { color: var(--stat-critico); }
+.color_energia   { color: var(--stat-energia); }
 .color_exp       { color: var(--vital-exp); }
 
 /* ============================================================
@@ -925,6 +926,341 @@
 }
 
 /* ============================================================
+   Itens — base de dados estilo Grim Tools (categorias + grade)
+   ============================================================ */
+.dbRoot {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+  gap: 8px;
+  min-height: 0;
+}
+
+/* Sidebar de categorias */
+.dbSidebar {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 14px 10px;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.dbSidebar::-webkit-scrollbar { display: none; }
+
+.dbSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dbSectionHeader {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brass-deep);
+  padding: 2px 8px 6px;
+}
+.dbSubgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+.dbSubgroup:last-child { margin-bottom: 0; }
+.dbSubHeader {
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 4px 8px 4px 14px;
+}
+.dbCatList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dbCat {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font: inherit;
+  color: inherit;
+}
+.dbCat:hover { background: var(--surface); }
+.dbCatActive { background: var(--surface-deep); box-shadow: var(--card-edge); }
+.dbCatLabel {
+  font: 500 12px/1.3 var(--mono);
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+}
+.dbCatActive .dbCatLabel { color: var(--brass-bright); }
+.dbCatCount {
+  font: 500 10px/1 var(--mono);
+  color: var(--ink-faint);
+  flex-shrink: 0;
+}
+
+/* Conteúdo — grade de cards */
+.dbContent {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 18px 20px;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dbContentHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.dbContentTitle {
+  font: 500 22px/1.1 var(--serif);
+  font-variation-settings: "opsz" 32;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.dbContentCount {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.dbGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+/* Sub-seções por tipo dentro da grade (ex: tipos defensivos de armadura) */
+.dbTypeSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.dbTypeSection:last-child { margin-bottom: 0; }
+.dbTypeHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.dbTypeTitle {
+  font: 500 13px/1.1 var(--serif);
+  font-variation-settings: "opsz" 18;
+  color: var(--brass-deep);
+  letter-spacing: 0.01em;
+}
+.dbTypeCount {
+  font: 500 10px/1 var(--mono);
+  color: var(--ink-faint);
+}
+
+/* Card de item */
+.itemCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  background: var(--surface);
+  box-shadow: var(--card-edge);
+  border-radius: 5px;
+}
+.itemCardHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.itemCardName {
+  font: 500 15px/1.2 var(--serif);
+  font-variation-settings: "opsz" 20;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+.itemCardLevel {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.06em;
+  color: var(--brass-deep);
+  flex-shrink: 0;
+}
+.itemCardType {
+  font: 500 9px/1.3 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+.itemCardStats {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  /* Cor neutra herdada — linhas com classe .color_* (especificidade maior que
+     herança) sobrescrevem com a cor global do atributo. */
+  color: var(--ink-soft);
+}
+.itemCardStat {
+  font: 400 12px/1.4 var(--mono);
+}
+.itemCardDesc {
+  font: italic 400 12px/1.5 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-muted);
+  margin: 2px 0 0;
+}
+
+/* Skill concedida — nome sublinhado + tooltip */
+.spellName {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  cursor: help;
+  outline: none;
+}
+.spellName:hover,
+.spellName:focus {
+  text-decoration-style: solid;
+  filter: brightness(1.15);
+}
+
+.spellTooltip {
+  position: fixed;
+  z-index: 1000;
+  max-width: 300px;
+  background: var(--paper);
+  box-shadow: var(--card-edge-lg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+.spellTipName {
+  font: 500 14px/1.2 var(--serif);
+  font-variation-settings: "opsz" 18;
+}
+.spellTipMeta {
+  font: 500 9px/1.2 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.spellTipDesc {
+  font: italic 400 12px/1.5 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-soft);
+  margin: 2px 0 0;
+}
+.spellTipStats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-soft);
+  /* Cor neutra herdada — linhas com .color_* sobrescrevem com a cor global. */
+  color: var(--ink-soft);
+}
+.spellTipLine {
+  font: 500 12px/1.4 var(--mono);
+}
+.spellTipNote {
+  font: italic 400 11px/1.4 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+.itemCardReq {
+  margin-top: 6px;
+  font: 500 11px/1.3 var(--mono);
+  letter-spacing: 0.02em;
+  color: var(--brass-deep);
+}
+
+.itemCardOrigin {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+}
+.itemCardOriginLabel {
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 2px;
+}
+.itemCardSource {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "name chance"
+    "meta chance";
+  gap: 0 10px;
+  align-items: center;
+}
+.itemCardSourceName {
+  grid-area: name;
+  font: 500 11px/1.3 var(--mono);
+  color: var(--ink);
+}
+.itemCardSourceMeta {
+  grid-area: meta;
+  font: 400 10px/1.3 var(--mono);
+  color: var(--ink-muted);
+}
+.itemCardSourceChance {
+  grid-area: chance;
+  font: 500 12px/1 var(--mono);
+  color: var(--brass);
+  justify-self: end;
+}
+.itemCardSourceShop {
+  grid-area: chance;
+  font: 500 11px/1 var(--mono);
+  color: var(--ouro, var(--brass));
+  justify-self: end;
+}
+.itemCardNoSource {
+  font: italic 400 11px/1.4 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-faint);
+}
+
+/* ============================================================
    Responsivo — empilha colunas em telas estreitas
    ============================================================ */
 @media (max-width: 980px) {
@@ -935,4 +1271,5 @@
   .rarityCardHeader { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .rarityRange { align-items: flex-start; text-align: left; }
   .forgeRoot { grid-template-columns: minmax(0, 1fr); }
+  .dbRoot { grid-template-columns: minmax(0, 1fr); }
 }

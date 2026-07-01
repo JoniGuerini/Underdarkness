@@ -161,7 +161,7 @@ const G_DEFESA: TalentTree = {
       id: 'g-d-bloqueio', name: 'Bloqueio Sólido',
       description: 'Postura defensiva refinada com escudo.',
       row: 0, col: 2,
-      effect: { perRank: 3, label: 'Bloqueio', unit: '%', color: 'fisico' },
+      effect: { perRank: 3, label: 'Chance de Bloqueio', unit: '%', color: 'fisico' },
     }),
     t({
       id: 'g-d-resistencia', name: 'Resistência Natural',

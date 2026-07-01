@@ -115,21 +115,27 @@ export function computeDerivedStatsWithSources(c: Character): DerivedStatsResult
   // ────────────────────────────────────────────────────────────────
   // Atributos finais (base + flat-* de itens)
   // ────────────────────────────────────────────────────────────────
+  // "Todos os Atributos" (ex: Amuleto de Ônix) soma em Força, Agilidade e Intelecto.
+  const todosAtributos = itemSources(contribs, 'flat-todos-atributos');
+
   sources.forca = [
     { label: 'Base', value: c.forca, tone: 'attr-forca' },
     ...itemSources(contribs, 'flat-forca'),
+    ...todosAtributos,
   ];
   const f = sumSources(sources.forca);
 
   sources.agilidade = [
     { label: 'Base', value: c.agilidade, tone: 'attr-agi' },
     ...itemSources(contribs, 'flat-agilidade'),
+    ...todosAtributos,
   ];
   const a = sumSources(sources.agilidade);
 
   sources.intelecto = [
     { label: 'Base', value: c.intelecto, tone: 'attr-int' },
     ...itemSources(contribs, 'flat-intelecto'),
+    ...todosAtributos,
   ];
   const i = sumSources(sources.intelecto);
 
@@ -163,6 +169,12 @@ export function computeDerivedStatsWithSources(c: Character): DerivedStatsResult
     ...itemSources(contribs, 'flat-evasao'),
   ];
   const evasao = sumSources(sources.evasao);
+
+  // Escudo de Energia — buffer arcano; por ora vem só de itens.
+  sources.escudoEnergia = [
+    ...itemSources(contribs, 'flat-escudo-energia'),
+  ];
+  const escudoEnergia = sumSources(sources.escudoEnergia);
 
   const hasShield = c.equipped.escudo != null;
   const blockMax = 75;
@@ -422,6 +434,7 @@ export function computeDerivedStatsWithSources(c: Character): DerivedStatsResult
     manaMax,
     armadura,
     evasao,
+    escudoEnergia,
     bloqueio,
     blockMax,
     resistMax,

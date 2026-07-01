@@ -28,58 +28,10 @@ export interface Recipe {
 }
 
 // ============================================================================
-// TIBÉRIO — Forjar (armas e armaduras com afixos básicos)
+// TIBÉRIO — Forjar
 // ============================================================================
-const tiberioRecipes: Recipe[] = [
-  {
-    id: 'craft-lamina-vau',
-    name: 'Lâmina do Vau',
-    crafterId: 'tiberio',
-    role: 'forjar',
-    description:
-      'Lâmina simples mas bem temperada. Tibério forja com calma, batendo o aço três vezes pra cada vez que outros baterriam uma.',
-    ingredients: [
-      { itemId: 'mat-minerio-ferro', quantity: 3 },
-      { itemId: 'mat-pedra-afiar', quantity: 1 },
-    ],
-    result: {
-      id: 'craft-espada-longa-magica',
-      name: 'Lâmina do Vau',
-      slot: 'arma',
-      rarity: 'magico',
-      stats: [
-        { text: '5 a 10 de Dano Físico', color: 'fisico', kind: 'base', effect: { key: 'flat-dmg-fis', value: 5, max: 10 } },
-        { text: '1.0 ataques/s', kind: 'base', effect: { key: 'weapon-speed', value: 1.0 } },
-        { text: '5% de Chance de Crítico', color: 'critico', kind: 'base', effect: { key: 'weapon-crit-base', value: 5 } },
-        { text: '+ 6 a 10 de Dano Físico', color: 'fisico', kind: 'prefix', effect: { key: 'flat-dmg-fis', value: 6, max: 10 } },
-      ],
-      description: 'Forjada na bigorna do Vau. O cabo ainda guarda o calor da forja.',
-    },
-  },
-  {
-    id: 'craft-botas-reforcadas',
-    name: 'Botas Reforçadas',
-    crafterId: 'tiberio',
-    role: 'forjar',
-    description:
-      'Couro batido com placas finas de ferro nas canelas. Pesa um pouco mais, mas o golpe que vier não passa.',
-    ingredients: [
-      { itemId: 'mat-couro-cru', quantity: 2 },
-      { itemId: 'mat-minerio-ferro', quantity: 1 },
-    ],
-    result: {
-      id: 'craft-botas-magicas',
-      name: 'Botas Reforçadas',
-      slot: 'pes',
-      rarity: 'magico',
-      stats: [
-        { text: '+12 de Evasão', color: 'agilidade', kind: 'base', effect: { key: 'flat-evasao', value: 12 } },
-        { text: '+ 18 de Armadura', color: 'fisico', kind: 'prefix', effect: { key: 'flat-armadura', value: 18 } },
-      ],
-      description: 'Cheiram a couro novo e fumaça de carvão.',
-    },
-  },
-];
+// Sem receitas por enquanto — as bases de equipamento serão a fonte de armas.
+const tiberioRecipes: Recipe[] = [];
 
 // ============================================================================
 // SOLANA — Destilar (poções e elixires)

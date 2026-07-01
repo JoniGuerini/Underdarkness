@@ -4,10 +4,11 @@ import {
   EQUIP_SLOT_LABEL,
   emptyEquipped,
   emptyInventory,
+  canEquipInSlot,
   findEmptyEquipSlot,
   findFirstCompatibleEquipSlot,
+  isTwoHandedItem,
   INVENTORY_SIZE,
-  itemFitsInSlot,
   PAPER_DOLL_ORDER,
 } from '../../data/items';
 import { ItemTooltip } from '../ItemTooltip/ItemTooltip';
@@ -72,8 +73,8 @@ export function Inventory({ character, onUpdate }: InventoryProps) {
 
   const canDropAt = useCallback((target: Location, item: Item): boolean => {
     if (target.kind === 'inventory') return true;
-    return itemFitsInSlot(item.slot, target.slot);
-  }, []);
+    return canEquipInSlot(item, target.slot, equipped);
+  }, [equipped]);
 
   /** Verifica swap bidirecional + checa stacks empilháveis. */
   const canSwap = useCallback(
@@ -135,6 +136,16 @@ export function Inventory({ character, onUpdate }: InventoryProps) {
         setAt(b, itemA);
       }
 
+      // Arma de duas mãos ocupa as duas mãos: manda a Mão Secundária pro inventário.
+      const mainNow = nextEquipped.arma;
+      if (mainNow && isTwoHandedItem(mainNow) && nextEquipped.escudo) {
+        const freeIdx = nextInventory.findIndex((x) => x === null);
+        if (freeIdx >= 0) {
+          nextInventory[freeIdx] = nextEquipped.escudo;
+          nextEquipped.escudo = null;
+        }
+      }
+
       setEquipped(nextEquipped);
       setInventory(nextInventory);
     },
@@ -151,8 +162,8 @@ export function Inventory({ character, onUpdate }: InventoryProps) {
       if (source.kind === 'inventory') {
         // Equipar: prefere posição vazia compatível (ex: anel1 antes de anel2).
         // Se nenhuma vazia, troca com a primeira posição compatível (swap).
-        const emptySlot = findEmptyEquipSlot(item.slot, equipped);
-        const targetSlot = emptySlot ?? findFirstCompatibleEquipSlot(item.slot);
+        const emptySlot = findEmptyEquipSlot(item, equipped);
+        const targetSlot = emptySlot ?? findFirstCompatibleEquipSlot(item, equipped);
         if (!targetSlot) return;
         swap(source, { kind: 'equipped', slot: targetSlot });
       } else {

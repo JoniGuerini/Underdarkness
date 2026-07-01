@@ -125,6 +125,7 @@
 .intelecto { color: var(--stat-intelecto); }
 .defesa    { color: var(--stat-defesa); }
 .critico   { color: var(--stat-critico); }
+.energia   { color: var(--stat-energia); }
 
 /* ============================================================
    Descrição (italic flavor)

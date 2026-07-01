@@ -1,5 +1,8 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import type { Character, Item, ItemStat, Rarity } from '../../types';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
+import type { Character, Item, ItemSlot, ItemStat, Rarity } from '../../types';
+import { getSpellById, type Spell, type ElementKey } from '../../data/spells';
+import { getSummonSpellById, getMinionById, type SummonSpell } from '../../data/summons';
 import {
   ALL_ENEMY_DEFS,
   getAreaEnemyLevelRange,
@@ -8,11 +11,14 @@ import {
   getEnemyCritMult,
   getEnemySpawnLocations,
   getEnemyVelAtaque,
+  getItemDropSources,
   spawnEnemy,
   type Enemy,
 } from '../../data/enemies';
-import { getLocationById } from '../../data/world';
-import { getMaterialName } from '../../data/materials';
+import { ACTS, getLocationById } from '../../data/world';
+import { MATERIALS, getMaterial, getMaterialName } from '../../data/materials';
+import { ITEM_SLOT_LABEL } from '../../data/items';
+import { getItemShopSources } from '../../data/shops';
 import {
   ITEM_MODS,
   MOD_GROUP_LABEL,
@@ -22,15 +28,32 @@ import {
   type ModCategory,
   type ModGroup,
 } from '../../data/itemMods';
-import { ITEM_BASES, type ItemBase } from '../../data/itemBases';
+import {
+  ITEM_BASES,
+  WEAPON_TYPE_LABEL,
+  ARMOR_TYPE_LABEL,
+  BELT_TYPE_LABEL,
+  RING_TYPE_LABEL,
+  AMULET_TYPE_LABEL,
+  ALJAVA_TYPE_LABEL,
+  makeBaseItem,
+  type ItemBase,
+  type WeaponType,
+  type ArmorType,
+  type BeltType,
+  type RingType,
+  type AmuletType,
+  type AljavaType,
+} from '../../data/itemBases';
 import { ItemTooltipInline } from '../ItemTooltip/ItemTooltip';
 import { StatLine, Unit } from '../StatLine/StatLine';
 import { RarityGuide } from './RarityGuide';
 import styles from './CodexView.module.css';
 
-type CodexSection = 'mods' | 'raridade' | 'forja' | 'bestiario';
+type CodexSection = 'itens' | 'mods' | 'raridade' | 'forja' | 'bestiario';
 
 const SECTIONS: { id: CodexSection; label: string }[] = [
+  { id: 'itens', label: 'Itens' },
   { id: 'mods', label: 'Mods de Item' },
   { id: 'raridade', label: 'Raridade' },
   { id: 'forja', label: 'Forja' },
@@ -42,7 +65,7 @@ interface CodexViewProps {
 }
 
 export function CodexView({ character: _character }: CodexViewProps) {
-  const [active, setActive] = useState<CodexSection>('mods');
+  const [active, setActive] = useState<CodexSection>('itens');
 
   return (
     <div className={styles.root}>
@@ -63,6 +86,7 @@ export function CodexView({ character: _character }: CodexViewProps) {
       </nav>
 
       <div className={styles.sectionBody} key={active}>
+        {active === 'itens' && <ItemsView />}
         {active === 'mods' && <ModsList />}
         {active === 'raridade' && <RarityGuide />}
         {active === 'forja' && <ForgeView />}
@@ -141,6 +165,585 @@ function groupMods(mods: ItemModDef[]): Partial<Record<ModGroup, ItemModDef[]>> 
     out[mod.group]!.push(mod);
   }
   return out;
+}
+
+// ============================================================================
+// ITENS — base de dados de equipamentos e materiais, com origem de drop
+// ============================================================================
+
+interface CatalogEntry {
+  id: string;
+  name: string;
+  /** Item completo (pro tooltip). */
+  item: Item;
+  /** Texto curto de categoria (ex: nível requerido, slot ou "Material"). */
+  meta: string;
+  /** Nível requerido (equipamentos). */
+  reqLevel?: number;
+  /** Rótulo da classe/categoria (ex: "Espadas de Uma Mão"). */
+  typeLabel?: string;
+  /** Magia concedida (armas mágicas). */
+  grantedSpellId?: string;
+  /** Magia de invocação concedida (cetros). */
+  grantedSummonId?: string;
+  /** Sub-seção dentro da grade (ex: tipo defensivo da armadura). */
+  sectionLabel?: string;
+}
+
+interface CatalogCategory {
+  id: string;
+  /** Rótulo na sidebar (ex: "Espadas"). */
+  label: string;
+  /** Título no topo da grade (ex: "Espadas de Uma Mão"). Default = label. */
+  title?: string;
+  /** Cabeçalho de topo na sidebar (ex: "Armas", "Armaduras"). */
+  group: string;
+  /** Sub-cabeçalho opcional (ex: "De Uma Mão", "Duas Mãos"). */
+  subgroup?: string;
+  entries: CatalogEntry[];
+}
+
+/** Famílias de arma — definem o rótulo (Espadas, Machados...) de cada tipo. */
+const WEAPON_FAMILIES: { family: string; types: WeaponType[] }[] = [
+  { family: 'Espadas', types: ['espada-uma-mao', 'espada-duas-maos'] },
+  { family: 'Machados', types: ['machado-uma-mao', 'machado-duas-maos'] },
+  { family: 'Maças', types: ['maca-uma-mao', 'maca-duas-maos'] },
+  { family: 'Adagas', types: ['adaga-uma-mao'] },
+  { family: 'Lanças', types: ['lanca'] },
+  { family: 'Alabardas', types: ['alabarda'] },
+  { family: 'Foices', types: ['foice'] },
+  { family: 'Arcos', types: ['arco'] },
+  { family: 'Bestas', types: ['besta'] },
+  { family: 'Varinhas', types: ['varinha'] },
+  { family: 'Cetros', types: ['cetro'] },
+  { family: 'Cajados', types: ['cajado'] },
+];
+
+/** Slots de armadura (com tipos defensivos), na ordem da sidebar. */
+const ARMOR_SLOTS: { slot: ItemSlot; label: string }[] = [
+  { slot: 'cabeca', label: 'Elmos' },
+  { slot: 'peito', label: 'Peitorais' },
+  { slot: 'maos', label: 'Luvas' },
+  { slot: 'pes', label: 'Botas' },
+  { slot: 'escudo', label: 'Escudos' },
+];
+
+const ARMOR_TYPE_ORDER: ArmorType[] = [
+  'armadura',
+  'evasao',
+  'escudo-energia',
+  'armadura-evasao',
+  'armadura-energia',
+  'evasao-energia',
+];
+
+const BELT_TYPE_ORDER: BeltType[] = [
+  'vida',
+  'mana',
+  'forca',
+  'armadura',
+  'escudo-energia',
+  'dano-fisico',
+];
+
+const RING_TYPE_ORDER: RingType[] = [
+  'vida',
+  'mana',
+  'res-fogo',
+  'res-gelo',
+  'res-raio',
+  'res-caos',
+  'dano-fisico',
+];
+
+const AMULET_TYPE_ORDER: AmuletType[] = [
+  'vida',
+  'mana',
+  'forca',
+  'agilidade',
+  'intelecto',
+  'todos-atributos',
+  'escudo-energia',
+];
+
+const ALJAVA_TYPE_ORDER: AljavaType[] = ['dano-fisico', 'critico', 'vel-ataque', 'vida'];
+
+
+function baseToEntry(b: ItemBase): CatalogEntry {
+  const typeLabel = b.weaponType
+    ? WEAPON_TYPE_LABEL[b.weaponType]
+    : b.armorType
+      ? ARMOR_TYPE_LABEL[b.armorType]
+      : ITEM_SLOT_LABEL[b.slot];
+  return {
+    id: b.id,
+    name: b.name,
+    item: makeBaseItem(b.id, 'codex'),
+    meta: b.reqLevel != null ? `Nv ${b.reqLevel}` : ITEM_SLOT_LABEL[b.slot],
+    reqLevel: b.reqLevel,
+    typeLabel,
+    grantedSpellId: b.grantedSpellId,
+    grantedSummonId: b.grantedSummonId,
+    sectionLabel: b.armorType
+      ? ARMOR_TYPE_LABEL[b.armorType]
+      : b.beltType
+        ? BELT_TYPE_LABEL[b.beltType]
+        : b.ringType
+          ? RING_TYPE_LABEL[b.ringType]
+          : b.amuletType
+            ? AMULET_TYPE_LABEL[b.amuletType]
+            : b.aljavaType
+              ? ALJAVA_TYPE_LABEL[b.aljavaType]
+              : cajadoElement(b)
+                ? ELEMENT_LABEL[cajadoElement(b)!]
+                : undefined,
+  };
+}
+
+/** Elemento da magia concedida por um cajado (pra seccionar por elemento). */
+function cajadoElement(b: ItemBase): ElementKey | undefined {
+  if (b.weaponType !== 'cajado' || !b.grantedSpellId) return undefined;
+  return getSpellById(b.grantedSpellId)?.element;
+}
+
+const CAJADO_ELEMENT_ORDER: ElementKey[] = ['fogo', 'gelo', 'raio', 'sagrado', 'caos'];
+
+const ELEMENT_LABEL: Record<ElementKey, string> = {
+  fogo: 'Fogo',
+  gelo: 'Gelo',
+  raio: 'Raio',
+  caos: 'Caos',
+  sagrado: 'Sagrado',
+};
+
+/** Nomes de dano por elemento — idênticos aos da ficha do personagem. */
+const DAMAGE_LABEL: Record<ElementKey, string> = {
+  fogo: 'Dano de Fogo',
+  gelo: 'Dano de Gelo',
+  raio: 'Dano de Raio',
+  caos: 'Dano de Caos',
+  sagrado: 'Dano Sagrado',
+};
+
+/** Tipos de duas mãos cujo id não contém "duas". */
+const TWO_HANDED_TYPES: WeaponType[] = ['cajado', 'alabarda', 'foice', 'besta'];
+
+/** Subgrupo (mão) de um tipo de arma. */
+const handSubgroup = (wt: WeaponType): string => {
+  if (TWO_HANDED_TYPES.includes(wt) || wt.includes('duas')) return 'Duas Mãos';
+  return 'De Uma Mão';
+};
+
+const byReqLevel = (a: ItemBase, b: ItemBase) => (a.reqLevel ?? 0) - (b.reqLevel ?? 0);
+
+// Ordem das mãos dentro de "Armas".
+const HAND_ORDER = ['De Uma Mão', 'Duas Mãos'];
+
+function buildCatalog(): CatalogCategory[] {
+  const cats: CatalogCategory[] = [];
+
+  // Armas — grupo "Armas", subgrupos por mão (De Uma Mão / Duas Mãos),
+  // listando os tipos de arma (Espadas, Machados, Maças, Adagas, Lanças, Cajados).
+  const weaponCats: CatalogCategory[] = [];
+  for (const fam of WEAPON_FAMILIES) {
+    for (const wt of fam.types) {
+      const bases = ITEM_BASES.filter((b) => b.slot === 'arma' && b.weaponType === wt);
+      if (wt === 'cajado') {
+        // Cajados: ordena por elemento (pra seccionar) e depois por nível.
+        bases.sort((x, y) => {
+          const ex = CAJADO_ELEMENT_ORDER.indexOf(cajadoElement(x) ?? 'fogo');
+          const ey = CAJADO_ELEMENT_ORDER.indexOf(cajadoElement(y) ?? 'fogo');
+          return ex - ey || (x.reqLevel ?? 0) - (y.reqLevel ?? 0);
+        });
+      } else {
+        bases.sort(byReqLevel);
+      }
+      if (bases.length > 0) {
+        weaponCats.push({
+          id: wt,
+          label: fam.family,
+          title: WEAPON_TYPE_LABEL[wt],
+          group: 'Armas',
+          subgroup: handSubgroup(wt),
+          entries: bases.map(baseToEntry),
+        });
+      }
+    }
+  }
+  // Ordena por mão (Uma Mão antes de Duas Mãos), mantendo a ordem das famílias.
+  weaponCats.sort((a, b) => HAND_ORDER.indexOf(a.subgroup!) - HAND_ORDER.indexOf(b.subgroup!));
+  cats.push(...weaponCats);
+
+  // Armaduras — grupo "Armaduras", uma categoria por slot (Peitorais, Elmos...).
+  // As entradas ficam ordenadas por tipo defensivo (e nível) pra a grade agrupar em seções.
+  for (const s of ARMOR_SLOTS) {
+    const slotBases = ITEM_BASES.filter((b) => b.slot === s.slot);
+    if (slotBases.length === 0) continue;
+    const typed = slotBases.filter((b) => b.armorType);
+    let entries: CatalogEntry[];
+    if (typed.length > 0) {
+      entries = [];
+      for (const t of ARMOR_TYPE_ORDER) {
+        entries.push(...typed.filter((b) => b.armorType === t).sort(byReqLevel).map(baseToEntry));
+      }
+      entries.push(...slotBases.filter((b) => !b.armorType).sort(byReqLevel).map(baseToEntry));
+    } else {
+      entries = slotBases.sort(byReqLevel).map(baseToEntry);
+    }
+    cats.push({ id: s.slot, label: s.label, group: 'Armaduras', entries });
+  }
+
+  // Cintos — categoria única, entradas ordenadas por tipo (implícito) pra a grade seccionar.
+  const belts = ITEM_BASES.filter((b) => b.slot === 'cinto');
+  if (belts.length > 0) {
+    const entries: CatalogEntry[] = [];
+    for (const bt of BELT_TYPE_ORDER) {
+      entries.push(...belts.filter((b) => b.beltType === bt).sort(byReqLevel).map(baseToEntry));
+    }
+    entries.push(...belts.filter((b) => !b.beltType).sort(byReqLevel).map(baseToEntry));
+    cats.push({ id: 'cinto', label: 'Cintos', group: 'Armaduras', entries });
+  }
+
+  // Anéis — categoria única, entradas ordenadas por tipo (implícito) pra a grade seccionar.
+  const rings = ITEM_BASES.filter((b) => b.slot === 'anel');
+  if (rings.length > 0) {
+    const entries: CatalogEntry[] = [];
+    for (const rt of RING_TYPE_ORDER) {
+      entries.push(...rings.filter((b) => b.ringType === rt).sort(byReqLevel).map(baseToEntry));
+    }
+    entries.push(...rings.filter((b) => !b.ringType).sort(byReqLevel).map(baseToEntry));
+    cats.push({ id: 'anel', label: 'Anéis', group: 'Acessórios', entries });
+  }
+
+  // Amuletos — categoria única, entradas ordenadas por tipo (implícito) pra a grade seccionar.
+  const amulets = ITEM_BASES.filter((b) => b.slot === 'amuleto');
+  if (amulets.length > 0) {
+    const entries: CatalogEntry[] = [];
+    for (const at of AMULET_TYPE_ORDER) {
+      entries.push(...amulets.filter((b) => b.amuletType === at).sort(byReqLevel).map(baseToEntry));
+    }
+    entries.push(...amulets.filter((b) => !b.amuletType).sort(byReqLevel).map(baseToEntry));
+    cats.push({ id: 'amuleto', label: 'Amuletos', group: 'Acessórios', entries });
+  }
+
+  // Aljavas — off-hand de arqueiro, seccionada por tipo (implícito).
+  const quivers = ITEM_BASES.filter((b) => b.slot === 'aljava');
+  if (quivers.length > 0) {
+    const entries: CatalogEntry[] = [];
+    for (const at of ALJAVA_TYPE_ORDER) {
+      entries.push(...quivers.filter((b) => b.aljavaType === at).sort(byReqLevel).map(baseToEntry));
+    }
+    entries.push(...quivers.filter((b) => !b.aljavaType).sort(byReqLevel).map(baseToEntry));
+    cats.push({ id: 'aljava', label: 'Aljavas', group: 'Armaduras', entries });
+  }
+
+  // Materiais e consumíveis.
+  const materialEntries: CatalogEntry[] = Object.keys(MATERIALS).map((id) => {
+    const item = getMaterial(id)!;
+    return { id, name: item.name, item, meta: 'Material' };
+  });
+  if (materialEntries.length > 0) {
+    cats.push({ id: 'materiais', label: 'Materiais & Consumíveis', group: 'Materiais', entries: materialEntries });
+  }
+  return cats;
+}
+
+function actTitle(act: number): string {
+  return ACTS.find((a) => a.num === act)?.title ?? `Ato ${act}`;
+}
+
+function ItemsView() {
+  const categories = useMemo(buildCatalog, []);
+  const [selectedCat, setSelectedCat] = useState(categories[0]?.id ?? '');
+  const active = categories.find((c) => c.id === selectedCat) ?? categories[0];
+
+  // Agrupa em grupo → subgrupo → categorias, preservando a ordem de inserção.
+  const groups = useMemo(() => {
+    const map = new Map<string, Map<string, CatalogCategory[]>>();
+    for (const c of categories) {
+      if (!map.has(c.group)) map.set(c.group, new Map());
+      const subs = map.get(c.group)!;
+      const key = c.subgroup ?? '';
+      if (!subs.has(key)) subs.set(key, []);
+      subs.get(key)!.push(c);
+    }
+    return [...map.entries()].map(([group, subs]) => ({ group, subs: [...subs.entries()] }));
+  }, [categories]);
+
+  if (!active) return null;
+
+  const renderCat = (cat: CatalogCategory) => (
+    <li key={cat.id}>
+      <button
+        type="button"
+        className={`${styles.dbCat} ${cat.id === active.id ? styles.dbCatActive : ''}`}
+        onClick={() => setSelectedCat(cat.id)}
+      >
+        <span className={styles.dbCatLabel}>{cat.label}</span>
+        <span className={styles.dbCatCount}>{cat.entries.length}</span>
+      </button>
+    </li>
+  );
+
+  return (
+    <div className={styles.dbRoot}>
+      <aside className={styles.dbSidebar}>
+        {groups.map(({ group, subs }) => (
+          <div key={group} className={styles.dbSection}>
+            <div className={styles.dbSectionHeader}>{group}</div>
+            {subs.map(([sub, cats]) => (
+              <div key={sub || group} className={styles.dbSubgroup}>
+                {sub && <div className={styles.dbSubHeader}>{sub}</div>}
+                <ul className={styles.dbCatList}>{cats.map(renderCat)}</ul>
+              </div>
+            ))}
+          </div>
+        ))}
+      </aside>
+
+      <section className={styles.dbContent}>
+        <div className={styles.dbContentHeader}>
+          <h2 className={styles.dbContentTitle}>{active.title ?? active.label}</h2>
+          <span className={styles.dbContentCount}>
+            {active.entries.length} {active.entries.length === 1 ? 'item' : 'itens'}
+          </span>
+        </div>
+        <ContentBody entries={active.entries} />
+      </section>
+    </div>
+  );
+}
+
+/** Corpo da grade — agrupa em seções por `sectionLabel` quando houver; senão, grade plana. */
+function ContentBody({ entries }: { entries: CatalogEntry[] }) {
+  const sections = useMemo(() => {
+    const map = new Map<string, CatalogEntry[]>();
+    let hasSections = false;
+    for (const e of entries) {
+      if (e.sectionLabel) hasSections = true;
+      const key = e.sectionLabel ?? '';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(e);
+    }
+    return { hasSections, groups: [...map.entries()] };
+  }, [entries]);
+
+  if (!sections.hasSections) {
+    return (
+      <div className={styles.dbGrid}>
+        {entries.map((entry) => (
+          <ItemCard key={entry.id} entry={entry} />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {sections.groups.map(([label, es]) => (
+        <div key={label || 'sem-tipo'} className={styles.dbTypeSection}>
+          {label && (
+            <div className={styles.dbTypeHeader}>
+              <span className={styles.dbTypeTitle}>{label}</span>
+              <span className={styles.dbTypeCount}>{es.length}</span>
+            </div>
+          )}
+          <div className={styles.dbGrid}>
+            {es.map((entry) => (
+              <ItemCard key={entry.id} entry={entry} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+function ItemCard({ entry }: { entry: CatalogEntry }) {
+  const dropSources = getItemDropSources(entry.id);
+  const shopSources = getItemShopSources(entry.id);
+  const spell = entry.grantedSpellId ? getSpellById(entry.grantedSpellId) ?? null : null;
+  const summon = entry.grantedSummonId ? getSummonSpellById(entry.grantedSummonId) ?? null : null;
+  const stats = entry.item.stats ?? [];
+  // As linhas "Concede:"/"Invoca:" são renderizadas de forma especial (com
+  // tooltip), então as removemos da lista de stats simples pra não duplicar.
+  const plainStats = stats.filter(
+    (s) => !s.text.startsWith('Concede:') && !s.text.startsWith('Invoca:'),
+  );
+  const hasSource = dropSources.length > 0 || shopSources.length > 0;
+
+  return (
+    <article className={styles.itemCard}>
+      <div className={styles.itemCardHeader}>
+        <span className={styles.itemCardName}>{entry.name}</span>
+      </div>
+      {entry.typeLabel && <span className={styles.itemCardType}>{entry.typeLabel}</span>}
+
+      {stats.length > 0 ? (
+        <ul className={styles.itemCardStats}>
+          {spell && <SpellGrant spell={spell} />}
+          {summon && <SummonGrant summon={summon} />}
+          {plainStats.map((s, i) => (
+            <li
+              key={i}
+              className={`${styles.itemCardStat} ${s.color ? styles[`color_${s.color}`] : ''}`}
+            >
+              {s.text}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        entry.item.description && <p className={styles.itemCardDesc}>{entry.item.description}</p>
+      )}
+
+      {entry.reqLevel != null && (
+        <div className={styles.itemCardReq}>Requer Nível {entry.reqLevel}</div>
+      )}
+
+      <div className={styles.itemCardOrigin}>
+        <div className={styles.itemCardOriginLabel}>Origem</div>
+
+        {dropSources.map((src) => (
+          <div key={`drop-${src.enemyId}-${src.locationId}`} className={styles.itemCardSource}>
+            <span className={styles.itemCardSourceName}>{src.enemyName}</span>
+            <span className={styles.itemCardSourceMeta}>
+              {src.locationName} · {actTitle(src.act)}
+            </span>
+            <span className={styles.itemCardSourceChance}>{Math.round(src.chance * 100)}%</span>
+          </div>
+        ))}
+
+        {shopSources.map((src) => (
+          <div key={`shop-${src.npcId}`} className={styles.itemCardSource}>
+            <span className={styles.itemCardSourceName}>{src.npcName}</span>
+            <span className={styles.itemCardSourceMeta}>
+              {src.locationName ? `${src.locationName} · ` : ''}Loja
+            </span>
+            <span className={styles.itemCardSourceShop}>{src.price} ouro</span>
+          </div>
+        ))}
+
+        {!hasSource && (
+          <div className={styles.itemCardNoSource}>Sem fonte definida ainda.</div>
+        )}
+      </div>
+    </article>
+  );
+}
+
+/** Linha "Concede: <skill>" com nome sublinhado e tooltip de detalhes ao hover. */
+function SpellGrant({ spell }: { spell: Spell }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+
+  const show = () => {
+    const r = ref.current?.getBoundingClientRect();
+    if (r) setPos({ left: r.left, top: r.bottom + 6 });
+  };
+  const hide = () => setPos(null);
+
+  return (
+    <li className={`${styles.itemCardStat} ${styles[`color_${spell.element}`]}`}>
+      Concede:{' '}
+      <span
+        ref={ref}
+        className={styles.spellName}
+        onMouseEnter={show}
+        onMouseLeave={hide}
+        tabIndex={0}
+        onFocus={show}
+        onBlur={hide}
+      >
+        {spell.name}
+      </span>
+      {pos && <SpellTooltip spell={spell} position={pos} />}
+    </li>
+  );
+}
+
+function SpellTooltip({ spell, position }: { spell: Spell; position: { left: number; top: number } }) {
+  return createPortal(
+    <div className={styles.spellTooltip} style={{ left: position.left, top: position.top }}>
+      <div className={`${styles.spellTipName} ${styles[`color_${spell.element}`]}`}>{spell.name}</div>
+      <div className={styles.spellTipMeta}>Magia · {ELEMENT_LABEL[spell.element]} · Tier {spell.tier}</div>
+      <p className={styles.spellTipDesc}>{spell.description}</p>
+      <div className={styles.spellTipStats}>
+        {spell.hits.map((h, i) => (
+          <div key={i} className={`${styles.spellTipLine} ${styles[`color_${h.element}`]}`}>
+            {h.min}–{h.max} de {DAMAGE_LABEL[h.element]}
+          </div>
+        ))}
+        <div className={`${styles.spellTipLine} ${styles.color_intelecto}`}>
+          Tempo de Conjuração: {spell.castTimeSec.toFixed(1)}s
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+/** Linha "Invoca: <skill>" com nome sublinhado e tooltip de detalhes ao hover. */
+function SummonGrant({ summon }: { summon: SummonSpell }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+
+  const show = () => {
+    const r = ref.current?.getBoundingClientRect();
+    if (r) setPos({ left: r.left, top: r.bottom + 6 });
+  };
+  const hide = () => setPos(null);
+
+  return (
+    <li className={`${styles.itemCardStat} ${styles.color_caos}`}>
+      Invoca:{' '}
+      <span
+        ref={ref}
+        className={styles.spellName}
+        onMouseEnter={show}
+        onMouseLeave={hide}
+        tabIndex={0}
+        onFocus={show}
+        onBlur={hide}
+      >
+        {summon.name}
+      </span>
+      {pos && <SummonTooltip summon={summon} position={pos} />}
+    </li>
+  );
+}
+
+function SummonTooltip({ summon, position }: { summon: SummonSpell; position: { left: number; top: number } }) {
+  const minion = getMinionById(summon.minionId);
+  return createPortal(
+    <div className={styles.spellTooltip} style={{ left: position.left, top: position.top }}>
+      <div className={`${styles.spellTipName} ${styles.color_caos}`}>{summon.name}</div>
+      <div className={styles.spellTipMeta}>Invocação · Tier {summon.tier}</div>
+      <p className={styles.spellTipDesc}>{summon.description}</p>
+      <div className={styles.spellTipStats}>
+        {minion && (
+          <>
+            <div className={styles.spellTipLine}>
+              Invoca: {summon.count} × {minion.name}
+            </div>
+            <div className={styles.spellTipLine}>{minion.role}</div>
+            <div className={`${styles.spellTipLine} ${styles.color_vida}`}>
+              Vida Máxima: {minion.vida}
+            </div>
+            <div className={styles.spellTipLine}>
+              Dano: {minion.danoMin}–{minion.danoMax}
+            </div>
+          </>
+        )}
+        <div className={`${styles.spellTipLine} ${styles.color_mana}`}>
+          Custo de Mana: {summon.manaCost}
+        </div>
+        <div className={`${styles.spellTipLine} ${styles.color_intelecto}`}>
+          Tempo de Conjuração: {summon.castTimeSec.toFixed(1)}s
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
 }
 
 // ============================================================================
@@ -289,7 +892,7 @@ function EnemyStatSheet({ enemy }: { enemy: Enemy }) {
           <StatLine name="Armadura" value={String(enemy.armadura)} color="defesa" />
         )}
         {(enemy.bloqueio ?? 0) > 0 && (
-          <StatLine name="Bloqueio" value={`${enemy.bloqueio}%`} color="defesa" />
+          <StatLine name="Chance de Bloqueio" value={`${enemy.bloqueio}%`} color="fisico" />
         )}
         {(enemy.resFogo ?? 0) > 0 && (
           <StatLine name="Res. Fogo" value={`${enemy.resFogo}%`} color="fogo" />

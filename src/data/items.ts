@@ -1,4 +1,5 @@
 ﻿import type { EquipSlot, Item, ItemSlot, Rarity } from '../types';
+import { weaponTypeOfItem, isTwoHandedWeaponType, isPrimaryOnlyWeaponType } from './itemBases';
 
 export const INVENTORY_SIZE = 36;
 
@@ -51,7 +52,7 @@ export const EQUIP_SLOT_LABEL: Record<EquipSlot, string> = {
   anel1: 'Anel',
   anel2: 'Anel',
   arma: 'Arma Principal',
-  escudo: 'Escudo',
+  escudo: 'Mão Secundária',
 };
 
 /** Label da categoria do item — usado em tooltips de item. */
@@ -65,39 +66,82 @@ export const ITEM_SLOT_LABEL: Record<ItemSlot, string> = {
   anel: 'Anel',
   arma: 'Arma Principal',
   escudo: 'Escudo',
+  aljava: 'Aljava',
 };
 
-/**
- * Verifica se um item de uma certa categoria pode ir num slot de equipamento.
- * Caso especial: item de categoria 'anel' aceita posições anel1 ou anel2.
- */
-export function itemFitsInSlot(itemSlot: ItemSlot | null, equipSlot: EquipSlot): boolean {
-  if (itemSlot === null) return false;
-  if (itemSlot === 'anel') return equipSlot === 'anel1' || equipSlot === 'anel2';
-  return itemSlot === equipSlot;
+/** O item é uma arma de duas mãos? (ocupa as duas mãos) */
+export function isTwoHandedItem(item: Item): boolean {
+  const wt = weaponTypeOfItem(item);
+  return wt ? isTwoHandedWeaponType(wt) : false;
+}
+
+/** O item é um arco? (Mão Principal exige Aljava na Secundária) */
+export function isBowItem(item: Item): boolean {
+  return weaponTypeOfItem(item) === 'arco';
 }
 
 /**
- * Encontra a primeira posição equipada compatível e vazia.
- * Pra click-to-equip: anel vai pra anel1 se livre, senão anel2.
+ * Pode equipar `item` no slot `equipSlot`, dado o estado atual de equipados?
+ *
+ * Regras:
+ * - **Anel** → anel1 ou anel2.
+ * - **Off-hand** (Escudo/Aljava) → só a Mão Secundária, e não se houver arma de
+ *   duas mãos na Principal (ela ocupa as duas mãos).
+ * - **Arma** → sempre pode na Principal. Na Secundária só se for de uma mão que
+ *   permita dual-wield (Lança e Arco não) E já houver uma arma na Principal.
+ * - **Armaduras** → o slot da própria categoria.
  */
+export function canEquipInSlot(
+  item: Item,
+  equipSlot: EquipSlot,
+  equipped: Record<EquipSlot, Item | null>,
+): boolean {
+  const s = item.slot;
+  if (s === null) return false;
+  if (s === 'anel') return equipSlot === 'anel1' || equipSlot === 'anel2';
+
+  if (s === 'escudo' || s === 'aljava') {
+    if (equipSlot !== 'escudo') return false;
+    const main = equipped.arma;
+    if (main && isTwoHandedItem(main)) return false;
+    // Arco na Principal → Secundária só aceita Aljava.
+    if (main && isBowItem(main) && s !== 'aljava') return false;
+    return true;
+  }
+
+  if (s === 'arma') {
+    if (equipSlot === 'arma') return true;
+    if (equipSlot === 'escudo') {
+      // Arco na Principal → Secundária só aceita Aljava (nenhuma arma).
+      if (equipped.arma && isBowItem(equipped.arma)) return false;
+      const wt = weaponTypeOfItem(item);
+      if (!wt || isPrimaryOnlyWeaponType(wt)) return false; // 2 mãos, Lança, Arco: só Principal
+      return equipped.arma != null; // 2ª arma exige uma arma na Principal
+    }
+    return false;
+  }
+
+  return s === equipSlot;
+}
+
+/** Primeira posição vazia compatível (respeita as regras de mão). */
 export function findEmptyEquipSlot(
-  itemSlot: ItemSlot,
+  item: Item,
   equipped: Record<EquipSlot, Item | null>,
 ): EquipSlot | null {
   for (const slot of EQUIP_SLOTS) {
-    if (itemFitsInSlot(itemSlot, slot) && equipped[slot] === null) return slot;
+    if (canEquipInSlot(item, slot, equipped) && equipped[slot] === null) return slot;
   }
   return null;
 }
 
-/**
- * Primeira posição compatível, mesmo que ocupada — fallback pra swap
- * quando todas as posições da categoria já têm item.
- */
-export function findFirstCompatibleEquipSlot(itemSlot: ItemSlot): EquipSlot | null {
+/** Primeira posição compatível, mesmo que ocupada — fallback pra swap. */
+export function findFirstCompatibleEquipSlot(
+  item: Item,
+  equipped: Record<EquipSlot, Item | null>,
+): EquipSlot | null {
   for (const slot of EQUIP_SLOTS) {
-    if (itemFitsInSlot(itemSlot, slot)) return slot;
+    if (canEquipInSlot(item, slot, equipped)) return slot;
   }
   return null;
 }

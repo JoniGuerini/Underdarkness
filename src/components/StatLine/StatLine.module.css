@@ -55,6 +55,7 @@
 .intelecto { color: var(--stat-intelecto); }
 .defesa { color: var(--stat-defesa); }
 .critico { color: var(--stat-critico); }
+.energia { color: var(--stat-energia); }
 .exp { color: var(--vital-exp); }
 .ouro { color: var(--brass-bright); }
 .comum { color: var(--rarity-comum); }
