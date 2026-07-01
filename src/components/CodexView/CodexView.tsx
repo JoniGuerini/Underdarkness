@@ -29,14 +29,19 @@ import {
 } from '../../data/materials';
 import { ITEM_SLOT_LABEL } from '../../data/items';
 import { getItemShopSources } from '../../data/shops';
+import { FOODS, getFood } from '../../data/foods';
+import { getRecipeByResult, RECIPE_ROLE_LABEL } from '../../data/recipes';
+import { getSellPrice } from '../../lib/inventory';
+import { getStatSegments } from '../../lib/statSegments';
 import {
   ITEM_MODS,
   MOD_GROUP_LABEL,
   MOD_GROUP_ORDER,
+  getTierWeights,
   rollMod,
   type ItemModDef,
   type ModCategory,
-  type ModGroup,
+  type ModTierDef,
 } from '../../data/itemMods';
 import {
   ITEM_BASES,
@@ -107,74 +112,130 @@ export function CodexView({ character: _character }: CodexViewProps) {
 }
 
 // ============================================================================
-// MODS DE ITEM — lista de prefixos e sufixos
+// MODS DE ITEM — sidebar de afixos (Prefixos/Sufixos) + detalhe com tiers
 // ============================================================================
+
+/** Nome curto do afixo pra sidebar/título — remove o esqueleto "+ # de". */
+function modShortName(mod: ItemModDef): string {
+  return mod.label.replace(/^\+\s*#(?:%| a #)?\s*(?:de|do|da)\s+/i, '');
+}
+
+/**
+ * Formata o range de um tier pra exibição:
+ * - roll simples → "10–19"
+ * - rollRange ("X a Y") → "(1–2) a (2–4)" — range do min e range do max.
+ */
+function formatTierRange(tier: ModTierDef): string {
+  if (tier.rollRange) {
+    const { min, max } = tier.rollRange;
+    return `(${min[0]}–${min[1]}) a (${min[0] + max[0]}–${min[1] + max[1]})`;
+  }
+  if (tier.roll) return `${tier.roll[0]}–${tier.roll[1]}`;
+  return '—';
+}
+
+const MOD_CATEGORY_LABEL: Record<ModCategory, string> = {
+  prefix: 'Prefixos',
+  suffix: 'Sufixos',
+};
+
 function ModsList() {
-  const prefixes = ITEM_MODS.filter((m) => m.category === 'prefix');
-  const suffixes = ITEM_MODS.filter((m) => m.category === 'suffix');
+  const [selectedId, setSelectedId] = useState(ITEM_MODS[0]?.id ?? '');
+  const selected = ITEM_MODS.find((m) => m.id === selectedId) ?? ITEM_MODS[0];
+
+  if (!selected) return null;
+
+  const renderMod = (mod: ItemModDef) => (
+    <li key={mod.id}>
+      <button
+        type="button"
+        className={`${styles.dbCat} ${mod.id === selected.id ? styles.dbCatActive : ''}`}
+        onClick={() => setSelectedId(mod.id)}
+      >
+        <span className={styles.dbCatLabel}>{modShortName(mod)}</span>
+        <span className={styles.dbCatCount}>{mod.tiers.length}</span>
+      </button>
+    </li>
+  );
 
   return (
-    <>
-      <header className={styles.intro}>
-        <h2 className={styles.introTitle}>Mods de Item</h2>
-        <p className={styles.introText}>
-          Lista mestra dos modificadores que podem aparecer em itens gerados. <strong>Prefixos</strong> aparecem antes do nome base do item; <strong>Sufixos</strong> aparecem depois ("do/da"). A separação segue a convenção de Path of Exile — prefixos concedem poder bruto, sufixos qualificam o personagem.
-        </p>
-      </header>
+    <div className={styles.dbRoot}>
+      <aside className={styles.dbSidebar}>
+        {(['prefix', 'suffix'] as ModCategory[]).map((cat) => {
+          const mods = ITEM_MODS.filter((m) => m.category === cat);
+          return (
+            <div key={cat} className={styles.dbSection}>
+              <div className={styles.dbSectionHeader}>{MOD_CATEGORY_LABEL[cat]}</div>
+              {MOD_GROUP_ORDER.filter((g) => mods.some((m) => m.group === g)).map((group) => (
+                <div key={group} className={styles.dbSubgroup}>
+                  <div className={styles.dbSubHeader}>{MOD_GROUP_LABEL[group]}</div>
+                  <ul className={styles.dbCatList}>
+                    {mods.filter((m) => m.group === group).map(renderMod)}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </aside>
 
-      <div className={styles.split}>
-        <ModColumn title="Prefixos" subtitle="Aparecem antes do nome base" mods={prefixes} category="prefix" />
-        <ModColumn title="Sufixos" subtitle="Aparecem depois do nome base" mods={suffixes} category="suffix" />
-      </div>
-    </>
+      <section className={styles.dbContent}>
+        <div className={styles.dbContentHeader}>
+          <h2 className={styles.dbContentTitle}>{modShortName(selected)}</h2>
+          <span className={styles.dbContentCount}>
+            {selected.tiers.length} {selected.tiers.length === 1 ? 'tier' : 'tiers'}
+          </span>
+        </div>
+        <ModDetail mod={selected} />
+      </section>
+    </div>
   );
 }
 
-interface ModColumnProps {
-  title: string;
-  subtitle: string;
-  mods: ItemModDef[];
-  category: ModCategory;
-}
+function ModDetail({ mod }: { mod: ItemModDef }) {
+  // Chances com TODOS os tiers liberados (ilvl máximo) — pesos decrescentes:
+  // cada tier acima é 2× mais raro. Em ilvl baixo, menos tiers entram no
+  // sorteio e as chances se redistribuem entre os elegíveis.
+  const weights = getTierWeights(mod.tiers.length);
+  const totalWeight = weights.reduce((a, b) => a + b, 0);
+  const chance = (i: number) => {
+    const pct = (weights[i] / totalWeight) * 100;
+    return pct >= 10 ? `${Math.round(pct)}%` : `${pct.toFixed(1)}%`;
+  };
 
-function ModColumn({ title, subtitle, mods, category }: ModColumnProps) {
-  const grouped = groupMods(mods);
   return (
-    <section className={styles.column}>
-      <header className={styles.columnHeader}>
-        <h3 className={`${styles.columnTitle} ${styles[`title_${category}`]}`}>{title}</h3>
-        <span className={styles.columnCount}>{mods.length}</span>
-        <span className={styles.columnSubtitle}>{subtitle}</span>
-      </header>
+    <div className={styles.modDetail}>
+      <div className={styles.modDetailHead}>
+        <span className={`${styles.modDetailLabel} ${styles[`color_${mod.color}`]}`}>
+          {mod.label}
+        </span>
+        <span className={styles.modDetailMeta}>
+          {mod.category === 'prefix' ? 'Prefixo' : 'Sufixo'} · {MOD_GROUP_LABEL[mod.group]}
+        </span>
+      </div>
+      <p className={styles.modDetailDesc}>{mod.description}</p>
 
-      <div className={styles.groups}>
-        {MOD_GROUP_ORDER.filter((g) => grouped[g]?.length).map((group) => (
-          <div key={group} className={styles.group}>
-            <div className={styles.groupHeader}>{MOD_GROUP_LABEL[group]}</div>
-            <ul className={styles.modList}>
-              {grouped[group]!.map((mod) => (
-                <li key={mod.id} className={styles.modRow}>
-                  <span className={`${styles.modLabel} ${styles[`color_${mod.color}`]}`}>
-                    {mod.label}
-                  </span>
-                  <span className={styles.modDesc}>{mod.description}</span>
-                </li>
-              ))}
-            </ul>
+      <div className={styles.tierTable}>
+        <div className={styles.tierHeadRow}>
+          <span>Tier</span>
+          <span>Nível do Item</span>
+          <span>Range</span>
+          <span className={styles.tierChanceHead}>Chance</span>
+        </div>
+        {mod.tiers.map((tier, i) => (
+          <div key={i} className={styles.tierRow}>
+            <span className={styles.tierName}>T{i + 1}</span>
+            <span className={styles.tierIlvl}>Nv {tier.ilvl}+</span>
+            <span className={styles.tierRange}>{formatTierRange(tier)}</span>
+            <span className={styles.tierChance}>{chance(i)}</span>
           </div>
         ))}
       </div>
-    </section>
+      <p className={styles.tierTableNote}>
+        Chances com todos os tiers liberados (nível de item máximo). O Nível do Item define o teto — tiers acima dele não rolam; abaixo do teto, cada tier acima é 2× mais raro que o anterior.
+      </p>
+    </div>
   );
-}
-
-function groupMods(mods: ItemModDef[]): Partial<Record<ModGroup, ItemModDef[]>> {
-  const out: Partial<Record<ModGroup, ItemModDef[]>> = {};
-  for (const mod of mods) {
-    if (!out[mod.group]) out[mod.group] = [];
-    out[mod.group]!.push(mod);
-  }
-  return out;
 }
 
 // ============================================================================
@@ -278,7 +339,7 @@ const AMULET_TYPE_ORDER: AmuletType[] = [
 
 const ALJAVA_TYPE_ORDER: AljavaType[] = ['dano-fisico', 'critico', 'vel-ataque', 'vida'];
 
-const MATERIAL_TYPE_ORDER: MaterialType[] = ['erva', 'minerio', 'couro', 'tecido', 'carne', 'verdura', 'fruta'];
+const MATERIAL_TYPE_ORDER: MaterialType[] = ['erva', 'minerio', 'barra', 'couro', 'tecido', 'carne', 'verdura', 'fruta'];
 
 
 function baseToEntry(b: ItemBase): CatalogEntry {
@@ -449,6 +510,25 @@ function buildCatalog(): CatalogCategory[] {
     cats.push({ id: 'aljava', label: 'Aljavas', group: 'Armaduras', entries });
   }
 
+  // Consumíveis — grupo "Consumíveis", itens usáveis. Hoje só "Comidas" (pratos
+  // de buff). Entradas ordenadas por tier pra a grade seccionar por Ato.
+  const foodDefs = Object.values(FOODS).sort((a, b) => a.tier - b.tier);
+  if (foodDefs.length > 0) {
+    cats.push({
+      id: 'consumivel-comida',
+      label: 'Comidas',
+      group: 'Consumíveis',
+      entries: foodDefs.map((d) => ({
+        id: d.item.id,
+        name: d.item.name,
+        item: getFood(d.item.id)!,
+        meta: 'Consumível',
+        typeLabel: 'Consumível · Comida',
+        sectionLabel: actTitle(d.tier),
+      })),
+    });
+  }
+
   // Materiais — grupo "Materiais", uma categoria por tipo (Ervas, Minérios...).
   const materialDefs = Object.values(MATERIALS);
   for (const mt of MATERIAL_TYPE_ORDER) {
@@ -587,6 +667,10 @@ function ContentBody({ entries }: { entries: CatalogEntry[] }) {
 function ItemCard({ entry }: { entry: CatalogEntry }) {
   const dropSources = getItemDropSources(entry.id);
   const shopSources = getItemShopSources(entry.id);
+  const recipe = getRecipeByResult(entry.id);
+  // Preço de compra em loja — definido só pra materiais e comidas (por ora).
+  const buyPrice = MATERIALS[entry.id]?.defaultPrice ?? FOODS[entry.id]?.defaultPrice ?? null;
+  const sellPrice = getSellPrice(entry.item);
   const spell = entry.grantedSpellId ? getSpellById(entry.grantedSpellId) ?? null : null;
   const summon = entry.grantedSummonId ? getSummonSpellById(entry.grantedSummonId) ?? null : null;
   const stats = entry.item.stats ?? [];
@@ -618,25 +702,52 @@ function ItemCard({ entry }: { entry: CatalogEntry }) {
         return entry.typeLabel ? <span className={styles.itemCardType}>{entry.typeLabel}</span> : null;
       })()}
 
-      {stats.length > 0 ? (
+      {stats.length > 0 && (
         <ul className={styles.itemCardStats}>
           {spell && <SpellGrant spell={spell} />}
           {summon && <SummonGrant summon={summon} />}
-          {plainStats.map((s, i) => (
-            <li
-              key={i}
-              className={`${styles.itemCardStat} ${s.color ? styles[`color_${s.color}`] : ''}`}
-            >
-              {s.text}
-            </li>
-          ))}
+          {plainStats.map((s, i) => {
+            const segments = getStatSegments(s);
+            return (
+              <li
+                key={i}
+                className={`${styles.itemCardStat} ${!segments && s.color ? styles[`color_${s.color}`] : ''}`}
+              >
+                {segments
+                  ? segments.map((seg, j) => (
+                      <span key={j} className={seg.color ? styles[`color_${seg.color}`] : ''}>
+                        {seg.text}
+                      </span>
+                    ))
+                  : s.text}
+              </li>
+            );
+          })}
         </ul>
-      ) : (
-        entry.item.description && <p className={styles.itemCardDesc}>{entry.item.description}</p>
       )}
 
-      {entry.reqLevel != null && (
-        <div className={styles.itemCardReq}>Requer Nível {entry.reqLevel}</div>
+      {entry.item.description && (
+        <p className={styles.itemCardDesc}>{entry.item.description}</p>
+      )}
+
+      {recipe && (
+        <div className={styles.itemCardOrigin}>
+          <div className={styles.itemCardOriginLabel}>
+            Receita · {RECIPE_ROLE_LABEL[recipe.role]}
+          </div>
+          {recipe.ingredients.map((ing) => (
+            <div key={ing.itemId} className={styles.itemCardSource}>
+              <span className={styles.itemCardSourceName}>{getMaterialName(ing.itemId)}</span>
+              <span className={styles.itemCardSourceMeta}>
+                {(() => {
+                  const t = getMaterialType(ing.itemId);
+                  return t ? MATERIAL_TYPE_SINGULAR[t] : 'Reagente';
+                })()}
+              </span>
+              <span className={styles.itemCardSourceChance}>×{ing.quantity}</span>
+            </div>
+          ))}
+        </div>
       )}
 
       <div className={styles.itemCardOrigin}>
@@ -665,6 +776,24 @@ function ItemCard({ entry }: { entry: CatalogEntry }) {
         {!hasSource && (
           <div className={styles.itemCardNoSource}>Sem fonte definida ainda.</div>
         )}
+      </div>
+
+      <div className={styles.itemCardOrigin}>
+        <div className={styles.itemCardOriginLabel}>Valor</div>
+        {buyPrice != null && (
+          <div className={styles.itemCardSource}>
+            <span className={styles.itemCardSourceName}>Compra em loja</span>
+            <span className={styles.itemCardSourceShop}>{buyPrice} ouro</span>
+          </div>
+        )}
+        <div className={styles.itemCardSource}>
+          {entry.reqLevel != null && (
+            <span className={styles.itemCardReq}>
+              Requer Nível <span className={styles.itemCardReqValue}>{entry.reqLevel}</span>
+            </span>
+          )}
+          <span className={styles.itemCardSourceShop}>{sellPrice} ouro</span>
+        </div>
       </div>
     </article>
   );
@@ -915,8 +1044,8 @@ function EnemyStatSheet({ enemy }: { enemy: Enemy }) {
       <BestiaryStatGroup title="Ofensivo">
         <StatLine name="Dano Físico" value={`${enemy.danoMin} — ${enemy.danoMax}`} color="fisico" />
         <StatLine
-          name="Vel. de Ataque"
-          value={<>{vel.toFixed(2)}<Unit> /s</Unit></>}
+          name="Tempo de Ataque"
+          value={<>{vel.toFixed(1)}<Unit> s</Unit></>}
           color="agilidade"
         />
         <StatLine name="Acerto" value={String(acerto)} color="agilidade" />
@@ -994,15 +1123,13 @@ function BestiaryStatGroup({ title, children }: { title: string; children: React
 // FORJA — sandbox de geração de itens (escolher base, raridade, mods)
 // ============================================================================
 
-/** Regras por raridade — quantidade de afixos permitidos (min/max). */
-const RARITY_RULES: Record<Exclude<Rarity, 'unico' | 'lendario'>, { min: number; max: number }> = {
-  comum: { min: 0, max: 0 },
-  magico: { min: 0, max: 2 },
-  raro: { min: 3, max: 6 },
+/** Regras por raridade — total de afixos (min/max) e cap por categoria
+ *  (Mágico: máx 1 prefixo + 1 sufixo; Raro: máx 3 de cada). */
+const RARITY_RULES: Record<Exclude<Rarity, 'unico' | 'lendario'>, { min: number; max: number; perCategory: number }> = {
+  comum: { min: 0, max: 0, perCategory: 0 },
+  magico: { min: 0, max: 2, perCategory: 1 },
+  raro: { min: 3, max: 6, perCategory: 3 },
 };
-
-/** Limite global por categoria — independe da raridade. */
-const PER_CATEGORY_CAP = 3;
 
 type ForgeRarity = 'comum' | 'magico' | 'raro';
 
@@ -1030,11 +1157,23 @@ function ForgeView() {
 
   const handleRarityChange = (next: ForgeRarity) => {
     setRarity(next);
-    // Trim mods se nova raridade não suporta a quantidade atual
-    const max = RARITY_RULES[next].max;
-    if (rolled.length > max) {
-      setRolled(rolled.slice(0, max));
+    // Trim mods se nova raridade não suporta a quantidade atual — respeita
+    // o total E o cap por categoria (ex: Raro 3 prefixos → Mágico só 1).
+    const nextRules = RARITY_RULES[next];
+    const trimmed: RolledMod[] = [];
+    let p = 0, s = 0;
+    for (const r of rolled) {
+      if (trimmed.length >= nextRules.max) break;
+      if (r.def.category === 'prefix') {
+        if (p >= nextRules.perCategory) continue;
+        p++;
+      } else {
+        if (s >= nextRules.perCategory) continue;
+        s++;
+      }
+      trimmed.push(r);
     }
+    if (trimmed.length !== rolled.length) setRolled(trimmed);
   };
 
   const handleBaseChange = (id: string) => {
@@ -1051,8 +1190,8 @@ function ForgeView() {
     }
     // Validações de adição
     if (rolled.length >= rules.max) return;
-    if (def.category === 'prefix' && prefixCount >= PER_CATEGORY_CAP) return;
-    if (def.category === 'suffix' && suffixCount >= PER_CATEGORY_CAP) return;
+    if (def.category === 'prefix' && prefixCount >= rules.perCategory) return;
+    if (def.category === 'suffix' && suffixCount >= rules.perCategory) return;
 
     setRolled([...rolled, { def, text: rollMod(def) }]);
   };
@@ -1072,8 +1211,8 @@ function ForgeView() {
     let p = 0, s = 0;
     for (const def of pool) {
       if (next.length >= total) break;
-      if (def.category === 'prefix' && p >= PER_CATEGORY_CAP) continue;
-      if (def.category === 'suffix' && s >= PER_CATEGORY_CAP) continue;
+      if (def.category === 'prefix' && p >= rules.perCategory) continue;
+      if (def.category === 'suffix' && s >= rules.perCategory) continue;
       next.push({ def, text: rollMod(def) });
       if (def.category === 'prefix') p++; else s++;
     }
@@ -1198,7 +1337,7 @@ function ForgeRaritySelector({ rarity, onChange }: ForgeRaritySelectorProps) {
 interface ForgeAffixManagerProps {
   rarity: ForgeRarity;
   rolled: RolledMod[];
-  rules: { min: number; max: number };
+  rules: { min: number; max: number; perCategory: number };
   prefixCount: number;
   suffixCount: number;
   onToggle: (def: ItemModDef) => void;
@@ -1254,11 +1393,11 @@ function ForgeAffixManager({
         </span>
         <span className={styles.forgeCountSep}>·</span>
         <span>
-          Prefixos: <strong>{prefixCount}</strong> / {PER_CATEGORY_CAP}
+          Prefixos: <strong>{prefixCount}</strong> / {rules.perCategory}
         </span>
         <span className={styles.forgeCountSep}>·</span>
         <span>
-          Sufixos: <strong>{suffixCount}</strong> / {PER_CATEGORY_CAP}
+          Sufixos: <strong>{suffixCount}</strong> / {rules.perCategory}
         </span>
       </div>
 
@@ -1266,14 +1405,14 @@ function ForgeAffixManager({
         title="Prefixos"
         category="prefix"
         rolledIds={rolledIds}
-        canAdd={rolled.length < rules.max && prefixCount < PER_CATEGORY_CAP}
+        canAdd={rolled.length < rules.max && prefixCount < rules.perCategory}
         onToggle={onToggle}
       />
       <ForgeModPicker
         title="Sufixos"
         category="suffix"
         rolledIds={rolledIds}
-        canAdd={rolled.length < rules.max && suffixCount < PER_CATEGORY_CAP}
+        canAdd={rolled.length < rules.max && suffixCount < rules.perCategory}
         onToggle={onToggle}
       />
     </div>

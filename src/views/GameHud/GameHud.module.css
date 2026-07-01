@@ -61,6 +61,16 @@
 .vFill.vida { background: var(--vital-vida); }
 .vFill.mana { background: var(--vital-mana); }
 .vFill.exp  { background: var(--vital-exp); }
+/* Escudo de Energia — camada sobreposta à vida, levemente translúcida */
+.vFill.energia {
+  background: var(--stat-energia);
+  opacity: 0.82;
+}
+
+.vEs {
+  color: var(--stat-energia);
+  filter: brightness(1.35);
+}
 
 /* Camada de texto sobre o fill — label à esquerda, valor à direita */
 .vContent {

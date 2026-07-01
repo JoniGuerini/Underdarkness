@@ -78,11 +78,28 @@ export interface ItemStatEffect {
   max?: number;
 }
 
+/**
+ * Trecho colorido dentro de uma linha de stat. `color` ausente = texto neutro.
+ * `'valor'` é a cor dos números da ficha do personagem (brass), pra manter o
+ * valor numérico consistente com o resto da UI.
+ */
+export interface ItemStatSegment {
+  text: string;
+  color?: ModColor | 'valor';
+}
+
 export interface ItemStat {
   /** texto exibido — ex: "+5 Dano Físico" */
   text: string;
   /** cor de categoria aplicada na linha inteira (opcional) */
   color?: ModColor;
+  /**
+   * Segmentos coloridos dentro da linha. Quando presente, o renderer usa isto
+   * em vez de `text`+`color`, permitindo colorir só parte da linha (ex: apenas
+   * o nome do atributo, deixando prefixo e valores neutros). `text` continua
+   * como fallback textual.
+   */
+  segments?: ItemStatSegment[];
   /**
    * Categoria do stat — usada pelo tooltip pra inserir divisória visual
    * entre grupos (base | prefixos | sufixos). Opcional: itens mock antigos
@@ -100,6 +117,12 @@ export interface Item {
   /** null = não-equipável (consumível, material) — só vai pro inventário */
   slot: ItemSlot | null;
   rarity: Rarity;
+  /**
+   * Nível do item (ilvl) — igual ao nível do monstro que o dropou. Define o
+   * teto de tier dos afixos ao GERAR (não afeta o item depois de pronto).
+   * Ausente em itens antigos/loja/materiais.
+   */
+  ilvl?: number;
   stats?: ItemStat[];
   /** texto-flavor (italic, no rodapé do tooltip) */
   description?: string;
@@ -144,6 +167,9 @@ export interface Character {
   vidaAtual: number;
   manaMax: number;
   manaAtual: number;
+  /** Escudo de Energia atual — vital que absorve dano ANTES da Vida.
+   *  Máximo é derivado (só itens); restaura ao fim do combate. */
+  esAtual: number;
   forca: number;
   agilidade: number;
   intelecto: number;

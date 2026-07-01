@@ -236,13 +236,15 @@ VIDA/MANA:  vidaMax = classe.vida + Σ flat-vida          (nenhum atributo)
             manaMax = classe.mana + (intelecto × 5) + Σ flat-mana
 
 DANO FÍSICO (range):
-  base = arma (flat-dmg-fis min/max) OU desarmado [1,1]
+ base = arma (flat-dmg-fis min/max) OU desarmado [2,4] (escala WoW — DPS desarmado ≈ o do antigo 1–1 rápido)
   forcaMult = 1 + forca/100   (MULTIPLICATIVO)
   danoFisico{Min,Max} = round(base{Min,Max} × forcaMult)
   → Força mostra delta absoluto no breakdown (keepZero=true)
 
-VEL ATAQUE: base = arma (weapon-speed) OU desarmado (ladino 1.6/guerreiro 1.0/mago 0.8)
-            velAtaque = base × (1 + Σpct-vel-ataque/100) + (agi-10)×0.02
+TEMPO DE ATAQUE (WoW-style, SEGUNDOS por golpe — maior = mais lento):
+ base = arma (weapon-speed, em segundos) OU desarmado (ladino 2.0s/guerreiro 2.5s/mago 3.0s)
+ velAtaque = base ÷ (1 + Σpct-vel-ataque/100) — % de vel. REDUZ o tempo; Agilidade NÃO contribui
+ ⚠️ o campo derivado continua chamado `velAtaque`, mas guarda SEGUNDOS
 
 CRÍTICO:    chanceCritico = [arma OU 5% desarmado] + max(0,agi-10)×0.4 + Σpct-crit-chance (cap 100%)
             multCritico   = 1.5 + (ladino?0.2:0) + Σ(pct-crit-mult/100)
@@ -265,7 +267,7 @@ ACERTO:     base classe (8/12/6) + floor(agi×1.5) + Σ flat-acerto
 RESIST (cap resistMax=75): res{elem} = Σ pct-res-{elem}; resFisico = Σ pct-res-fisica
 
 TOTAL+DPS:  danoTotal{Min,Max} = danoFisico{Min,Max} + Σ elementais (referência; mago usa magia no combate)
-            dps = ((min+max)/2) × velAtaque × (1 + (chanceCritico/100)×(multCritico-1))
+            dps = ((min+max)/2) ÷ velAtaque(seg) × (1 + (chanceCritico/100)×(multCritico-1))
 
 MAGIA:      pctDmgMagia / pctDmg{Elem}Magia = Σ pct-dmg-*-magia (só magias)
             eficienciaMana = Σ pct-eficiencia-mana (cap 95%) — reduz custo: custo × (1 − eff/100)
@@ -305,7 +307,7 @@ Revisão guiada de **cada um dos 39 stats**: pergunta → resposta → implement
 | **Vida Máxima** | Só classe + itens. Nenhum atributo. Nenhum ganho por level-up. |
 | **Mana Máxima** | Classe + Int×5 + itens. Nenhum ganho por level-up. |
 | **Regen Vida/Mana** | Zero base, só itens. **Por segundo** (`/s`). Fora do combate: `useRegenTick`. No combate RT: tick 1s no `CombatModal`. |
-| **Dano Físico** | Desarmado 1–1. Arma define range. Força multiplica. |
+| **Dano Físico** | Desarmado 2–4 (escala WoW). Arma define range (por golpe = DPS-alvo × segundos). Força multiplica. |
 | **Dano Total** | Físico (range) + elementais (flat). |
 | **DPS** | `dano médio × vel × (1 + crit×(mult-1))`. Referencial teórico. |
 | **Armadura** | Reduz físico via fórmula PoE `armadura/(armadura + 10×dano)`. `applyArmor()` em combat.ts. Inimigos têm `armadura?`. |
@@ -317,13 +319,14 @@ Revisão guiada de **cada um dos 39 stats**: pergunta → resposta → implement
 | **Mult. de Crítico** | Base 1,5 + Ladino 0,2 + itens. Multiplica o golpe inteiro (físico ou magia) **antes** da mitigação. |
 | **Bloqueio** | Só com escudo equipado; senão 0%. Só itens (`pct-bloqueio`). Cap 75%. Após conectar: `rollBlock()` → 0 dano (sem crítico/mitigação). Inimigos: `bloqueio?` por tipo (maioria 0). |
 | **Roubo Vida/Mana** | Zero base, só itens. % do dano efetivo causado (pós-mitigação do alvo; overkill não conta). Jogador e inimigos (`rouboVida?` / `rouboMana?`). `computeLeech()` / `applyPlayerLeech()`. |
+| **Escudo de Energia** | VITAL (não defensivo). Zero base, só itens (`flat-escudo-energia`). Todo dano recebido consome ES antes da Vida (`applyDamageToPlayer` em combat.ts). `Character.esAtual` persistido; restaura no fim do combate e re-forma ao trocar equipamento fora de combate. **UI: camada sobreposta à barra de Vida** (PoE-style), largura = ES ÷ VidaMax (cap 100%), translúcida (opacity .82) + valor "+N" em energia — na ficha (VitalBar `overlayCurrent`), topbar do HUD e CombatModal. StatLine com breakdown só aparece na ficha se ES > 0. Sem regen de ES. |
 | **Dano Elemental** | `flat-dmg-{elem}` = dano por golpe em ataques não-magia (físico/habilidade). Mago usa magia da arma. Afixos de magia usam `pct-dmg-*-magia`. |
 | **Dano de Magias** | `pct-dmg-magia` + `pct-dmg-{elem}-magia` — só magias; não soma em melee. |
 | **Eficiência de Mana** | Zero base, só itens. % de redução do custo (100 mana + 20% → 80). Cap 95%. `effectiveManaCost()` em combate. |
 | **Redução do Tempo de Conjuração** | Zero base, só itens. % reduz segundos de cast. Cap 95%. `effectiveCastTime()` no intervalo de ataque do Mago. |
 | **Res. Elementais** | Zero base, só itens. Cap 75%. Jogador e inimigos (`res{Elem}?`). Pen. do atacante reduz res. efetiva antes do %. |
 | **Penetração** | Zero base, só itens (`pct-pen-{elem}`). Res. efetiva = max(0, Res. alvo − Pen.), cap 75%. `applyElementalMitigation()` em combat.ts. |
-| **Vel. de Ataque** | Arma (`weapon-speed`) ou desarmado + Agi + itens. Define cadência do ataque básico automático no combate RT (`getPlayerAttackIntervalMs`). |
+| **Tempo de Ataque** | SEGUNDOS por golpe (WoW-style; campo derivado ainda se chama `velAtaque`). Arma (`weapon-speed` em seg) ou desarmado (2.0/2.5/3.0s); `pct-vel-ataque` DIVIDE o tempo. Agilidade NÃO contribui. Dano por golpe das bases = DPS-alvo × segundos (armas lentas batem mais forte). Inimigos idem (`velAtaque` em seg, default 3.0; dano dos 184 defs re-escalado pra manter DPS). Intervalo RT = seg × 1000. |
 
 ### ⏳ EM DISCUSSÃO
 _(nenhum stat de combate core pendente)_
@@ -351,23 +354,31 @@ _(nenhum — questionário de combate core concluído)_
 ### Bases (itemBases.ts)
 Templates "limpos". `baseStats[]` com `text` (display) + `effect` (numérico). Helper `makeBaseItem(baseId, idPrefix)`.
 
-| Arma | Dano Fís | Vel | Crit | Extra |
-|---|---|---|---|---|
-| Espada Curta | 1–2 | 1.5/s | 5% | arma inicial |
-| Adaga Curva | 3–6 | 1.6/s | 8% | |
-| Espada Longa | 5–10 | 1.0/s | 5% | |
-| Martelo de Guerra | 8–16 | 0.7/s | 5% | |
-| Cajado de Carvalho | — | 0.8/s | 5% | Concede Bola de Fogo |
+**Armas (167 bases geradas por curva de DPS):** cada arma declara `speedSec` (Tempo de Ataque em SEGUNDOS, WoW-style) e o dano por golpe é derivado: `dano médio = DPS-alvo(reqLevel, 1h/2h) × speedSec` — armas lentas batem mais forte pro mesmo DPS. Faixas: adagas ~2.0–2.1s · espadas 1h ~2.3–2.6s · maças/machados 1h ~2.6–3.1s · duas mãos ~3.3–3.6s. Crítico base 5%. Cajados não têm dano físico (concedem magia; cadência = cast time). Cetros concedem invocação.
 
 ### Afixos / Mods (itemMods.ts)
-Prefixos (poder bruto) e Sufixos (qualificadores "do/da"), PoE-style. `ItemModDef`: `id, label, category, group, color, description, roll: [min,max]`. `rollMod()` gera valor. **O Registro lê `description` daqui** — atualizar mod = atualizar registro.
+Prefixos (poder bruto) e Sufixos (qualificadores "do/da"), PoE-style. `ItemModDef`: `id, label, category, group, color, description, tiers: ModTierDef[]`. **O Registro lê `description` daqui** — atualizar mod = atualizar registro.
+
+**Sistema de tiers (41 mods):**
+- Cada afixo tem uma escada de `tiers` **ascendente** (T1 fraco → T-máx forte, convenção de atos/materiais — NÃO a invertida do PoE). Quantidade **variável por afixo**: stats principais têm escadas longas (vida 8, armadura/evasão/ES 7, dano/atributos/res elem/acerto 6), utilidades nichadas são curtas (roubo 3, pen/crít chance/eficiência/bloqueio/regen/res física/todos-atributos 4, %vel/%magia/mult crít 5).
+- `ModTierDef`: `ilvl` (item level mínimo pro tier rolar) + `roll: [min,max]` ou `rollRange: {min, max}` (max = delta somado ao min).
+- **Item level (ilvl) = nível do monstro que dropou** (drop de mob nv 35 → item nv 35). Independente do `reqLevel` da base (requisito pra equipar). Ilvl alto libera tiers altos; tiers baixos continuam elegíveis.
+- **Sorteio com pesos decrescentes**: dentro dos tiers elegíveis, cada tier acima é 2× mais raro que o anterior (`getTierWeights` — ex.: 4 elegíveis → 8/4/2/1 → T-máx ~6,7%). Ilvl 100 NÃO garante tier máximo — é o "good roll".
+- Helpers: `getEligibleTiers(mod, ilvl)`, `getTierWeights(n)`, `rollTier(mod, ilvl)`, `rollModStat(mod, ilvl)` (ItemStat completo com `effect` real), `rollMod(mod, ilvl=100)` (só texto — Forja sandbox), `tierDisplayRange(tier)`.
+- Cada `ItemModDef` tem `key: StatKey` — liga o afixo ao cálculo da ficha.
+- Códice > Mods de Item: sidebar estilo database (Prefixos/Sufixos → grupos → afixo) + detalhe com tabela de tiers (Tier · Nível do Item · Range · Chance).
+
+### Gerador de equipamento (lib/itemGen.ts) — LOOT PROCEDURAL ATIVO
+`generateEquipment(ilvl)`: base sorteada entre as com `reqLevel ≤ ilvl` → raridade por peso (comum 82 / mágico 16 / raro 2, `RARITY_WEIGHTS` — mágico/raro são DE VERDADE raros por decisão do usuário; por kill: ~1,9% mágico, ~0,24% raro) → afixos únicos respeitando caps da raridade, tier limitado pelo ilvl com pesos decrescentes. Item sai com `ilvl` gravado (tooltip mostra "Nv Item N") e `effect` real em cada afixo — entra direto na ficha.
+- **Drop:** `rollRewards` (combat.ts) rola `EQUIP_DROP_CHANCE = 0.12` por vitória; ilvl = `enemy.level`. Loot que não cabe na bag é descartado em silêncio (comportamento pré-existente).
+- **Nomes:** sempre o nome da base — a cor da raridade diferencia (decisão do usuário: sem nome expandido por afixo). Único/Lendário ainda não geram (sem exemplares).
 
 ### Raridades
 | Tier | Afixos | Cor |
 |---|---|---|
 | Comum | 0 (só base) | cinza |
-| Mágico | 1–2 | azul |
-| Raro | 3+ | khaki |
+| Mágico | 1–2 (máx 1 prefixo + 1 sufixo) | azul |
+| Raro | 3–6 (máx 3 prefixos + 3 sufixos) | khaki |
 | Único | fixos curados | tussock |
 | Lendário | fixos + especiais | lavender |
 
@@ -410,7 +421,7 @@ Prefixos (poder bruto) e Sufixos (qualificadores "do/da"), PoE-style. `ItemModDe
 `applyRegenTick` a cada `COMBAT_REGEN_INTERVAL_MS` (1s) dentro do modal. Fora do combate: tick por segundo via `useRegenTick` (só itens com regen); **não** substitui o restore total ao sair de um combate.
 
 ### Inimigos (enemies.ts)
-`EnemyDef` com stats no **nível 1** e `locationId` exclusivo (uma criatura = uma área). `spawnEnemy(def, level)` escala linearmente.
+`EnemyDef` com stats no **nível 1** e `locationId` exclusivo (uma criatura = uma área). `spawnEnemy(def, level)` escala com curva **GEOMÉTRICA de 1.046^(nível−1)** — a mesma da curva de DPS dos equipamentos, mantendo a relação jogador×inimigo coerente do nv 1 ao 100 (mob do seu nível cai em ~3 golpes de arma do nível dele; a escala linear `×nível` antiga dobrava o mob do nv 1→2 e foi descartada). Balanço WoW-style: vida nível 1 entre 25–100, dano por golpe alto com `velAtaque` em segundos (2.0–5.0s). **Primeiro golpe do combate respeita o Tempo de Ataque cheio dos dois lados** (CombatModal init; inimigo com +400ms de cortesia).
 Nível do encontro: **`resolveEncounterLevel(charLevel, areaLevel)`** = clamp(personagem, área, área+1). Ex.: Floresta (1) — char nv 1→1, nv 2→2, nv 3+→2.
 12 áreas hostis × 4 criaturas cada (48 total). **Pedragal** é a única zona sem encontros. Pool derivado em `LOCATION_ENEMIES`. `rollEncounter(locationId, characterLevel)`.
 

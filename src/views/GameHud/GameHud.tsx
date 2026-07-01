@@ -123,6 +123,8 @@ export function GameHud({
   const vidaPct = (character.vidaAtual / character.vidaMax) * 100;
   const manaPct = (character.manaAtual / character.manaMax) * 100;
   const expPct = character.xpNext > 0 ? (character.xp / character.xpNext) * 100 : 0;
+  // Escudo de Energia sobrepõe a barra de vida, proporcional à Vida Máxima
+  const esPct = Math.min(100, (character.esAtual / character.vidaMax) * 100);
 
   return (
     <div className={styles.view}>
@@ -160,9 +162,15 @@ export function GameHud({
             <div className={styles.vitals}>
               <div className={styles.vTrack}>
                 <div className={`${styles.vFill} ${styles.vida}`} style={{ width: `${vidaPct}%` }} />
+                {character.esAtual > 0 && (
+                  <div className={`${styles.vFill} ${styles.energia}`} style={{ width: `${esPct}%` }} />
+                )}
                 <div className={styles.vContent}>
                   <span className={styles.vLabel}>Vida</span>
-                  <span className={styles.vValues}>{character.vidaAtual} / {character.vidaMax}</span>
+                  <span className={styles.vValues}>
+                    {character.vidaAtual} / {character.vidaMax}
+                    {character.esAtual > 0 && <span className={styles.vEs}> +{character.esAtual}</span>}
+                  </span>
                 </div>
               </div>
               <div className={styles.vTrack}>
@@ -411,6 +419,9 @@ export function GameHud({
                       manaMax: derived.manaMax,
                       vidaAtual: Math.min(character.vidaAtual, derived.vidaMax),
                       manaAtual: Math.min(character.manaAtual, derived.manaMax),
+                      // Escudo de Energia re-forma no novo máximo fora de combate
+                      // (não há regen de ES; ele só se consome em combate).
+                      esAtual: derived.escudoEnergia,
                     });
                   }}
                 />

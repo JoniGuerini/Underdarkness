@@ -134,78 +134,14 @@
   font-weight: 500;
 }
 
-/* ============================================================
-   Split — duas colunas (Prefixos | Sufixos) com gap 8px
-   ============================================================ */
-.split {
-  flex: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 8px;
-  min-height: 0;
-}
-
-.column {
-  background: var(--paper);
-  border: none;  box-shadow: var(--card-edge);
-  border-radius: 6px;
-  padding: 22px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.column::-webkit-scrollbar { display: none; }
-
-.columnHeader {
-  display: grid;
-  grid-template-columns: auto auto 1fr;
-  align-items: baseline;
-  gap: 12px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border-soft);
-}
-.columnTitle {
-  font: 500 22px/1.1 var(--serif);
-  font-variation-settings: "opsz" 36;
-  letter-spacing: -0.01em;
-  margin: 0;
-}
-/* Cor distinta por coluna pra reforçar a divisão visual.
-   Prefixo = brass-bright (poder), Sufixo = ink-soft (qualifier) */
-.columnTitle.title_prefix { color: var(--brass-bright); }
-.columnTitle.title_suffix { color: var(--rarity-magico); }
-
+/* Contagem usada no header da lista do Bestiário */
 .columnCount {
   font: 500 12px/1 var(--mono);
   color: var(--brass-deep);
   letter-spacing: 0.04em;
 }
-.columnSubtitle {
-  font: italic 400 13px/1.4 var(--serif);
-  font-variation-settings: "opsz" 14;
-  color: var(--ink-muted);
-  text-align: right;
-}
 
-/* ============================================================
-   Grupos dentro da coluna (Vital, Atributos, Resistências, etc.)
-   ============================================================ */
-.groups {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
+/* Header de grupo (Bestiário: Ofensivo/Defensivo/Recompensas) */
 .groupHeader {
   font: 500 11px/1 var(--mono);
   letter-spacing: 0.08em;
@@ -213,33 +149,100 @@
   color: var(--ink-muted);
 }
 
-.modList {
-  list-style: none;
+/* ============================================================
+   MOD DETAIL — painel direito da seção Mods (label + tabela de tiers)
+   ============================================================ */
+.modDetail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 560px;
+}
+
+.modDetailHead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.modDetailLabel {
+  font: 500 15px/1.3 var(--mono);
+  letter-spacing: -0.005em;
+}
+
+.modDetailMeta {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.modDetailDesc {
+  font: 400 12px/1.5 var(--mono);
+  color: var(--ink-muted);
   margin: 0;
-  padding: 0;
+}
+
+.tierTable {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin-top: 6px;
 }
 
-.modRow {
+.tierHeadRow,
+.tierRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: 56px 120px minmax(0, 1fr) 64px;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.tierHeadRow {
+  padding: 0 12px 4px;
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.tierRow {
   padding: 8px 12px;
   background: var(--bg);
   border: 1px solid var(--border-faint);
   border-radius: 4px;
-  gap: 2px;
+  font: 400 12px/1.3 var(--mono);
 }
 
-.modLabel {
-  font: 500 13px/1.3 var(--mono);
-  letter-spacing: -0.005em;
+.tierName {
+  font-weight: 600;
+  color: var(--ink-soft);
 }
 
-.modDesc {
-  font: 400 12px/1.4 var(--mono);
+.tierIlvl {
   color: var(--ink-muted);
+}
+
+.tierRange {
+  color: var(--brass-deep);
+}
+
+.tierChanceHead,
+.tierChance {
+  text-align: right;
+}
+
+.tierChance {
+  color: var(--ink-muted);
+}
+
+.tierTableNote {
+  font: italic 400 11px/1.5 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-faint);
+  margin: 2px 0 0;
+  max-width: 560px;
 }
 
 /* Cores por categoria — espelham --elem-* / --stat-* / --vital-* */
@@ -258,6 +261,7 @@
 .color_critico   { color: var(--stat-critico); }
 .color_energia   { color: var(--stat-energia); }
 .color_exp       { color: var(--vital-exp); }
+.color_valor     { color: var(--brass-deep); }
 
 /* ============================================================
    RARIDADE — 3 cards em coluna, um por tier, + footer com regra global
@@ -362,9 +366,11 @@
 }
 
 /* Cores dos tiers — referenciam os tokens já existentes em tokens.css */
-.rarity_comum   { color: var(--rarity-comum); }
-.rarity_magico  { color: var(--rarity-magico); }
-.rarity_raro    { color: var(--rarity-raro); }
+.rarity_comum    { color: var(--rarity-comum); }
+.rarity_magico   { color: var(--rarity-magico); }
+.rarity_raro     { color: var(--rarity-raro); }
+.rarity_unico    { color: var(--rarity-unico); }
+.rarity_lendario { color: var(--rarity-lendario); }
 
 /* Rodapé com a regra global de limite (3 prefixos / 3 sufixos) */
 .rarityFooter {
@@ -1204,10 +1210,15 @@
   color: var(--ink-faint);
   margin-top: 2px;
 }
+/* Rodapé de valor: "Requer Nível X" à esquerda, ouro à direita (mesma linha). */
 .itemCardReq {
-  margin-top: 6px;
+  grid-area: name;
   font: 500 11px/1.3 var(--mono);
   letter-spacing: 0.02em;
+  color: var(--ink-soft);
+}
+
+.itemCardReqValue {
   color: var(--brass-deep);
 }
 

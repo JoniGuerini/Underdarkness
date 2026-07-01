@@ -10,6 +10,7 @@ import { getGrantedSpell, type ElementKey, type Spell } from '../data/spells';
 import { computeDerivedStats, effectiveManaCost, effectiveCastTime } from './stats';
 import { addItemToInventory } from './inventory';
 import { applyLevelUp } from './leveling';
+import { generateEquipment } from './itemGen';
 import { getMaterial } from '../data/materials';
 
 /** Resultado de uma ação ofensiva (jogador ou inimigo) */
@@ -392,7 +393,29 @@ export function enemyAttack(enemy: Enemy, character: Character): AttackResult {
   };
 }
 
-/** Restaura vida e mana aos máximos derivados — ao encerrar um combate. */
+/**
+ * Aplica dano ao jogador consumindo o Escudo de Energia PRIMEIRO (vital que
+ * absorve antes da Vida) e só então a Vida. Retorna o personagem atualizado
+ * e o quanto foi absorvido/perdido (pra log).
+ */
+export function applyDamageToPlayer(
+  character: Character,
+  damage: number,
+): { character: Character; absorbed: number; vidaLost: number } {
+  const absorbed = Math.min(character.esAtual, damage);
+  const vidaLost = damage - absorbed;
+  return {
+    character: {
+      ...character,
+      esAtual: character.esAtual - absorbed,
+      vidaAtual: Math.max(0, character.vidaAtual - vidaLost),
+    },
+    absorbed,
+    vidaLost,
+  };
+}
+
+/** Restaura vida, mana e escudo de energia aos máximos derivados — ao encerrar um combate. */
 export function restoreVitalsFull(character: Character): Character {
   const d = computeDerivedStats(character);
   return {
@@ -401,6 +424,7 @@ export function restoreVitalsFull(character: Character): Character {
     manaMax: d.manaMax,
     vidaAtual: d.vidaMax,
     manaAtual: d.manaMax,
+    esAtual: d.escudoEnergia,
   };
 }
 
@@ -419,6 +443,10 @@ export interface VictoryRewards {
   loot: Item[];
 }
 
+/** Chance de um inimigo dropar um equipamento gerado. Baixa de propósito —
+ *  drop de equipamento deve ser evento, não rotina (decisão do usuário). */
+export const EQUIP_DROP_CHANCE = 0.12;
+
 export function rollRewards(enemy: Enemy): VictoryRewards {
   const gold = enemy.goldMin === enemy.goldMax ? enemy.goldMin : r(enemy.goldMin, enemy.goldMax);
   const loot: Item[] = [];
@@ -429,6 +457,11 @@ export function rollRewards(enemy: Enemy): VictoryRewards {
         if (item) loot.push(item);
       }
     }
+  }
+  // Equipamento procedural — ilvl do item = nível do monstro derrotado.
+  if (Math.random() < EQUIP_DROP_CHANCE) {
+    const equip = generateEquipment(enemy.level);
+    if (equip) loot.push(equip);
   }
   return { xp: enemy.xp, gold, loot };
 }
@@ -484,10 +517,12 @@ export function applyDefeat(character: Character): Character {
 
 const MIN_ACTION_MS = 400;
 
-/** Intervalo entre ataques básicos do jogador (ms). Mago usa cast + vel. da arma. */
+/** Intervalo entre ataques básicos do jogador (ms). `velAtaque` é o Tempo de
+ *  Ataque em SEGUNDOS (WoW-style) — o intervalo é ele direto. Mago usa o maior
+ *  entre o tempo da arma e o cast da magia. */
 export function getPlayerAttackIntervalMs(character: Character, stats?: DerivedStats): number {
   const s = stats ?? computeDerivedStats(character);
-  const weaponMs = s.velAtaque > 0 ? 1000 / s.velAtaque : 1000;
+  const weaponMs = s.velAtaque > 0 ? s.velAtaque * 1000 : 3000;
   const spell = getGrantedSpell(character);
   if (spell) {
     const castMs = effectiveCastTime(spell.castTimeSec, s.reducaoTempoConjuracao) * 1000;
@@ -496,9 +531,9 @@ export function getPlayerAttackIntervalMs(character: Character, stats?: DerivedS
   return Math.max(MIN_ACTION_MS, weaponMs);
 }
 
-/** Intervalo entre ataques do inimigo (ms). */
+/** Intervalo entre ataques do inimigo (ms) — Tempo de Ataque em segundos. */
 export function getEnemyAttackIntervalMs(enemy: Enemy): number {
-  return Math.max(MIN_ACTION_MS, 1000 / getEnemyVelAtaque(enemy));
+  return Math.max(MIN_ACTION_MS, getEnemyVelAtaque(enemy) * 1000);
 }
 
 /** Intervalo de regen no combate RT — 1 segundo. */

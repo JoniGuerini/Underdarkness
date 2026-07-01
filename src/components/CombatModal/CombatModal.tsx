@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Character } from '../../types';
 import type { Enemy } from '../../data/enemies';
 import {
+  applyDamageToPlayer,
   applyDefeat,
   applyVictory,
   applyPlayerLeech,
@@ -148,7 +149,16 @@ export function CombatModal({ enemy, character, onUpdate, onClose }: CombatModal
       return;
     }
     const crit = result.critical ? ' Golpe crítico.' : '';
-    pushLog(`${foe.name} ataca — você toma ${result.damage} de dano.${crit}`, 'player_hit');
+    const char = characterRef.current;
+    const { character: afterHit, absorbed } = applyDamageToPlayer(char, result.damage);
+    if (absorbed > 0) {
+      pushLog(
+        `${foe.name} ataca — seu escudo absorve ${absorbed}${afterHit.vidaAtual < char.vidaAtual ? ` e você toma ${result.damage - absorbed} de dano` : ''}.${crit}`,
+        'player_hit',
+      );
+    } else {
+      pushLog(`${foe.name} ataca — você toma ${result.damage} de dano.${crit}`, 'player_hit');
+    }
     if (result.leechVida > 0) {
       const healed = Math.min(result.leechVida, foe.vidaMax - enemyHpRef.current);
       if (healed > 0) {
@@ -158,10 +168,7 @@ export function CombatModal({ enemy, character, onUpdate, onClose }: CombatModal
         pushLog(`${foe.name} recupera ${healed} de vida (roubo).`, 'system');
       }
     }
-    const char = characterRef.current;
-    const newHp = Math.max(0, char.vidaAtual - result.damage);
-    const afterHit: Character = { ...char, vidaAtual: newHp };
-    if (newHp <= 0) {
+    if (afterHit.vidaAtual <= 0) {
       onUpdate(afterHit);
       handleDefeat();
     } else {
@@ -179,8 +186,10 @@ export function CombatModal({ enemy, character, onUpdate, onClose }: CombatModal
     setPhase('opening');
     phaseRef.current = 'opening';
     setRewards(null);
-    nextPlayerAttackRef.current = now + 900;
-    nextEnemyAttackRef.current = now + 1400;
+    // Timers provisórios — são REARMADOS quando a fase 'fighting' começa (ver
+    // timeout abaixo), pra animação da barra e o golpe real coincidirem.
+    nextPlayerAttackRef.current = now + getPlayerAttackIntervalMs(characterRef.current);
+    nextEnemyAttackRef.current = now + getEnemyAttackIntervalMs(enemy) + 400;
     nextRegenRef.current = now + COMBAT_REGEN_INTERVAL_MS;
     nextAbilityRef.current = 0;
     setLog([
@@ -189,6 +198,13 @@ export function CombatModal({ enemy, character, onUpdate, onClose }: CombatModal
       { id: ++idRef.current, text: 'Combate em tempo real — ataques automáticos.', tone: 'system' },
     ]);
     const t = window.setTimeout(() => {
+      // Rearma os timers no instante em que a luta COMEÇA de fato — o primeiro
+      // golpe respeita o Tempo de Ataque cheio e a barra anima o ciclo inteiro
+      // (armar na abertura fazia o 1º golpe disparar antes da animação acabar).
+      const start = Date.now();
+      nextPlayerAttackRef.current = start + getPlayerAttackIntervalMs(characterRef.current);
+      nextEnemyAttackRef.current = start + getEnemyAttackIntervalMs(enemy) + 400;
+      setNowMs(start);
       setPhase('fighting');
       phaseRef.current = 'fighting';
     }, 600);
@@ -239,11 +255,22 @@ export function CombatModal({ enemy, character, onUpdate, onClose }: CombatModal
   const pct = (cur: number, max: number) => Math.max(0, Math.min(100, (cur / max) * 100));
   const playerHpPct = pct(character.vidaAtual, character.vidaMax);
   const playerMpPct = pct(character.manaAtual, character.manaMax);
+  // ES sobrepõe a barra de vida proporcionalmente à Vida Máxima (PoE-style)
+  const playerEsPct = pct(character.esAtual, character.vidaMax);
   const enemyHpPct = pct(enemyHp, enemy.vidaMax);
 
   const ability = character.abilities[0]?.name ?? 'Habilidade';
-  const abilityManaCost = effectiveManaCost(ABILITY_MANA_COST, computeDerivedStats(character).eficienciaMana);
+  const derivedNow = computeDerivedStats(character);
+  const abilityManaCost = effectiveManaCost(ABILITY_MANA_COST, derivedNow.eficienciaMana);
   const canFight = phase === 'fighting';
+
+  // Cadência do ataque básico — a barra anima via CSS pela duração exata do
+  // golpe; aqui só calculamos onde o ciclo atual está (pra sincronizar a
+  // animação quando o componente monta no meio de um ciclo).
+  const playerIntervalMs = getPlayerAttackIntervalMs(character, derivedNow);
+  const enemyIntervalMs = getEnemyAttackIntervalMs(enemy);
+  const elapsedOf = (nextAt: number, intervalMs: number) =>
+    canFight ? Math.max(0, Math.min(intervalMs, intervalMs - (nextAt - nowMs))) : 0;
   const abilityReady = canFight && nowMs >= nextAbilityRef.current && character.manaAtual >= abilityManaCost;
 
   const handleAbility = () => {
@@ -301,8 +328,22 @@ export function CombatModal({ enemy, character, onUpdate, onClose }: CombatModal
               {character.classLabel} · Nv {character.level}
             </div>
             <div className={styles.bars}>
-              <BarRow label="Vida" current={character.vidaAtual} max={character.vidaMax} pct={playerHpPct} kind="vida" />
+              <BarRow
+                label="Vida"
+                current={character.vidaAtual}
+                max={character.vidaMax}
+                pct={playerHpPct}
+                kind="vida"
+                overlayPct={playerEsPct}
+                overlayValue={character.esAtual}
+              />
               <BarRow label="Mana" current={character.manaAtual} max={character.manaMax} pct={playerMpPct} kind="mana" />
+              <AttackBar
+                cycle={nextPlayerAttackRef.current}
+                durationMs={playerIntervalMs}
+                elapsedMs={elapsedOf(nextPlayerAttackRef.current, playerIntervalMs)}
+                running={canFight}
+              />
             </div>
           </article>
 
@@ -316,6 +357,15 @@ export function CombatModal({ enemy, character, onUpdate, onClose }: CombatModal
             </div>
             <div className={styles.bars}>
               <BarRow label="Vida" current={Math.max(0, enemyHp)} max={enemy.vidaMax} pct={enemyHpPct} kind="vida" />
+              {/* Inimigo não tem mana (por ora) — espaçador mantém as linhas
+                  alinhadas com o painel do jogador. */}
+              <div className={styles.barSpacer} aria-hidden />
+              <AttackBar
+                cycle={nextEnemyAttackRef.current}
+                durationMs={enemyIntervalMs}
+                elapsedMs={elapsedOf(nextEnemyAttackRef.current, enemyIntervalMs)}
+                running={canFight}
+              />
             </div>
           </article>
         </div>
@@ -398,13 +448,68 @@ function CombatHeader({ enemy, onClose, canClose }: { enemy: Enemy; onClose: () 
   );
 }
 
-function BarRow({ label, current, max, pct, kind }: { label: string; current: number; max: number; pct: number; kind: 'vida' | 'mana' }) {
+function BarRow({ label, current, max, pct, kind, overlayPct = 0, overlayValue = 0 }: {
+  label: string;
+  current: number;
+  max: number;
+  pct: number;
+  kind: 'vida' | 'mana';
+  /** Escudo de Energia sobreposto (proporcional ao max da barra). */
+  overlayPct?: number;
+  overlayValue?: number;
+}) {
   return (
     <div className={styles.barTrack}>
       <div className={`${styles.barFill} ${styles[`fill_${kind}`]}`} style={{ width: `${pct}%` }} />
+      {overlayPct > 0 && (
+        <div className={`${styles.barFill} ${styles.fill_energia}`} style={{ width: `${overlayPct}%` }} />
+      )}
       <div className={styles.barContent}>
         <span className={styles.barLabel}>{label}</span>
-        <span className={styles.barValues}>{current} / {max}</span>
+        <span className={styles.barValues}>
+          {current} / {max}
+          {overlayValue > 0 && <span className={styles.esValue}> +{overlayValue}</span>}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Barra de cadência — enche até o próximo ataque básico automático.
+ * O preenchimento é uma ANIMAÇÃO CSS (0 → 100% na duração exata do golpe),
+ * fluida a 60fps sem depender dos ticks do loop. `cycle` (timestamp do próximo
+ * golpe) remonta o fill a cada ataque — reset seco, sem animação de volta.
+ * `elapsedMs` sincroniza via animation-delay negativo quando o componente
+ * monta no meio de um ciclo.
+ */
+function AttackBar({ cycle, durationMs, elapsedMs, running }: {
+  cycle: number;
+  durationMs: number;
+  elapsedMs: number;
+  running: boolean;
+}) {
+  // O offset e a duração são capturados UMA vez por ciclo — reescrever o
+  // animation-delay a cada re-render (os ticks de 100ms) faria a animação
+  // saltar pra posição recalculada. Congelados, o navegador anima sozinho.
+  const frozenStyle = useMemo(
+    () => ({
+      animationDuration: `${durationMs}ms`,
+      animationDelay: `-${elapsedMs}ms`,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cycle],
+  );
+
+  return (
+    <div className={styles.attackTrack}>
+      <div
+        key={cycle}
+        className={styles.attackFill}
+        style={{ ...frozenStyle, animationPlayState: running ? 'running' : 'paused' }}
+      />
+      <div className={styles.attackContent}>
+        <span className={styles.attackLabel}>Ataque</span>
       </div>
     </div>
   );

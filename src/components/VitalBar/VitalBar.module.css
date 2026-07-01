@@ -22,6 +22,22 @@
 .fill.mana { background: var(--vital-mana); }
 .fill.exp  { background: var(--vital-exp); }
 
+/* Escudo de Energia — camada sobreposta à barra de vida, proporcional a
+   ES ÷ Vida Máxima (PoE-style). Levemente translúcida pra vida aparecer. */
+.overlay {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  background: var(--stat-energia);
+  opacity: 0.82;
+  transition: width 0.3s ease-out;
+}
+
+.overlayValue {
+  color: var(--stat-energia);
+  filter: brightness(1.35);
+}
+
 /* Camada de texto sobre o fill */
 .content {
   position: relative;

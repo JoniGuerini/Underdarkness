@@ -95,6 +95,9 @@ function migrate(c: Character): Character {
     manaMax: derived.manaMax,
     vidaAtual: Math.min(leveled.vidaAtual, derived.vidaMax),
     manaAtual: Math.min(leveled.manaAtual, derived.manaMax),
+    // Escudo de Energia (vital) — personagens antigos não têm o campo: inicia
+    // cheio no máximo derivado. Existentes clampam pro cap atual.
+    esAtual: Math.min(leveled.esAtual ?? derived.escudoEnergia, derived.escudoEnergia),
   };
 }
 

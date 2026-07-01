@@ -228,8 +228,9 @@ export function computeDerivedStatsWithSources(c: Character): DerivedStatsResult
     baseFisMin = dmgFisContribs.reduce((s, cc) => s + cc.effect.value, 0);
     baseFisMax = dmgFisContribs.reduce((s, cc) => s + (cc.effect.max ?? cc.effect.value), 0);
   } else {
-    // Desarmado: 1 a 1 uniformemente — ganho real vem de equipar uma arma
-    const base: [number, number] = [1, 1];
+    // Desarmado: 2 a 4 — na escala WoW (golpes a cada 2–3s) preserva o DPS
+    // miserável do antigo 1–1 rápido. Ganho real vem de equipar uma arma.
+    const base: [number, number] = [2, 4];
     dmgFisSourcesMin.push({
       label: `Desarmado`,
       value: base[0],
@@ -263,31 +264,33 @@ export function computeDerivedStatsWithSources(c: Character): DerivedStatsResult
   sources.danoFisicoMax = dmgFisSourcesMin;
 
   // ────────────────────────────────────────────────────────────────
-  // Velocidade de Ataque (base × (1 + pct/100) + modAgi)
+  // Tempo de Ataque (SEGUNDOS por golpe, convenção WoW — maior = mais lento)
+  // base = arma (weapon-speed, em segundos) OU desarmado por classe.
+  // % de Velocidade de Ataque REDUZ o tempo: tempo = base ÷ (1 + Σ%/100).
+  // Agilidade NÃO contribui.
   // ────────────────────────────────────────────────────────────────
-  const baseAtkSpeed = hasWeapon
+  const baseAtkSec = hasWeapon
     ? (dmgFisContribs.length > 0 ? contribs.find((c) => c.effect.key === 'weapon-speed')?.effect.value ?? 0 : 0)
-    : (cls === 'ladino' ? 1.6 : cls === 'guerreiro' ? 1.0 : 0.8);
+    : (cls === 'ladino' ? 2.0 : cls === 'guerreiro' ? 2.5 : 3.0);
   const weaponSpeedContribs = contribs.filter((c) => c.effect.key === 'weapon-speed');
 
   const pctAtkSpeedSources = itemSources(contribs, 'pct-vel-ataque');
   const pctAtkSpeed = sumSources(pctAtkSpeedSources);
-  const agiAtkMod = (a - 10) * 0.02;
+  const velAtaque = pctAtkSpeed > 0 ? baseAtkSec / (1 + pctAtkSpeed / 100) : baseAtkSec;
 
   const weaponSpeedItem = weaponSpeedContribs[0];
+  // Delta total (negativo = mais rápido), rateado entre os itens pela fatia de %.
+  const atkDelta = velAtaque - baseAtkSec;
   sources.velAtaque = [
     hasWeapon && weaponSpeedItem
       ? { label: weaponSpeedItem.itemName, value: weaponSpeedItem.effect.value, tone: rarityTone(weaponSpeedItem.itemRarity) }
-      : { label: `Desarmado (${classLabel(cls)})`, value: baseAtkSpeed, tone: 'class' as StatSourceTone },
-    // Cada bônus % vira contribuição efetiva: base × (% / 100) — preserva tone do item
+      : { label: `Desarmado (${classLabel(cls)})`, value: baseAtkSec, tone: 'class' as StatSourceTone },
     ...pctAtkSpeedSources.map((s) => ({
-      label: s.label + ` (+${s.value}%)`,
-      value: baseAtkSpeed * (s.value / 100),
+      label: s.label + ` (+${s.value}% vel.)`,
+      value: pctAtkSpeed > 0 ? atkDelta * (s.value / pctAtkSpeed) : 0,
       tone: s.tone,
     })),
-    ...(agiAtkMod !== 0 ? [{ label: `Agilidade ((${a} - 10) × 0.02)`, value: agiAtkMod, tone: 'attr-agi' as StatSourceTone }] : []),
   ];
-  const velAtaque = baseAtkSpeed * (1 + pctAtkSpeed / 100) + agiAtkMod;
 
   // ────────────────────────────────────────────────────────────────
   // Crítico
@@ -367,9 +370,12 @@ export function computeDerivedStatsWithSources(c: Character): DerivedStatsResult
   sources.danoTotalMax = sources.danoTotalMin;
 
   const danoMedio = (danoTotalMin + danoTotalMax) / 2;
-  const dps = danoMedio * velAtaque * (1 + (chanceCritico / 100) * (multCritico - 1));
+  // velAtaque agora é tempo em segundos → DPS = dano médio ÷ tempo de ataque.
+  const dps = velAtaque > 0
+    ? (danoMedio / velAtaque) * (1 + (chanceCritico / 100) * (multCritico - 1))
+    : 0;
   sources.dps = [
-    { label: `Dano médio × Vel × (1 + Crit × (Mult-1))`, value: dps, tone: 'base' },
+    { label: `Dano médio ÷ Tempo de Ataque × (1 + Crit × (Mult-1))`, value: dps, tone: 'base' },
   ];
 
   // ────────────────────────────────────────────────────────────────

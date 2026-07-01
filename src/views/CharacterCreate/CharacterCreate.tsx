@@ -53,6 +53,7 @@ export function CharacterCreate({ canGoBack, onBack, onCreate }: CharacterCreate
       vidaAtual: data.vida,
       manaMax: 0,
       manaAtual: 0,
+      esAtual: 0,
       forca: data.forca,
       agilidade: data.agilidade,
       intelecto: data.intelecto,
@@ -78,6 +79,7 @@ export function CharacterCreate({ canGoBack, onBack, onCreate }: CharacterCreate
       manaMax: derived.manaMax,
       vidaAtual: derived.vidaMax,
       manaAtual: derived.manaMax,
+      esAtual: derived.escudoEnergia,
     };
     onCreate(character);
   };

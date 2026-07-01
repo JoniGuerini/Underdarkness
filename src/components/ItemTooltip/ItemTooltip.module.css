@@ -124,6 +124,8 @@
 .sagrado   { color: var(--elem-sagrado); }
 .vida      { color: var(--vital-vida); }
 .mana      { color: var(--vital-mana); }
+.exp       { color: var(--vital-exp); }
+.valor     { color: var(--brass-deep); }
 .forca     { color: var(--stat-forca); }
 .agilidade { color: var(--stat-agilidade); }
 .intelecto { color: var(--stat-intelecto); }
@@ -141,4 +143,28 @@
   font: italic 400 12px/1.45 var(--serif);
   color: var(--ink-muted);
   letter-spacing: 0.01em;
+}
+
+/* ============================================================
+   Valor de venda a NPC — rodapé discreto
+   ============================================================ */
+.sellValue {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.sellValueLabel {
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.sellValueGold {
+  font: 500 11px/1 var(--mono);
+  color: var(--brass-bright);
 }

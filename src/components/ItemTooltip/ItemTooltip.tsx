@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import type { Item } from '../../types';
 import { ITEM_SLOT_LABEL, RARITY_LABEL } from '../../data/items';
 import { getMaterialType, MATERIAL_TYPE_SINGULAR, MATERIAL_TYPE_COLOR, REAGENT_GROUP_LABEL } from '../../data/materials';
+import { getSellPrice } from '../../lib/inventory';
+import { getStatSegments } from '../../lib/statSegments';
 import styles from './ItemTooltip.module.css';
 
 interface ItemTooltipProps {
@@ -60,6 +62,12 @@ function ItemTooltipBody({ item }: { item: Item }) {
               <span className={styles.slotLabel}>{ITEM_SLOT_LABEL[item.slot]}</span>
             </>
           )}
+          {item.ilvl !== undefined && (
+            <>
+              <span className={styles.metaSep}>·</span>
+              <span className={styles.slotLabel}>Nv Item {item.ilvl}</span>
+            </>
+          )}
           {item.stackable && item.stack !== undefined && (
             <>
               <span className={styles.metaSep}>·</span>
@@ -76,12 +84,23 @@ function ItemTooltipBody({ item }: { item: Item }) {
             // Stats sem `kind` (mocks antigos) renderizam como linha plana.
             const prev = item.stats![i - 1];
             const showDivider = i > 0 && prev?.kind !== undefined && stat.kind !== undefined && prev.kind !== stat.kind;
+            const segments = getStatSegments(stat);
             return (
               <Fragment key={i}>
                 {showDivider && <div className={styles.statDivider} />}
-                <span className={`${styles.stat} ${stat.color ? styles[stat.color] : ''}`}>
-                  {stat.text}
-                </span>
+                {segments ? (
+                  <span className={styles.stat}>
+                    {segments.map((seg, j) => (
+                      <span key={j} className={seg.color ? styles[seg.color] : ''}>
+                        {seg.text}
+                      </span>
+                    ))}
+                  </span>
+                ) : (
+                  <span className={`${styles.stat} ${stat.color ? styles[stat.color] : ''}`}>
+                    {stat.text}
+                  </span>
+                )}
               </Fragment>
             );
           })}
@@ -89,6 +108,11 @@ function ItemTooltipBody({ item }: { item: Item }) {
       )}
 
       {item.description && <div className={styles.description}>{item.description}</div>}
+
+      <div className={styles.sellValue}>
+        <span className={styles.sellValueLabel}>Venda</span>
+        <span className={styles.sellValueGold}>{getSellPrice(item)} ouro</span>
+      </div>
     </>
   );
 }

@@ -47,9 +47,28 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
       <div className={styles.grid}>
         <Column title="Recursos">
           <Section title="Vitais">
-            <VitalBar label="Vida" current={c.vidaAtual} max={c.vidaMax} kind="vida" />
+            {/* Escudo de Energia sobrepõe a barra de vida (ES ÷ Vida Máx) */}
+            <VitalBar label="Vida" current={c.vidaAtual} max={c.vidaMax} kind="vida" overlayCurrent={c.esAtual} />
             <VitalBar label="Mana" current={c.manaAtual} max={c.manaMax} kind="mana" />
             <VitalBar label="Exp" current={c.xp} max={c.xpNext} kind="exp" />
+            {s.escudoEnergia > 0 && (
+              <StatLine
+                name="Escudo de Energia"
+                value={s.escudoEnergia}
+                color="energia"
+                breakdown={sources.escudoEnergia}
+                tooltip={
+                  <>
+                    <TooltipLine>
+                      Vital arcano — todo dano recebido consome o Escudo <em>antes</em> da Vida. Aparece sobreposto à barra de vida, proporcional à Vida Máxima.
+                    </TooltipLine>
+                    <TooltipLine>
+                      Zero base — vem de itens com <Mod color="energia">Escudo de Energia</Mod>. Restaura por completo ao fim de cada combate.
+                    </TooltipLine>
+                  </>
+                }
+              />
+            )}
           </Section>
 
           <Section title="Atributos">
@@ -254,7 +273,7 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
               breakdown={sources.dps}
               tooltip={
                 <>
-                  Dano por segundo médio considerando o Dano Total, a <Mod color="agilidade">Velocidade de Ataque</Mod> e a <Mod color="critico">Chance de Crítico</Mod>.
+                  Dano por segundo médio considerando o Dano Total, o <Mod color="agilidade">Tempo de Ataque</Mod> e a <Mod color="critico">Chance de Crítico</Mod>.
                 </>
               }
             />
@@ -358,17 +377,17 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
 
           <Section title="Velocidade">
             <StatLine
-              name="Velocidade de Ataque"
-              value={<>{s.velAtaque.toFixed(2)}<Unit> /s</Unit></>}
+              name="Tempo de Ataque"
+              value={<>{s.velAtaque.toFixed(1)}<Unit> s</Unit></>}
               color="agilidade"
               breakdown={sources.velAtaque}
               tooltip={
                 <>
                   <TooltipLine>
-                    Ataques por segundo — define cadência do ataque básico automático no combate.
+                    Segundos entre cada ataque básico automático no combate — quanto menor, mais rápido.
                   </TooltipLine>
                   <TooltipLine>
-                    Também alimenta o <Mod color="critico">Dano Por Segundo</Mod> teórico na ficha.
+                    Bônus de <Mod color="agilidade">% de Velocidade de Ataque</Mod> reduzem esse tempo. Também alimenta o <Mod color="critico">Dano Por Segundo</Mod> teórico na ficha.
                   </TooltipLine>
                 </>
               }
@@ -548,22 +567,6 @@ export function CharacterSheet({ character }: CharacterSheetProps) {
                   </TooltipLine>
                   <TooltipLine>
                     Comparada ao <Mod color="agilidade">Acerto</Mod> do agressor — fórmula: <em>Acerto ÷ (Acerto + Evasão)</em>, entre 5% e 95%.
-                  </TooltipLine>
-                </>
-              }
-            />
-            <StatLine
-              name="Escudo de Energia"
-              value={s.escudoEnergia}
-              color="energia"
-              breakdown={sources.escudoEnergia}
-              tooltip={
-                <>
-                  <TooltipLine>
-                    Um buffer arcano que absorve dano <em>antes</em> da Vida.
-                  </TooltipLine>
-                  <TooltipLine>
-                    Zero base — vem de itens com <Mod color="energia">Escudo de Energia</Mod>.
                   </TooltipLine>
                 </>
               }

@@ -9,7 +9,7 @@ import type { Item } from '../types';
  */
 
 /** Tipo de material — cresce conforme adicionamos categorias. */
-export type MaterialType = 'erva' | 'minerio' | 'couro' | 'tecido' | 'carne' | 'verdura' | 'fruta';
+export type MaterialType = 'erva' | 'minerio' | 'couro' | 'tecido' | 'carne' | 'verdura' | 'fruta' | 'barra';
 
 export const MATERIAL_TYPE_LABEL: Record<MaterialType, string> = {
   erva: 'Ervas',
@@ -19,6 +19,7 @@ export const MATERIAL_TYPE_LABEL: Record<MaterialType, string> = {
   carne: 'Carnes',
   verdura: 'Verduras',
   fruta: 'Frutas',
+  barra: 'Barras',
 };
 
 /** Rótulo no singular — usado no tooltip/card de um item individual. */
@@ -30,6 +31,7 @@ export const MATERIAL_TYPE_SINGULAR: Record<MaterialType, string> = {
   carne: 'Carne',
   verdura: 'Verdura',
   fruta: 'Fruta',
+  barra: 'Barra',
 };
 
 /** Cor viva por tipo de reagente — destaca o subtipo no tooltip/card.
@@ -42,6 +44,7 @@ export const MATERIAL_TYPE_COLOR: Record<MaterialType, string> = {
   carne: 'var(--material-carne)',
   verdura: 'var(--material-verdura)',
   fruta: 'var(--material-fruta)',
+  barra: 'var(--material-barra)',
 };
 
 /** Rótulo-guarda-chuva de todos os materiais. */
@@ -117,58 +120,83 @@ const ERVAS: MaterialDef[] = [
   mat('erva', 5, 'raiz-primordial', 'Raiz Primordial', 'Mais velha que o solo. Lembra de quando não havia nada pra enraizar.', 37),
 ];
 
-// ── Minérios (metais e pedras de forja) ────────────────────────────────
+// ── Minérios (metais de forja) ─────────────────────────────────────────
+// Só metais que viram Barra (bruto → refinado); cada minério tem sua barra.
+// Não-metálicos/orgânicos (madrepérola, coral, etc.) foram removidos.
 const MINERIOS: MaterialDef[] = [
   // Tier 1 — Vales e bosques (Ato I): metais comuns, o básico da bigorna
   mat('minerio', 1, 'minerio-ferro', 'Minério de Ferro', 'Veios ferrosos em pedra parda. O pão-com-manteiga de toda forja.', 5),
-  mat('minerio', 1, 'minerio-cobre', 'Cobre', 'Avermelhado sob a crosta. Macio, mas honesto no trabalho.', 4),
-  mat('minerio', 1, 'minerio-estanho', 'Estanho', 'Cinza-fosco e dócil. Ligado ao cobre, nasce o bronze.', 5),
-  mat('minerio', 1, 'minerio-chumbo', 'Chumbo', 'Pesado e mole. Absorve o que não deveria escapar.', 5),
-  mat('minerio', 1, 'minerio-pirita', 'Pirita', 'Brilha como ouro e engana o tolo. Ainda assim, presta.', 4),
+  mat('minerio', 1, 'minerio-cobre', 'Minério de Cobre', 'Avermelhado sob a crosta. Macio, mas honesto no trabalho.', 4),
+  mat('minerio', 1, 'minerio-estanho', 'Minério de Estanho', 'Cinza-fosco e dócil. Ligado ao cobre, nasce o bronze.', 5),
+  mat('minerio', 1, 'minerio-chumbo', 'Minério de Chumbo', 'Pesado e mole. Absorve o que não deveria escapar.', 5),
 
   // Tier 2 — As Profundezas (Ato II): metais fundos, frios e teimosos
-  mat('minerio', 2, 'minerio-prata-bruta', 'Prata Bruta', 'Veios claros na rocha escura. Fere o que vem da noite.', 9),
-  mat('minerio', 2, 'minerio-ferro-negro', 'Ferro Negro', 'Ferro que desceu fundo demais e voltou frio de vez.', 10),
-  mat('minerio', 2, 'minerio-galena', 'Galena', 'Cubos cinza que reluzem no escuro. Guardam prata e veneno na mesma pedra.', 10),
-  mat('minerio', 2, 'minerio-cobalto', 'Cobalto', 'Azul teimoso que ri do fogo brando. Tinge e endurece ligas.', 11),
-  mat('minerio', 2, 'minerio-antimonio', 'Antimônio', 'Metaloide quebradiço que não perdoa o descuido do ferreiro.', 12),
+  mat('minerio', 2, 'minerio-prata-bruta', 'Minério de Prata', 'Veios claros na rocha escura. Fere o que vem da noite.', 9),
+  mat('minerio', 2, 'minerio-ferro-negro', 'Minério de Ferro Negro', 'Ferro que desceu fundo demais e voltou frio de vez.', 10),
+  mat('minerio', 2, 'minerio-cobalto', 'Minério de Cobalto', 'Azul teimoso que ri do fogo brando. Tinge e endurece ligas.', 11),
+  mat('minerio', 2, 'minerio-antimonio', 'Minério de Antimônio', 'Metaloide quebradiço que não perdoa o descuido do ferreiro.', 12),
 
   // Tier 3 — O Mar Sem Sol (Ato III): metais do fundo salgado
-  mat('minerio', 3, 'minerio-coralita', 'Coralita', 'Metal que cresce como coral, anel sobre anel. Vive com a maré e morre com ela.', 15),
-  mat('minerio', 3, 'minerio-nautilita', 'Nautilita', 'Espiral perfeita arrancada de conchas fósseis. Guarda o eco do mar.', 16),
-  mat('minerio', 3, 'minerio-sal-de-ferro', 'Sal-de-Ferro', 'Cristais rubros que a água salgada depositou por eras. Cortam a língua.', 17),
-  mat('minerio', 3, 'minerio-abissalio', 'Abissálio', 'Reluz num azul doente vindo das fossas. Frio ao toque, sempre.', 18),
-  mat('minerio', 3, 'minerio-madreperola', 'Madrepérola Bruta', 'Nácar duro raspado de conchas colossais. Reluz como óleo na água.', 17),
+  mat('minerio', 3, 'minerio-coralaco', 'Minério de Coralaço', 'Metal que cresce nos recifes como coral, anel sobre anel. Nasce e endurece com a maré.', 15),
+  mat('minerio', 3, 'minerio-abissalio', 'Minério de Abissálio', 'Reluz num azul doente vindo das fossas. Frio ao toque, sempre.', 18),
 
   // Tier 4 — As Veias de Fogo (Ato IV): metais que nascem no calor
-  mat('minerio', 4, 'minerio-piroferro', 'Piroferro', 'Ferro que nunca esfria de todo. Brasa presa dentro da pedra.', 22),
-  mat('minerio', 4, 'minerio-escoria-viva', 'Escória Viva', 'Rejeito do magma que ainda escorre. Endurece em formas cruéis.', 24),
-  mat('minerio', 4, 'minerio-magnetita-ignea', 'Magnetita Ígnea', 'Puxa o aço e a atenção. Nasce onde a terra sangra fogo.', 25),
-  mat('minerio', 4, 'minerio-titanio', 'Titânio', 'Cinza-claro e leve como mentira. Ri do calor que derrete o resto.', 26),
+  mat('minerio', 4, 'minerio-piroferro', 'Minério de Piroferro', 'Ferro que nunca esfria de todo. Brasa presa dentro da pedra.', 22),
+  mat('minerio', 4, 'minerio-titanio', 'Minério de Titânio', 'Cinza-claro e leve como mentira. Ri do calor que derrete o resto.', 26),
 
   // Tier 5 — O Abismo Primordial (Ato V): metais míticos, quase vivos
-  mat('minerio', 5, 'minerio-adamante', 'Adamante', 'A pedra que se recusa a quebrar. Guardada no fundo de tudo.', 32),
-  mat('minerio', 5, 'minerio-estelario', 'Estelário', 'Caiu do céu antes do primeiro homem. Ainda lembra do frio do vazio.', 34),
-  mat('minerio', 5, 'minerio-vazita', 'Vazita', 'Metal que não reflete luz alguma. Pesa mais quando ninguém olha.', 36),
-  mat('minerio', 5, 'minerio-oricalco', 'Oricalco', 'O metal perdido dos primeiros deuses. Canta baixo quando forjado.', 38),
+  mat('minerio', 5, 'minerio-adamante', 'Minério de Adamante', 'A pedra que se recusa a quebrar. Guardada no fundo de tudo.', 32),
+  mat('minerio', 5, 'minerio-estelario', 'Minério de Estelário', 'Caiu do céu antes do primeiro homem. Ainda lembra do frio do vazio.', 34),
+  mat('minerio', 5, 'minerio-vazita', 'Minério de Vazita', 'Metal que não reflete luz alguma. Pesa mais quando ninguém olha.', 36),
+  mat('minerio', 5, 'minerio-oricalco', 'Minério de Oricalco', 'O metal perdido dos primeiros deuses. Canta baixo quando forjado.', 38),
+];
+
+// ── Barras (metais refinados — fundidos a partir de minérios) ──────────
+// Refinados: cada barra sai do seu minério bruto (bruto → refinado na forja).
+const BARRAS: MaterialDef[] = [
+  // Tier 1 — metais comuns
+  mat('barra', 1, 'barra-ferro', 'Barra de Ferro', 'Fundida e batida em lingote cinza. O primeiro passo de toda lâmina e prego.', 14),
+  mat('barra', 1, 'barra-cobre', 'Barra de Cobre', 'Reluz avermelhada depois de purgada a escória. Dobra fácil sob o martelo.', 12),
+  mat('barra', 1, 'barra-estanho', 'Barra de Estanho', 'Lingote claro e mole. Sozinho vale pouco; ligado ao cobre, vira bronze.', 14),
+  mat('barra', 1, 'barra-chumbo', 'Barra de Chumbo', 'Pesada e fosca. Boa pra lastro, selo e o que não deve escapar.', 14),
+
+  // Tier 2 — metais fundos
+  mat('barra', 2, 'barra-prata', 'Barra de Prata', 'Branca e fria ao sair da fôrma. Corta o que anda de noite.', 26),
+  mat('barra', 2, 'barra-ferro-negro', 'Barra de Ferro Negro', 'Escura como breu, densa demais pro tamanho. Não reflete a forja.', 28),
+  mat('barra', 2, 'barra-cobalto', 'Barra de Cobalto', 'Azul-aço teimoso. Endurece qualquer liga a que se junta.', 30),
+  mat('barra', 2, 'barra-antimonio', 'Barra de Antimônio', 'Lingote quebradiço e brilhante. Deixa o metal duro, mas cobra em fissuras.', 34),
+
+  // Tier 3 — metais do fundo salgado
+  mat('barra', 3, 'barra-coralaco', 'Barra de Coralaço', 'Fundido do recife, guarda o azul-esverdeado do fundo. Não teme o sal.', 44),
+  mat('barra', 3, 'barra-abissalio', 'Barra de Abissálio', 'Lingote que gela a mão do ferreiro. Carrega o frio das profundezas.', 52),
+
+  // Tier 4 — metais que nascem no calor
+  mat('barra', 4, 'barra-piroferro', 'Barra de Piroferro', 'Morna ao toque mesmo com a fôrma fria. Guarda brasa na própria trama.', 60),
+  mat('barra', 4, 'barra-titanio', 'Barra de Titânio', 'Leve como mentira, dura como jura. Ri do calor que derrete o resto.', 72),
+
+  // Tier 5 — metais míticos
+  mat('barra', 5, 'barra-adamante', 'Barra de Adamante', 'Não risca, não entorta, não cede. Fundi-la já é uma proeza.', 90),
+  mat('barra', 5, 'barra-estelario', 'Barra de Estelário', 'Reluz com um frio que não é daqui. Lembra do vazio de onde caiu.', 96),
+  mat('barra', 5, 'barra-vazita', 'Barra de Vazita', 'Lingote que engole a luz da forja. Pesa mais do que deveria.', 100),
+  mat('barra', 5, 'barra-oricalco', 'Barra de Oricalco', 'Canta baixo quando resfria. O metal dos primeiros deuses, domado.', 108),
 ];
 
 // ── Couros (peles e carapaças de criaturas) ────────────────────────────
 const COUROS: MaterialDef[] = [
   // Tier 1 — Vales e bosques (Ato I): fauna comum
-  mat('couro', 1, 'couro-cru', 'Couro Cru', 'Pele recém-tirada, ainda cheirando a cabra. A base de tudo.', 4),
+  mat('couro', 1, 'couro-cru', 'Couro Cru', 'Pele recém-tirada, ainda quente e malcheirosa. A base de tudo.', 4),
   mat('couro', 1, 'couro-lobo', 'Couro de Lobo', 'Pelo cinza e correoso. Aquenta e aguenta.', 5),
-  mat('couro', 1, 'couro-javali', 'Couro de Javali', 'Grosso e cheio de cerdas. Custa a furar.', 5),
+  mat('couro', 1, 'couro-hiena', 'Couro de Hiena', 'Áspero e malhado, com pelos duros feito arame. Custa a furar.', 5),
   mat('couro', 1, 'pele-veado', 'Pele de Veado', 'Macia e leve. Boa pra vestes que não pesam a marcha.', 4),
   mat('couro', 1, 'couro-urso', 'Couro de Urso', 'Denso e quente. Quase uma armadura por si só.', 6),
-  mat('couro', 1, 'couro-raposa', 'Pele de Raposa', 'Ruiva e lustrosa. Vale mais pela vaidade que pela proteção.', 5),
+  mat('couro', 1, 'couro-antilope', 'Pele de Antílope', 'Clara e lustrosa, de corredor das estepes. Vale mais pela vaidade que pela proteção.', 5),
 
   // Tier 2 — As Profundezas (Ato II): bestas do subsolo
   mat('couro', 2, 'couro-morcego', 'Membrana de Morcego', 'Fina, escura e correosa. Estica sem rasgar.', 8),
   mat('couro', 2, 'pele-verme-cego', 'Pele de Verme Cego', 'Pálida e pegajosa. Nunca viu o sol e não sente falta.', 9),
   mat('couro', 2, 'quitina-aracnideo', 'Quitina de Aracnídeo', 'Placas que rangem ao vergar. Leves, e cheias de má lembrança.', 10),
   mat('couro', 2, 'couro-necrofago', 'Couro de Necrófago', 'Curtido pela própria podridão. Resiste ao que devora.', 11),
-  mat('couro', 2, 'casca-troglodita', 'Casca de Troglodita', 'Pele calejada de quem vive raspando pedra. Dura na mesma medida.', 12),
+  mat('couro', 2, 'casca-tateador', 'Casca de Tateador Cego', 'Pele calejada de quem tateia a pedra no escuro. Dura na mesma medida.', 12),
   mat('couro', 2, 'couro-rato', 'Couro de Rato Gigante', 'Fino, mas surpreendentemente resistente. Cheira a esgoto e teimosia.', 9),
 
   // Tier 3 — O Mar Sem Sol (Ato III): pele de coisas afogadas
@@ -176,19 +204,19 @@ const COUROS: MaterialDef[] = [
   mat('couro', 3, 'pele-enguia', 'Pele de Enguia Abissal', 'Lisa e elétrica ao toque. Guarda um choque adormecido.', 16),
   mat('couro', 3, 'carapaca-crustaceo', 'Carapaça de Crustáceo', 'Blindagem do fundo, cravejada de sal. Pesa como culpa.', 17),
   mat('couro', 3, 'couro-sereiano', 'Couro Sereiano', 'Nem peixe, nem gente. Reluz num verde afogado.', 18),
-  mat('couro', 3, 'couro-tubarao', 'Pele de Tubarão', 'Áspera num sentido, lisa no outro. Lixa madeira e orgulho.', 17),
+  mat('couro', 3, 'couro-serpente-abissal', 'Pele de Serpente Abissal', 'Áspera num sentido, lisa no outro. Lixa madeira e orgulho.', 17),
 
   // Tier 4 — As Veias de Fogo (Ato IV): peles que bebem calor
   mat('couro', 4, 'couro-salamandra', 'Couro de Salamandra', 'Não queima. Bebe o fogo e pede mais.', 22),
   mat('couro', 4, 'couro-magmatico', 'Couro Magmático', 'Endurecido na brasa, rachado como lava seca.', 24),
-  mat('couro', 4, 'escama-draconica', 'Escama Dracônica', 'Cada placa vale uma fortuna e uma cicatriz.', 25),
+  mat('couro', 4, 'escama-serpe', 'Escama de Serpe', 'Placa de serpente de lava — cada uma vale uma fortuna e uma cicatriz.', 25),
   mat('couro', 4, 'pele-fenix', 'Pele de Fênix', 'Morna mesmo arrancada. Insiste em brasa sob a mão.', 26),
   mat('couro', 4, 'couro-lagarto-igneo', 'Couro de Lagarto Ígneo', 'Escamas mornas que estalam calor. Ótima contra o frio, péssima no verão.', 23),
   mat('couro', 4, 'casca-golem', 'Casca de Golem', 'Placa de rocha viva arrancada do braço de um. Pesa como sentença.', 26),
 
   // Tier 5 — O Abismo Primordial (Ato V): peles do que não devia ter pele
   mat('couro', 5, 'couro-abissal', 'Couro Abissal', 'Escuridão curtida em forma de pele. Absorve o olhar.', 32),
-  mat('couro', 5, 'pele-quimera', 'Pele de Quimera', 'Três texturas na mesma peça, nenhuma em paz.', 34),
+  mat('couro', 5, 'couro-aberracao', 'Couro de Aberração', 'Três texturas na mesma peça, nenhuma em paz.', 34),
   mat('couro', 5, 'couro-eterno', 'Couro Eterno', 'Não apodrece, não racha, não esquece. Só endurece.', 36),
   mat('couro', 5, 'manto-vazio', 'Manto do Vazio', 'Pele de algo que talvez nunca tenha tido corpo.', 38),
   mat('couro', 5, 'couro-tenebroso', 'Couro Tenebroso', 'Curtido na ausência de luz. Engole a mão de quem toca sem fé.', 35),
@@ -237,21 +265,21 @@ const CARNES: MaterialDef[] = [
   // Tier 1 — Vales e bosques (Ato I): caça comum
   mat('carne', 1, 'carne-caca', 'Carne de Caça', 'Corte magro de bicho do mato. Rende bem no espeto.', 4),
   mat('carne', 1, 'carne-veado', 'Lombo de Veado', 'Macio e magro. O corte que o caçador guarda pra si.', 5),
-  mat('carne', 1, 'carne-javali', 'Pernil de Javali', 'Vermelho e rijo, com gosto de terra e briga.', 5),
-  mat('carne', 1, 'carne-ave', 'Ave Silvestre', 'Peito firme de pássaro do campo. Boa assada.', 4),
-  mat('carne', 1, 'carne-lebre', 'Carne de Lebre', 'Miúda e delicada. Some rápido da panela.', 4),
-  mat('carne', 1, 'carne-porco-selvagem', 'Bacon Selvagem', 'Toucinho defumado de porco do mato. Gordura que vale ouro em marcha.', 5),
-  mat('carne', 1, 'carne-cabra', 'Perna de Cabra', 'Rija e cheirosa. Precisa de fogo baixo e paciência alta.', 4),
-  mat('carne', 1, 'carne-faisao', 'Faisão', 'Ave nobre de carne escura. Bonito no prato, difícil na caça.', 5),
+  mat('carne', 1, 'carne-urso', 'Pernil de Urso', 'Vermelho e rijo, com gosto de mato e briga.', 5),
+  mat('carne', 1, 'carne-harpia', 'Coxa de Harpia', 'Peito firme de ave-monstro das alturas. Rija, mas rende bem assada.', 4),
+  mat('carne', 1, 'carne-sapo', 'Coxa de Sapo', 'Miúda e delicada, tirada do brejo. Some rápido da panela.', 4),
+  mat('carne', 1, 'carne-toucinho', 'Toucinho de Caça', 'Gordura defumada de bicho do mato. Vale ouro em marcha longa.', 5),
+  mat('carne', 1, 'carne-antilope', 'Perna de Antílope', 'Rija e cheirosa. Precisa de fogo baixo e paciência alta.', 4),
+  mat('carne', 1, 'carne-escorpiao', 'Cauda de Escorpião', 'Branca e firme sob a casca. Iguaria de quem não teme o ferrão.', 5),
 
   // Tier 2 — As Profundezas (Ato II): carne do subsolo, pra estômagos fortes
   mat('carne', 2, 'carne-morcego', 'Carne de Morcego', 'Escura e correosa. Melhor não perguntar o sabor.', 8),
   mat('carne', 2, 'carne-verme', 'Polpa de Verme', 'Pálida e gelatinosa. Nutre, se você conseguir engolir.', 9),
   mat('carne', 2, 'carne-aranha', 'Abdômen de Aranha', 'Recheado e amargo. Iguaria pra quem tem coragem.', 10),
   mat('carne', 2, 'carne-rato-gigante', 'Pernil de Rato Gigante', 'Mais carne do que se gostaria de admitir. Sustenta.', 9),
-  mat('carne', 2, 'carne-troglodita', 'Posta de Troglodita', 'Carne pálida de quem nunca viu sol. Come-se em tempo de fome.', 12),
-  mat('carne', 2, 'carne-serpente-cega', 'Posta de Serpente Cega', 'Longa e sem osso. Escorrega da faca e da consciência.', 10),
-  mat('carne', 2, 'carne-toupeira', 'Pernil de Toupeira Gigante', 'Terroso e denso. Sabe a raiz e a escuridão.', 9),
+  mat('carne', 2, 'carne-tateador', 'Posta de Tateador Cego', 'Carne pálida de quem nunca viu sol. Come-se em tempo de fome.', 12),
+  mat('carne', 2, 'carne-reptante', 'Filé de Reptante', 'Longo e sem osso. Escorrega da faca e da consciência.', 10),
+  mat('carne', 2, 'carne-tampa-andante', 'Polpa de Tampa Andante', 'Carne fibrosa do cogumelo que anda. Terrosa e densa.', 9),
   mat('carne', 2, 'carne-larva', 'Larva Recheada', 'Estoura doce entre os dentes. Não olhe antes de comer.', 8),
 
   // Tier 3 — O Mar Sem Sol (Ato III): pescados e frutos do fundo
@@ -260,19 +288,19 @@ const CARNES: MaterialDef[] = [
   mat('carne', 3, 'carne-crustaceo', 'Carne de Crustáceo', 'Doce sob a casca dura. Vale o trabalho de quebrar.', 17),
   mat('carne', 3, 'carne-enguia', 'Posta de Enguia', 'Gordurosa e elétrica. Formiga na língua.', 18),
   mat('carne', 3, 'carne-caranguejo', 'Pata de Caranguejo Real', 'Doce e suculenta sob a couraça. Um banquete que se defende.', 17),
-  mat('carne', 3, 'carne-lula', 'Manto de Lula Gigante', 'Fatias largas e elásticas. Guardam tinta e mistério.', 16),
+  mat('carne', 3, 'carne-agua-viva', 'Manto de Água-Viva', 'Fatias largas e gelatinosas. Guardam um choque na ponta.', 16),
 
   // Tier 4 — As Veias de Fogo (Ato IV): bestas que já vêm temperadas
   mat('carne', 4, 'carne-salamandra', 'Rabo de Salamandra', 'Já vem quase no ponto. Arde na boca, no bom sentido.', 22),
   mat('carne', 4, 'carne-lagarto-igneo', 'Pernil de Lagarto Ígneo', 'Temperado pela própria brasa. Picante de nascença.', 24),
-  mat('carne', 4, 'carne-draconica', 'Corte Dracônico', 'Nobre e raro. Um banquete — ou uma última refeição.', 25),
+  mat('carne', 4, 'carne-corte-flamejante', 'Corte Flamejante', 'Nobre e raro, arde na boca. Um banquete — ou uma última refeição.', 25),
   mat('carne', 4, 'carne-fenix', 'Peito de Fênix', 'Renasce mal-passado se você piscar. Coma logo.', 26),
-  mat('carne', 4, 'carne-touro-igneo', 'Costela de Touro Ígneo', 'Marmorizada de brasa. Sela sozinha ao ar quente.', 24),
+  mat('carne', 4, 'carne-predador-fendas', 'Costela de Predador', 'Marmorizada de brasa. Sela sozinha ao ar quente.', 24),
   mat('carne', 4, 'carne-serpe', 'Filé de Serpe', 'Longo corte de serpente de fogo. Arde de nascença e no molho.', 25),
 
   // Tier 5 — O Abismo Primordial (Ato V): carne que não devia ser comida
   mat('carne', 5, 'carne-abissal', 'Naco Abissal', 'Carne de algo sem nome. Mastiga de volta, dizem.', 32),
-  mat('carne', 5, 'carne-quimera', 'Costela de Quimera', 'Três sabores brigando no mesmo osso.', 34),
+  mat('carne', 5, 'carne-aberracao', 'Costela de Aberração', 'Três sabores brigando no mesmo osso, nenhum em paz.', 34),
   mat('carne', 5, 'carne-eterna', 'Carne Eterna', 'Não estraga, não sacia, não acaba. Só alimenta o vazio.', 36),
   mat('carne', 5, 'carne-vazio', 'Vísceras do Vazio', 'O que sobra de algo que talvez nunca tenha comido nem sido comido.', 38),
   mat('carne', 5, 'carne-leviata', 'Posta de Leviatã', 'Um único corte alimenta uma aldeia. Se a aldeia tiver estômago.', 36),
@@ -362,7 +390,7 @@ const FRUTAS: MaterialDef[] = [
   mat('fruta', 5, 'fruta-tamarindo', 'Tamarindo', 'Vagem azeda que faz a boca fechar. Tempera e refresca.', 32),
 ];
 
-const ALL_MATERIALS: MaterialDef[] = [...ERVAS, ...MINERIOS, ...COUROS, ...TECIDOS, ...CARNES, ...VERDURAS, ...FRUTAS];
+const ALL_MATERIALS: MaterialDef[] = [...ERVAS, ...MINERIOS, ...BARRAS, ...COUROS, ...TECIDOS, ...CARNES, ...VERDURAS, ...FRUTAS];
 
 export const MATERIALS: Record<string, MaterialDef> = Object.fromEntries(
   ALL_MATERIALS.map((d) => [d.item.id, d]),
