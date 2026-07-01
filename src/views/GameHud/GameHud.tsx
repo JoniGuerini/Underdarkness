@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import type { Character, EquipSlot, Item, TabKey } from '../../types';
+import type { Character, EquipSlot, Item, MapItem, TabKey } from '../../types';
 import { TAB_LABEL } from '../../data/classes';
 import { EQUIP_GROUPS, EQUIP_SLOTS, EQUIP_SLOT_LABEL } from '../../data/items';
 import { ItemTooltip } from '../../components/ItemTooltip/ItemTooltip';
@@ -11,10 +11,12 @@ import { MapView, MapHeader } from '../../components/MapView/MapView';
 import { JournalView, JournalHeader } from '../../components/JournalView/JournalView';
 import { CodexView, CodexHeader } from '../../components/CodexView/CodexView';
 import { MercadoView, MercadoHeader } from '../../components/MercadoView/MercadoView';
+import { AtlasMapsView, AtlasMapsHeader } from '../../components/AtlasMapsView/AtlasMapsView';
 import { SocialView, SocialHeader } from '../../components/SocialView/SocialView'; // SOCIAL: removível
 import { OptionsView, OptionsHeader } from '../../components/OptionsView/OptionsView';
 import { NpcDialog } from '../../components/NpcDialog/NpcDialog';
 import { CombatModal } from '../../components/CombatModal/CombatModal';
+import { MapRunModal } from '../../components/MapRunModal/MapRunModal';
 import { getNpcsAt, type Npc } from '../../data/npcs';
 import { hasEncounters, rollEncounter, type Enemy } from '../../data/enemies';
 import { computeDerivedStats } from '../../lib/stats';
@@ -40,7 +42,7 @@ interface GameHudProps {
   onBackToList: () => void;
 }
 
-const TAB_ORDER: TabKey[] = ['personagem', 'habilidades', 'mapa', 'diario', 'codice', 'mercado', 'social', 'opcoes'];
+const TAB_ORDER: TabKey[] = ['personagem', 'habilidades', 'mapa', 'diario', 'codice', 'mercado', 'atlas', 'social', 'opcoes'];
 
 export function GameHud({
   character,
@@ -54,13 +56,15 @@ export function GameHud({
   const [activeNpc, setActiveNpc] = useState<Npc | null>(null);
   const [combatEnemy, setCombatEnemy] = useState<Enemy | null>(null);
   const [combatSession, setCombatSession] = useState(0);
+  const [runMap, setRunMap] = useState<MapItem | null>(null);
+  const [runSession, setRunSession] = useState(0);
   /** Tooltip do item equipado no painel direito — hover-driven, portal-fixed. */
   const [equipTooltip, setEquipTooltip] = useState<
     { item: Item; left: number; top: number } | null
   >(null);
   const equipRowRefs = useRef<Map<EquipSlot, HTMLDivElement>>(new Map());
   const realTime = useRealTime();
-  useRegenTick(character, onUpdate, !combatEnemy);
+  useRegenTick(character, onUpdate, !combatEnemy && !runMap);
 
   /** Quantidade total de slots preenchidos — exibido no header do painel. */
   const equippedCount = useMemo(
@@ -368,6 +372,7 @@ export function GameHud({
         activeTab === 'diario' ||
         activeTab === 'codice' ||
         activeTab === 'mercado' ||
+        activeTab === 'atlas' ||
         activeTab === 'social' || // SOCIAL: removível
         activeTab === 'opcoes') && (
         <Modal
@@ -387,6 +392,8 @@ export function GameHud({
               <CodexHeader character={character} onClose={closeTab} shortcut={shortcutFor('codice')} />
             ) : activeTab === 'mercado' ? (
               <MercadoHeader character={character} onClose={closeTab} shortcut={shortcutFor('mercado')} />
+            ) : activeTab === 'atlas' ? (
+              <AtlasMapsHeader character={character} onClose={closeTab} shortcut={shortcutFor('atlas')} />
             ) : activeTab === 'social' ? ( // SOCIAL: removível
               <SocialHeader character={character} onClose={closeTab} shortcut={shortcutFor('social')} />
             ) : (
@@ -444,6 +451,17 @@ export function GameHud({
             {activeTab === 'mercado' && (
               <MercadoView character={character} onUpdate={onUpdate} />
             )}
+            {activeTab === 'atlas' && (
+              <AtlasMapsView
+                character={character}
+                onUpdate={onUpdate}
+                onRunMap={(m) => {
+                  closeTab();
+                  setRunSession((n) => n + 1);
+                  setRunMap(m);
+                }}
+              />
+            )}
             {activeTab === 'social' && <SocialView character={character} />}{/* SOCIAL: removível */}
             {activeTab === 'opcoes' && (
               <OptionsView
@@ -472,6 +490,15 @@ export function GameHud({
         character={character}
         onUpdate={onUpdate}
         onClose={() => setCombatEnemy(null)}
+      />
+
+      {/* Expedição de mapa — abre ao abrir um mapa do Atlas */}
+      <MapRunModal
+        key={runSession}
+        map={runMap}
+        character={character}
+        onUpdate={onUpdate}
+        onClose={() => setRunMap(null)}
       />
 
     </div>

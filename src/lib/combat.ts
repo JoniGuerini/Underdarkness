@@ -3,7 +3,7 @@
  * `CombatModal` só orquestra estado e renderização.
  */
 
-import type { Character, Item, DerivedStats } from '../types';
+import type { Character, Item, DerivedStats, MapAffix } from '../types';
 import type { Enemy } from '../data/enemies';
 import { getEnemyAcerto, getEnemyCritChance, getEnemyCritMult, getEnemyVelAtaque } from '../data/enemies';
 import { getGrantedSpell, type ElementKey, type Spell } from '../data/spells';
@@ -11,6 +11,7 @@ import { computeDerivedStats, effectiveManaCost, effectiveCastTime } from './sta
 import { addItemToInventory } from './inventory';
 import { applyLevelUp } from './leveling';
 import { getMaterial } from '../data/materials';
+import { sumAffixValue } from '../data/mapAffixes';
 
 /** Resultado de uma ação ofensiva (jogador ou inimigo) */
 export interface AttackResult {
@@ -465,6 +466,47 @@ export function applyVictory(character: Character, rewards: VictoryRewards): Vic
     leveledUp,
     gainedLevels,
     newLevel: leveled.level,
+  };
+}
+
+/**
+ * Aplica vitória **sem** restaurar vitais — usado entre ondas de uma expedição
+ * (Atlas de Mapas). Soma XP + ouro + loot e checa level-up, mas mantém a vida/mana
+ * atuais, que carregam pra próxima luta (sem cura entre elas).
+ */
+export function applyVictoryNoRestore(character: Character, rewards: VictoryRewards): VictoryApplyResult {
+  let inventory = character.inventory;
+  for (const item of rewards.loot) {
+    const { inventory: next, added } = addItemToInventory(inventory, item);
+    if (added) inventory = next;
+  }
+  const withRewards: Character = {
+    ...character,
+    xp: character.xp + rewards.xp,
+    gold: character.gold + rewards.gold,
+    inventory,
+  };
+  const { character: leveled, leveledUp, gainedLevels } = applyLevelUp(withRewards);
+  return { character: leveled, leveledUp, gainedLevels, newLevel: leveled.level };
+}
+
+/**
+ * Aplica os afixos de dificuldade de um mapa ao inimigo spawnado da expedição.
+ * Multiplicadores de Vida/Dano/Vel. de Ataque e um adicional flat de Crítico.
+ */
+export function applyMapModsToEnemy(enemy: Enemy, affixes: MapAffix[]): Enemy {
+  if (affixes.length === 0) return enemy;
+  const vidaMult = 1 + sumAffixValue(affixes, 'enemy-vida') / 100;
+  const danoMult = 1 + sumAffixValue(affixes, 'enemy-dano') / 100;
+  const velMult = 1 + sumAffixValue(affixes, 'enemy-vel') / 100;
+  const critAdd = sumAffixValue(affixes, 'enemy-crit');
+  return {
+    ...enemy,
+    vidaMax: Math.max(1, Math.round(enemy.vidaMax * vidaMult)),
+    danoMin: Math.max(1, Math.round(enemy.danoMin * danoMult)),
+    danoMax: Math.max(1, Math.round(enemy.danoMax * danoMult)),
+    velAtaque: (enemy.velAtaque ?? 1) * velMult,
+    chanceCritico: (enemy.chanceCritico ?? 5) + critAdd,
   };
 }
 

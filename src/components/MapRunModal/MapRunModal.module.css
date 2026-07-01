@@ -1,0 +1,364 @@
+/* ============================================================
+   Header (modal large) — espelha o CombatModal
+   ============================================================ */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+.nameBlock { flex: 1; text-align: left; }
+.title {
+  font: 500 28px/1.1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.subtitle {
+  font: 500 11px/1.4 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.btnBack {
+  font-size: 11px;
+  padding: 9px 14px;
+  background: var(--bg);
+}
+.btnBack:hover { background: var(--surface); }
+.headerNote {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brass-bright);
+  background: var(--surface-deep);
+  padding: 8px 14px;
+  border-radius: 4px;
+  box-shadow: var(--card-edge-pill);
+}
+
+/* ============================================================
+   Root
+   ============================================================ */
+.root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+/* ── Progresso das ondas ─────────────────────────────────── */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: var(--paper);
+  border-radius: 6px;
+  box-shadow: var(--card-edge);
+}
+.progressDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--surface-deep);
+  box-shadow: inset 0 0 0 1px var(--border);
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.dotDone {
+  background: var(--brass);
+  box-shadow: inset 0 0 0 1px var(--brass-deep);
+}
+.dotActive {
+  background: var(--brass-bright);
+  box-shadow: 0 0 0 3px var(--surface-hover), inset 0 0 0 1px var(--brass-bright);
+  transform: scale(1.15);
+}
+.dotBoss {
+  border-radius: 2px;
+  transform: rotate(45deg);
+}
+.dotBoss.dotActive {
+  transform: rotate(45deg) scale(1.15);
+}
+.progressLabel {
+  margin-left: auto;
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* ============================================================
+   Combatentes
+   ============================================================ */
+.combatants {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+.combatant {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.combatantLabel {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.combatantName {
+  font: 500 22px/1.2 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.combatantMeta {
+  font: 500 11px/1.3 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--brass-deep);
+}
+.bars {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.versus {
+  align-self: center;
+  font: 500 22px/1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  color: var(--brass-light);
+  letter-spacing: 0.06em;
+  padding: 0 8px;
+}
+
+/* Barras */
+.barTrack {
+  position: relative;
+  height: 24px;
+  background: var(--bg);
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: var(--card-edge-pill);
+}
+.barFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100%;
+  transition: width 0.4s ease-out;
+}
+.fill_vida { background: var(--vital-vida); }
+.fill_mana { background: var(--vital-mana); }
+.barContent {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+}
+.barLabel {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.barValues {
+  font: 500 11px/1 var(--mono);
+  color: var(--ink);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* ============================================================
+   Log
+   ============================================================ */
+.logCard {
+  flex: 1;
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 16px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+.logHeader {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.logBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--brass-light) transparent;
+  padding-right: 4px;
+}
+.logBody::-webkit-scrollbar { width: 6px; }
+.logBody::-webkit-scrollbar-thumb { background: var(--brass-light); border-radius: 3px; }
+
+.logEntry {
+  font: 400 13px/1.6 var(--mono);
+  letter-spacing: 0.005em;
+  padding: 3px 0;
+  animation: entryIn 0.18s ease-out;
+}
+@keyframes entryIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.tone_neutral { color: var(--ink-soft); }
+.tone_system {
+  font-style: italic;
+  font-family: var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-muted);
+}
+.tone_enemy_hit { color: var(--brass-deep); }
+.tone_player_hit { color: var(--vital-vida); }
+.tone_miss { color: var(--ink-muted); font-style: italic; }
+.tone_reward { color: var(--brass-bright); font-weight: 500; }
+
+/* ============================================================
+   Ações
+   ============================================================ */
+.actionsCard {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 14px 22px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.rtHint {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-left: auto;
+}
+.btnAction {
+  min-width: 140px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+.btnAbilityCost {
+  margin-left: 6px;
+  font-size: 9px;
+  color: var(--vital-mana);
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+
+/* ============================================================
+   Result card
+   ============================================================ */
+.resultCard {
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--card-edge);
+  border-radius: 6px;
+  padding: 22px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  text-align: center;
+  animation: entryIn 0.25s ease-out;
+}
+.resultTitle {
+  font: 500 28px/1.1 var(--serif);
+  font-variation-settings: "opsz" 36;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.result_win .resultTitle { color: var(--brass-bright); }
+.result_loss .resultTitle { color: var(--vital-vida); }
+.result_flee .resultTitle { color: var(--ink-soft); }
+
+.rewardList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  min-width: 360px;
+}
+.rewardItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 14px;
+  background: var(--bg);
+  border-radius: 3px;
+  box-shadow: var(--card-edge-pill);
+  font: 400 13px/1.4 var(--mono);
+}
+.rewardLabel {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.rewardValue {
+  font: 500 14px/1 var(--mono);
+  color: var(--brass-deep);
+  letter-spacing: 0.02em;
+}
+.lootLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding: 4px 14px 8px;
+  justify-content: center;
+}
+.lootItem {
+  font: 400 12px/1.4 var(--mono);
+}
+.resultMessage {
+  font: italic 400 13px/1.55 var(--serif);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-muted);
+  max-width: 480px;
+  margin: 0;
+}
+.btnContinue {
+  margin-top: 8px;
+  padding: 11px 32px;
+}
+
+/* ============================================================
+   Responsivo
+   ============================================================ */
+@media (max-width: 900px) {
+  .combatants { grid-template-columns: 1fr; }
+  .versus { align-self: center; }
+}

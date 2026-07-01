@@ -76,6 +76,11 @@ function migrate(c: Character): Character {
     abandonedQuestIds: c.abandonedQuestIds ?? [],
     acceptedQuestIds: c.acceptedQuestIds ?? [],
     questStates: c.questStates ?? {},
+    // Endgame — estoque de mapas e maior tier concluído (saves antigos: vazios).
+    maps: c.maps ?? [],
+    highestMapTier: c.highestMapTier ?? 0,
+    // TEMP: ouro alto pra testar a forja de mapas do endgame. Remover depois (volta a usar c.gold via ...c).
+    gold: 999999,
     location: c.location === 'origem' ? 'pedragal' : (c.location ?? 'pedragal'),
     // Recomputa xpNext com a curva nova (10*level^1.5) — saves antigos tinham
     // xpNext: 100 hardcoded, agora é função do nível atual.

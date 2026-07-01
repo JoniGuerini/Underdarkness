@@ -76,6 +76,8 @@ VITAIS:  --vital-vida #d97766 · --vital-mana #5a8aa8 · --vital-exp #8a6f3e
 DANO:    --elem-fisico #F0E68C · --elem-fogo #C09060 · --elem-gelo #4DD9D9 · --elem-raio #6495ED · --elem-caos #B57EDC · --elem-sagrado #EFE5C4
 ATRIB:   --stat-forca #E04848 (verm) · --stat-agilidade #22C55E (verde) · --stat-intelecto #3B82F6 (azul) · --stat-defesa #9aa6b4 · --stat-critico #a3b04c
 RARIDADE: --rarity-comum #b0b6c0 · --rarity-magico #6495ED · --rarity-raro #F0E68C · --rarity-unico #C09060 · --rarity-lendario #B57EDC
+MAPA(tier): --map-tier-1 #b0b6c0 · --map-tier-2 #6495ED · --map-tier-3 #F0E68C · --map-tier-4 #C09060
+MATERIAIS: --material-{erva,minerio,couro,tecido,carne,verdura,fruta}  (cor por tipo de reagente)
 ```
 
 ### Sombras em camadas (assinatura visual)
@@ -107,19 +109,27 @@ src/
   hooks/
     useCharacters.ts         # CRUD de personagens + persistência
     useSettings.ts           # settings (atalhos, fullscreen)
+    useRegenTick.ts          # regen vida/mana 1/s fora de combate (só itens)
     useRealTime.ts           # relógio real HH:MM (placeholder p/ tempo de jogo)
 
   lib/
     stats.ts                 # ★ CORAÇÃO: computeDerivedStatsWithSources()
-    combat.ts                # lógica de combate em tempo real (pura)
+    combat.ts                # combate em tempo real (puro) + magias + afixos de mapa
     leveling.ts              # curva de XP, applyLevelUp
     inventory.ts             # addItemToInventory etc.
     settings.ts              # tipos/helpers de settings + atalhos
     storage.ts               # load/save + migração de schema
+    locationInfo.ts          # badges / nível de encontro por local
+    questProgress.ts         # status efetivo de quest, aceite, recompensas
+    lootgen.ts               # ★ ENDGAME: rollItem/rollItems (loot procedural)
+    mapgen.ts                # ★ ENDGAME: rollMap, expedições, drops, cor por tier
 
   data/                      # conteúdo declarativo (single source of truth)
-    classes.ts  talents.ts  world.ts  enemies.ts  npcs.ts  quests.ts
+    classes.ts  talents.ts  world.ts  enemies.ts  npcs.ts  npcDialogues.ts  quests.ts
     items.ts  itemBases.ts  itemMods.ts  materials.ts  recipes.ts  shops.ts
+    spells.ts  summons.ts                           # magias/invocações por arma (Mago)
+    market.ts                                       # casa de leilões (mock)
+    mapAffixes.ts                                   # ENDGAME: afixos de item-mapa
     social.ts  socialLinks.ts  parties.ts          # mock multiplayer — SOCIAL:
 
   components/                # 1 pasta por componente (.tsx + .module.css)
@@ -147,18 +157,20 @@ Grid 3 linhas: **topbar** (nome/classe + barras vitais) / **central** (cena da l
 - **Painel direito:** **Equipamento** (10 slots reais de `EQUIP_GROUPS`, tooltip de item no hover) + **Status Ativos** (placeholder).
 
 ### Tabs (atalhos configuráveis em settings)
-| Tab | Default | Conteúdo |
-|---|---|---|
-| Personagem | C | Inventory (paper-doll + bag) + CharacterSheet |
-| Habilidades | A | árvore de habilidades (talent tree) |
-| Mapa | M | Atlas (MapView) |
-| Diário | J | Quests (JournalView) |
-| Registro | K | mods, forja, bestiário |
-| Códice | L | guia de raridade (e futuros guias) |
-| Social | G | chat, guilda, amigos, grupos (mock) — SOCIAL: |
-| Opções | ESC | settings |
+Ordem em `TAB_ORDER` (GameHud). `registro` foi **absorvido pelo Códice** (não existe mais como tab).
+| Tab | Default | Componente | Conteúdo |
+|---|---|---|---|
+| Personagem | C | `Inventory` + `CharacterSheet` | paper-doll + bag + ficha |
+| Habilidades | A | `TalentsView` | árvore de talentos |
+| Mapa | M | `MapView` | atlas de campanha (viagem) |
+| Diário | J | `JournalView` | quests |
+| Códice | K | `CodexView` | Itens · Mods · Raridade · Forja · Bestiário · guia do Atlas |
+| Mercado | L | `MercadoView` | casa de leilões (mock) |
+| Atlas de Mapas | N | `AtlasMapsView` (+ `MapRunModal`) | ★ ENDGAME: forja / estoque / expedição |
+| Social | G | `SocialView` | chat, guilda, amigos, grupos (mock) — SOCIAL: |
+| Opções | ESC | `OptionsView` | settings |
 
-**Modal único compartilhado:** Personagem/Habilidades/Mapa/Diário/Registro/Códice/Social/Opções compartilham UM `<Modal large>`.
+**Modal único compartilhado:** todas as tabs (exceto o overlay de expedição `MapRunModal`) compartilham UM `<Modal large>`. Cada tab tem um par View/Header (ex.: `CodexView`/`CodexHeader`).
 
 ---
 
@@ -177,7 +189,11 @@ interface Character {
   talentRanks: Record<string, number>;             // talent.id → rank
   visitedLocations: string[];
   abandonedQuestIds: string[];
+  acceptedQuestIds: string[];                       // quests aceitas via diálogo (requiresAccept)
+  questStates: Record<string, QuestStatus>;         // status por quest quando difere do mock global
   gold, day: number;
+  maps: MapItem[];                                  // ENDGAME: estoque de mapas (fora dos 36 slots)
+  highestMapTier: number;                           // ENDGAME: maior tier concluído
   time, period, location, createdAt: string;
   updatedAt?: string;
 }
@@ -192,7 +208,7 @@ interface Character {
 - `flat-*` — **soma** cumulativa entre slots
 - `pct-*` — soma como **percentual**
 
-Lista: `weapon-speed, weapon-crit-base, flat-{vida,mana,armadura,evasao,regen-vida,regen-mana,acerto,forca,agilidade,intelecto,dmg-fis,dmg-fogo,dmg-gelo,dmg-raio,dmg-caos,dmg-sagrado}, pct-{res-fogo,res-gelo,res-raio,res-caos,res-sagrado,res-fisica,pen-fogo,pen-gelo,pen-raio,pen-caos,pen-sagrado,vel-ataque,red-tempo-conjuracao,crit-chance,crit-mult,eficiencia-mana,dmg-magia,dmg-{elem}-magia,roubo-vida,roubo-mana,esquiva,bloqueio}`.
+Lista: `weapon-speed, weapon-crit-base, flat-{vida,mana,armadura,evasao,escudo-energia,regen-vida,regen-mana,acerto,forca,agilidade,intelecto,todos-atributos,dmg-fis,dmg-fogo,dmg-gelo,dmg-raio,dmg-caos,dmg-sagrado}, pct-{res-fogo,res-gelo,res-raio,res-caos,res-sagrado,res-fisica,pen-fogo,pen-gelo,pen-raio,pen-caos,pen-sagrado,vel-ataque,red-tempo-conjuracao,crit-chance,crit-mult,eficiencia-mana,dmg-magia,dmg-{elem}-magia,roubo-vida,roubo-mana,bloqueio}`.
 
 ### ItemStatEffect / ItemStat
 ```ts
@@ -202,11 +218,14 @@ interface ItemStat { text: string; color?: ModColor; kind?: 'base'|'prefix'|'suf
 `ItemStat` **sem** `effect` só aparece no tooltip (não afeta a ficha). Com `effect`, vira número real.
 
 ### Outros tipos
-- **Item:** `id, name, slot: ItemSlot|null, rarity, stats?, description?, stackable?, stack?`.
+- **Item:** `id, name, slot: ItemSlot|null, rarity, stats?, description?, stackable?, stack?`. `ItemSlot` inclui `aljava` (off-hand exclusiva de arco).
 - **Talent:** `id, name, description, row, col, maxRank (default 5), prerequisites?, effect?`.
-- **Quest:** `id, title, type (principal|side|bounty|classe|evento|faccao), status (ativa|concluida|falhada), chapter?, giver?, locationId?, description, story, objectives[], rewards[], journal[], expiresIn?`.
-- **MapLocation:** `id, name, description, region, level, x, y, connections[], type? (town|wilderness|dungeon|boss)`.
-- **DerivedStats:** saída de stats.ts (ver § 7).
+- **Quest:** `id, title, type (principal|side|bounty|classe|evento|faccao), status (ativa|concluida|falhada), chapter?, giver?, locationId?, description, story, objectives[], rewards[], journal[], expiresIn?, requiresAccept?, giverNpcId?`.
+- **MapLocation:** `id, name, description, region, level, x, y, connections[], type? (town|wilderness|dungeon|boss), branch? (main|parallel), act?`.
+- **MapItem / MapAffix:** item-mapa de endgame + afixo rolado (ver § 25).
+- **Spell / SummonSpell / Minion:** magias/invocações concedidas por arma do Mago (`spells.ts`/`summons.ts` — ver § 25b).
+- **MarketListing:** listagem da casa de leilões mock (`market.ts` — ver § 17b).
+- **DerivedStats:** saída de stats.ts (ver § 7) — inclui `escudoEnergia`.
 
 ---
 
@@ -232,8 +251,10 @@ Helper `itemSources(contribs, key)` constrói sources com `max` pra ranges e suf
 ```
 ATRIBUTOS:  forca/agi/int = base + Σ flat-{attr}
 
-VIDA/MANA:  vidaMax = classe.vida + Σ flat-vida          (nenhum atributo)
-            manaMax = classe.mana + (intelecto × 5) + Σ flat-mana
+VIDA/MANA:  vidaMax = classe.vida + Σ flat-vida          (nenhum atributo; sem termo de level)
+            manaMax = (intelecto × 5) + Σ flat-mana      (SEM termo de classe — mana é 100% Int + itens)
+ESCUDO EN.: escudoEnergia = Σ flat-escudo-energia        (buffer absorvido antes da Vida; só itens)
+TODOS ATR.: flat-todos-atributos soma em forca/agi/int simultaneamente
 
 DANO FÍSICO (range):
   base = arma (flat-dmg-fis min/max) OU desarmado [1,1]
@@ -282,13 +303,13 @@ ROUBO/MOB:  rouboVida/Mana = Σpct-roubo-{x} (só itens); floor(danoEfetivo × %
 
 ## 8. Classes (data/classes.ts)
 
-| Classe | Vida | Mana | Força | Agi | Int |
-|---|---:|---:|---:|---:|---:|
-| Guerreiro | 14 | 2 | **8** | 3 | 3 |
-| Ladino | 10 | 4 | 5 | **8** | 5 |
-| Mago | 8 | 12 | 3 | 5 | **8** |
+| Classe | Vida | Força | Agi | Int |
+|---|---:|---:|---:|---:|
+| Guerreiro | 30 | **8** | 3 | 3 |
+| Ladino | 20 | 5 | **8** | 5 |
+| Mago | 15 | 3 | 5 | **8** |
 
-Cada classe: atributo primário em 8, demais em 3–5. 2 `abilities` (flavor, sem mecânica). Textos de tab em `TAB_LABEL`/`TAB_SHORTCUT`/`TAB_DESC`.
+`ClassData` **não tem campo `mana`** — Mana é derivada (Int×5 + itens). Cada classe: atributo primário em 8, demais em 3–5. 2 `abilities` (flavor, sem mecânica). Textos de tab em `TAB_LABEL`/`TAB_SHORTCUT`/`TAB_DESC`.
 
 ---
 
@@ -302,8 +323,10 @@ Revisão guiada de **cada um dos 39 stats**: pergunta → resposta → implement
 | **Força** | Base 8/5/3. Cada ponto = +1% Dano Físico multiplicativo. NÃO contribui pra Armadura. |
 | **Agilidade** | Base 3/8/5. Cada ponto = +2 Esquiva e +2 Evasão (flat). |
 | **Intelecto** | Base 3/5/8. Cada ponto = +5 Mana Máxima. |
-| **Vida Máxima** | Só classe + itens. Nenhum atributo. Nenhum ganho por level-up. |
-| **Mana Máxima** | Classe + Int×5 + itens. Nenhum ganho por level-up. |
+| **Vida Máxima** | Base por classe (Guerreiro 30 / Ladino 20 / Mago 15) + itens. Nenhum atributo. Nenhum ganho por level-up. |
+| **Mana Máxima** | Int×5 + itens. **Sem termo de classe.** Nenhum ganho por level-up. |
+| **Escudo de Energia** | Zero base, só itens (`flat-escudo-energia`). Buffer que absorve dano antes da Vida. |
+| **Todos os Atributos** | `flat-todos-atributos` — soma simultânea em Força, Agilidade e Intelecto (afixo de amuleto). |
 | **Regen Vida/Mana** | Zero base, só itens. **Por segundo** (`/s`). Fora do combate: `useRegenTick`. No combate RT: tick 1s no `CombatModal`. |
 | **Dano Físico** | Desarmado 1–1. Arma define range. Força multiplica. |
 | **Dano Total** | Físico (range) + elementais (flat). |
@@ -348,19 +371,21 @@ _(nenhum — questionário de combate core concluído)_
 
 ## 10. Sistema de Itens
 
-### Bases (itemBases.ts)
-Templates "limpos". `baseStats[]` com `text` (display) + `effect` (numérico). Helper `makeBaseItem(baseId, idPrefix)`.
+### Bases (itemBases.ts) — ~614 templates
+Templates "limpos". `baseStats[]` com `text` (display) + `effect` (numérico). Helper `makeBaseItem(baseId, idPrefix)`. Quase toda base tem `reqLevel` e dano escalado por `rolledDamage(reqLevel, aps, cls)` (curva DPS ~4,6%/nível; 2 mãos ×1,28; spread 25–30%).
 
-| Arma | Dano Fís | Vel | Crit | Extra |
-|---|---|---|---|---|
-| Espada Curta | 1–2 | 1.5/s | 5% | arma inicial |
-| Adaga Curva | 3–6 | 1.6/s | 8% | |
-| Espada Longa | 5–10 | 1.0/s | 5% | |
-| Martelo de Guerra | 8–16 | 0.7/s | 5% | |
-| Cajado de Carvalho | — | 0.8/s | 5% | Concede Bola de Fogo |
+**Famílias de arma (`WeaponType`, 15):** espada/machado/maça de uma e duas mãos, adaga, lança, alabarda, foice, arco, besta, cajado, varinha, cetro. Helpers `isTwoHandedWeaponType`, `isPrimaryOnlyWeaponType` (2 mãos, lança e arco só na Principal), `weaponTypeOfItem`.
+
+**Armadura (`ArmorType`, 6):** `armadura`, `evasao`, `escudo-energia` + híbridos (`armadura-evasao`, `armadura-energia`, `evasao-energia`). Peças: cabeça/peito/mãos/pés (60 cada) + escudo (60).
+
+**Acessórios:** cinto (`BeltType`), anel (`RingType`), amuleto (`AmuletType`), aljava (`AljavaType`, off-hand só de arco).
+
+**Armas mágicas:** `grantedSpellId` (16 cajados/varinhas → magia = ataque básico do Mago) e `grantedSummonId` (5 cetros → invocação; combate ainda **não** integrado). Ver § 25b.
 
 ### Afixos / Mods (itemMods.ts)
-Prefixos (poder bruto) e Sufixos (qualificadores "do/da"), PoE-style. `ItemModDef`: `id, label, category, group, color, description, roll: [min,max]`. `rollMod()` gera valor. **O Registro lê `description` daqui** — atualizar mod = atualizar registro.
+Prefixos (poder bruto) e Sufixos (qualificadores "do/da"), PoE-style. `ItemModDef`: `id, label, category, group, color, description, roll: [min,max]`, **`statKey: StatKey`** (efeito numérico) e **`namePrefix?: {m,f}` / `nameSuffix?`** (fragmentos pra compor nome procedural, com gênero). Dois geradores:
+- `rollMod(mod)` → **só texto** (o Códice lê isto — atualizar mod = atualizar Códice).
+- `rollModStat(mod)` → `ItemStat` completo com `effect` numérico via `statKey` (usado pelo **loot procedural**, ver § 25).
 
 ### Raridades
 | Tier | Afixos | Cor |
@@ -404,15 +429,16 @@ Prefixos (poder bruto) e Sufixos (qualificadores "do/da"), PoE-style. `ItemModDe
 - `getEnemyAttackIntervalMs` — `1/enemy.velAtaque` (default 1,0/s)
 - `applyArmor`, `mitigatePhysicalDamage`, `applyElementalMitigation`, `rollHit`, `rollCritical`, `rollBlock`
 - `tryFlee()` — 70%. `rollRewards`, `applyVictory`, `applyDefeat`, `restoreVitalsFull`, `computeLeech` / `applyPlayerLeech`
-- **Fim de combate** (vitória, derrota ou fuga): vida e mana restauradas a 100% dos máximos derivados.
+- **Endgame:** `applyVictoryNoRestore` (aplica XP/ouro/loot **sem** curar — usado entre ondas de expedição) e `applyMapModsToEnemy(enemy, affixes)` (buffa vida/dano/vel/crit conforme afixos do mapa). Ver § 25.
+- **Fim de combate no `CombatModal`** (vitória, derrota ou fuga): vida e mana restauradas a 100%. **Expedições NÃO curam entre lutas** — só ao final.
 
 ### Regen no combate
 `applyRegenTick` a cada `COMBAT_REGEN_INTERVAL_MS` (1s) dentro do modal. Fora do combate: tick por segundo via `useRegenTick` (só itens com regen); **não** substitui o restore total ao sair de um combate.
 
-### Inimigos (enemies.ts)
-`EnemyDef` com stats no **nível 1** e `locationId` exclusivo (uma criatura = uma área). `spawnEnemy(def, level)` escala linearmente.
-Nível do encontro: **`resolveEncounterLevel(charLevel, areaLevel)`** = clamp(personagem, área, área+1). Ex.: Floresta (1) — char nv 1→1, nv 2→2, nv 3+→2.
-12 áreas hostis × 4 criaturas cada (48 total). **Pedragal** é a única zona sem encontros. Pool derivado em `LOCATION_ENEMIES`. `rollEncounter(locationId, characterLevel)`.
+### Inimigos (enemies.ts) — ~184 defs
+`EnemyDef` com stats no **nível 1** e `locationId` exclusivo (uma criatura = uma área). `spawnEnemy(def, level)` escala linearmente. Stats opcionais: `velAtaque, acerto, chanceCritico, multCritico, bloqueio, rouboVida, rouboMana, res{Fogo,Gelo,Raio,Caos,Sagrado}, armadura, loot[], xpFactor` (defaults: acerto = nível×6, crit 5%, mult 1,5, vel 1/s).
+Nível do encontro: **`resolveEncounterLevel(charLevel, areaLevel)`** = clamp(personagem, área, área+1).
+Pool derivado em `LOCATION_ENEMIES`; `rollEncounter(locationId, characterLevel)`. **Cidades (`type: 'town'`) não têm encontros.** Chefes de expedição de endgame são inimigos de locais `type: 'boss'` reforçados (ver § 25).
 
 ---
 
@@ -424,31 +450,48 @@ Nível do encontro: **`resolveEncounterLevel(charLevel, areaLevel)`** = clamp(pe
 
 ---
 
-## 14. Mundo / Atlas (world.ts + MapView)
+## 14. Mundo / Atlas de Campanha (world.ts + MapView)
 
-13 locations em grafo com **tronco principal** + **4 ramos sem saída** (voltar ao hub pra seguir). Conexões bidirecionais. **Pedragal** é a única `town` (zona segura); demais locais têm patrulha.
+**61 locais** em grafo, distribuídos por **5 atos** (`act`): Ato I (nv 1–20) … Ato V (nv 80–100). Cada local tem `type` (`town`/`wilderness`/`dungeon`/`boss`) e `branch` (`main` = tronco da história / `parallel` = ramo opcional sem saída). Conexões bidirecionais.
+- **5 cidades** (`type: 'town'`, zonas seguras): Pedragal, Candelária, Cais Pálido, Brasa Última, Último Limiar.
+- **5 arenas de chefe** (`type: 'boss'`): Forja do Caos (19), Trono Cego (40), Leviatã Adormecido (60), Coração da Forja (80), Escuridão Primordial (100).
+- ~31 `wilderness` + ~20 `dungeon` têm patrulha.
+
+> Esta é a progressão **vertical** (nv 1→100). O endgame **horizontal** (Atlas de Mapas) vive em outra tab — ver § 25.
 
 ---
 
 ## 15. NPCs / Vila / Lojas / Crafting / Descanso
 
-**NPCs (npcs.ts):** declarativo — `roles: NpcRole[]` (`falar, loja, forjar, destilar, descansar`), UI renderiza botões conforme. Campo `portrait?` existe mas **nenhum NPC usa** (revertidos). Roster Pedragal: Tibério (Ferreiro), Solana (Alquimista), Doroteu (Padeiro), Sirvên (Ancião), Madalena (Estalajadeira). Cards quadrados (`aspect-ratio: 1/1`, grid `minmax(200px,1fr)`).
+**NPCs (npcs.ts + npcDialogues.ts):** declarativo — `roles: NpcRole[]` (`falar, loja, forjar, destilar, descansar`), UI renderiza botões conforme. `npcDialogues.ts` guarda os fluxos de conversa (`NpcDialog` full-screen; pode aceitar quests `requiresAccept`). NPCs existem nas **5 cidades**; roster de Pedragal: Tibério (Ferreiro), Solana (Alquimista), Doroteu (Padeiro), Sirvên (Ancião), Madalena (Estalajadeira). Campo `portrait?` existe mas **nenhum NPC usa** (revertidos). Cards quadrados (`aspect-ratio: 1/1`, grid `minmax(200px,1fr)`).
 
-**Loja/Forja/Destilaria/Estalagem:** `shops.ts` (compra/venda), `recipes.ts` (materiais → item), RestPane (5g → Vida/Mana cheias + `day+1`).
+**Materiais (`materials.ts`):** ~196 reagentes empilháveis, 7 tipos (`MaterialType`: erva, minério, couro, tecido, carne, verdura, fruta) × tiers 1–5 (~ato). Maps `MATERIAL_TYPE_LABEL/SINGULAR/COLOR` (tokens `--material-{tipo}`); grupo "Reagente de Criação". Frutas usam nomes reais.
+
+**Loja/Forja/Destilaria/Estalagem:** `shops.ts` (compra/venda), `recipes.ts` (materiais → item), `ShopPane`/`CraftPane`/`RestPane` (descanso 5g → Vida/Mana cheias + `day+1`).
 
 ---
 
 ## 16. Quests / Diário (quests.ts + JournalView)
 
-Mock cobrindo todos os estados/tipos. Abandono some do diário (`abandonedQuestIds`), retomável. Progresso hoje é hardcoded (sem sistema de eventos).
+Mock cobrindo todos os estados/tipos. Quests com `requiresAccept` só entram no diário após aceite via `NpcDialog` (`acceptedQuestIds`); status por-personagem em `questStates` sobrepõe o mock global. Abandono some do diário (`abandonedQuestIds`), retomável. Lógica de status efetivo/aceite/recompensa em `lib/questProgress.ts`. Progresso de objetivos ainda é hardcoded (sem sistema de eventos).
 
 ---
 
-## 17. Registro + Códice
+## 17. Códice (CodexView) — Registro unificado
 
-**Registro** (`RegistroView`): **Mods**, **Forja** (simulador), **Bestiário** (`enemies.ts`). Manter `description` dos mods sincronizada com fórmulas reais.
+O antigo **Registro** foi **absorvido pelo Códice** (não existe mais `RegistroView`). `CodexView` tem seções (`CodexSection`):
+- **Itens** (`ItemsView`) — catálogo de bases + materiais com origem (drop/loja).
+- **Mods** (`ModsList`) — lê `description` dos afixos (manter sincronizado com as fórmulas reais).
+- **Raridade** (`RarityGuide`).
+- **Forja** (`ForgeView`) — sandbox de craft.
+- **Bestiário** (`BestiaryView`) — de `enemies.ts`.
+- **Atlas de Mapas** (`AtlasGuide`) — guia da mecânica de endgame (≠ tab de gameplay do Atlas).
 
-**Códice** (`CodexView` + `RarityGuide`): guias que ensinam mecânicas — hoje **Raridade**; novos guias entram aqui, não no Registro.
+Novos guias/registros entram como seções aqui.
+
+## 17b. Mercado (MercadoView) — Casa de Leilões (MOCK)
+
+Tab própria (`L`). Listagens em `market.ts` (`MarketListing`: `seller`, `sellerClassKey`, `item`, `price`, `listedMinutesAgo`, `isPlayer?`), filtro por `MarketCategory` (`todos|arma|armadura|acessorio|consumivel`). Fachada de compra/venda entre jogadores — sem rede real.
 
 ---
 
@@ -462,7 +505,9 @@ Tudo `// SOCIAL:`. Tab **Social**: chat Global/Guilda/Amigos/Grupos (LFG estilo 
 
 `loadCharacters()` → parse + `migrate()` por personagem. Chave `underdarkness_characters`.
 
-`migrate()` faz: garante `rarity` em itens; rename `anel`→`anel1`; redimensiona inventário pra `INVENTORY_SIZE`; renomeia location `origem`→`pedragal`; recomputa `xpNext`; **re-sincroniza atributos** (`forca/agi/int`) com `CLASSES[classKey]`; level-ups retroativos; **sincroniza `vidaMax`/`manaMax`** com `computeDerivedStats` e clampa atuais.
+`migrate()` faz: garante `rarity` em itens; rename `anel`→`anel1`; redimensiona inventário pra `INVENTORY_SIZE`; renomeia location `origem`→`pedragal`; recomputa `xpNext`; **re-sincroniza atributos** (`forca/agi/int`) com `CLASSES[classKey]`; level-ups retroativos; **sincroniza `vidaMax`/`manaMax`** com `computeDerivedStats` e clampa atuais; garante campos novos (`acceptedQuestIds`, `questStates`, `maps: []`, `highestMapTier: 0`).
+
+> ⚠️ **TEMP (dev/teste):** enquanto o endgame está "no forno", `migrate()` força `gold: 999999` e o gate de nível 100 do Atlas está desativado (ver § 23, Dívida técnica). **Reverter antes de release.**
 
 > ⚠️ **Requisito firme do usuário:** atributos re-sincronizam da classe a cada load — personagens existentes herdam mudanças de balanceamento **sem recriar**. Quando houver alocação manual de pontos, separar base-da-classe de pontos-alocados e tornar esse refresh condicional.
 
@@ -529,20 +574,27 @@ Documentação só com confirmação.
 
 ## 23. Roadmap / TODOs / Pendências
 
-### Imediato (questionário de stats)
-- [ ] **Dano Elemental** — perguntas pendentes (§ 9).
+### Feito recentemente (deste ciclo)
+- [x] **Loot procedural** (`lootgen.ts` + `rollModStat`).
+- [x] **Endgame — Atlas de Mapas** (§ 25): geração de mapas, expedições ondas+chefe sem cura, drops T/T+1.
+- [x] **Magias do Mago** no combate (spell por arma; eficiência de mana + redução de cast).
+- [x] Catálogo de materiais por tipo (196 itens: ervas/minérios/couros/tecidos/carnes/verduras/frutas).
+
 ### Sistemas a definir
+- [ ] **Invocações (summons)** — `summons.ts` existe (5 minions + 5 magias em cetros), mas **combate ainda não usa**. Plugar em `combat.ts`.
 - [ ] **"Turno fora do combate"** (bloqueador da regen externa): por ação | tick em tempo real | por período do dia.
 - [ ] Plugar efeitos de **talento** em stats.ts.
-- [ ] Sistema de **habilidades/feitiços** real (combate em tempo real + custos/tempos de cast por spell).
 - [ ] Alocação **manual de pontos de atributo** (separar base-classe de alocado; refresh da migração condicional).
 - [ ] Descartar item (drag-out da bag).
-- [ ] Eventos no Atlas, loot procedural, reputação como sistema, multi-slot items, save slots múltiplos.
+- [ ] Endgame: balanceamento de tiers/afixos, sabor por tema, uniques de mapa.
+- [ ] Eventos no Atlas, reputação como sistema, multi-slot items, save slots múltiplos.
 
 ### Dívida técnica
+- **TEMP (reverter antes de release):** `storage.ts` força `gold: 999999`; `AtlasMapsView` com `unlocked = true` (2 pontos) ignora o gate de nível 100. Só pra testar o endgame sem boneco nv 100.
 - CSS `.contextMenu`/`.menuItemDanger` órfãos (menu removido) — limpar.
 - `useRealTime` é placeholder do tempo de jogo.
 - `portrait?` de NPC + PNGs em `assets/` dormentes (revertidos) — manter ou remover.
+- Comentário no topo de `world.ts` ainda diz "Pedragal é a única zona segura", mas há 5 `town` — atualizar.
 
 ---
 
@@ -558,7 +610,42 @@ Documentação só com confirmação.
 | Adicionar base de item | `data/itemBases.ts` |
 | Persistir campo novo | `types.ts` → `CharacterCreate.tsx` → `storage.ts` |
 | Adicionar tab/modal | `views/GameHud/GameHud.tsx` + `data/classes.ts` (TAB_*) + `lib/settings.ts` |
+| Forjar/abrir mapa (endgame) | `lib/mapgen.ts` + `components/AtlasMapsView` / `MapRunModal` |
+| Gerar loot procedural | `lib/lootgen.ts` (`rollItem`) + `data/itemMods.ts` (`rollModStat`) |
+| Magia de arma do Mago | `data/spells.ts` + `grantedSpellId` em `itemBases.ts` |
 | Padrão visual | `design-system.md` primeiro, depois componente similar |
+
+---
+
+## 25. ★ Endgame — Atlas de Mapas (estilo PoE)
+
+Progressão **horizontal** após o teto de nível 100 (teto continua 100; sem XP além disso — poder vem de loot + tiers de mapa). Tab própria **Atlas de Mapas** (`N`), pensada pra desbloquear em nível 100.
+
+### Item-mapa (`MapItem`) e geração (`lib/mapgen.ts`)
+- `MAX_MAP_TIER = 16`. `tierMonsterLevel(tier) = 100 + (tier−1)×3`. `tierWaves(tier) = min(7, 4 + floor((tier−1)/4))`. Nº de afixos = `min(4, 1 + floor(tier/2))`.
+- `rollMap(tier)` sorteia um **tema** (local hostil → pool de inimigos + sabor), nível, ondas e afixos → devolve um `MapItem`. Fora do inventário de 36 slots: vive em `Character.maps`.
+- Cor por tier: `tierColorVar(tier)` → tokens `--map-tier-1..4`.
+
+### Afixos de mapa (`data/mapAffixes.ts`)
+6 afixos (`MapAffixDef`: `id, label, description, color, kind, roll, minTier`). `kind`:
+- **Dificuldade:** `enemy-vida` (+20–60%), `enemy-dano` (+15–45%), `enemy-vel` (+10–25%), `enemy-crit` (+6–16%, minTier 3).
+- **Recompensa:** `loot-quantidade` (+20–80%), `loot-raridade` (+15–50%).
+Helpers `rollMapAffix`, `sumAffixValue`. `AFFIX_COLOR_VAR` mapeia `ModColor` → var CSS pra colorir inline.
+
+### Expedição (`components/MapRunModal`)
+- `buildExpeditionEnemies(map)`: `waves` de inimigos normais do tema + **1 chefe** (`beefBoss`: +80% vida, +15% dano, +2 níveis). `applyMapModsToEnemy` aplica os afixos de dificuldade em cada inimigo.
+- **Sem cura entre lutas** — vida/mana persistem; só regen/roubo/habilidade sustentam. `applyVictoryNoRestore` entre ondas; `restoreVitalsFull` **só** no fim (vitória, derrota ou fuga).
+- **Vitória final:** ouro + `baseLootCount(tier)` itens via **loot procedural** (`lootgen`, com bônus de raridade/quantidade dos afixos) + `rollExpeditionMapDrops(tier)` (drop de mapas T/T+1) + atualiza `highestMapTier`. **Derrota/fuga consomem o mapa.**
+
+### UI (`components/AtlasMapsView`)
+"Dispositivo de Mapas" forja um mapa T1 (**200 ouro**), estoque ordenado por tier, botão "Abrir Expedição" → `MapRunModal`. Guia da mecânica no Códice (`AtlasGuide`). Mostra o maior tier concluído (`highestMapTier`).
+
+---
+
+## 25b. Magias & Invocações do Mago (spells.ts / summons.ts)
+
+- **Magias (`spells.ts`, 16):** `Spell` = `id, name, element, tier, castTimeSec, hits[]`. Concedidas por arma via `grantedSpellId` (16 cajados/varinhas; fogo/gelo/raio/sagrado tiers 1–3, caos 1–4). `getGrantedSpell(character)` retorna `null` se não-Mago. **São o ataque básico do Mago** (sem custo de mana); dano em `combat.ts` via `resolveSpellDamage`, escalado por `pct-dmg-magia` / `pct-dmg-{elem}-magia`.
+- **Invocações (`summons.ts`, 5 minions + 5 magias):** `Minion` (`role, vida, danoMin/Max`) e `SummonSpell` (`tier, manaCost, castTimeSec, minionId, count`), concedidas por `grantedSummonId` (5 cetros). **Ainda não integradas ao combate** (§ 23).
 
 ---
 

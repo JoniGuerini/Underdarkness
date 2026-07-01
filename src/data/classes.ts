@@ -52,6 +52,7 @@ export const TAB_LABEL: Record<string, string> = {
   diario: 'Diário',
   codice: 'Códice',
   mercado: 'Mercado',
+  atlas: 'Atlas de Mapas',
   social: 'Social', // SOCIAL: removível
   opcoes: 'Opções',
 };
@@ -63,6 +64,7 @@ export const TAB_SHORTCUT: Record<string, string> = {
   diario: 'J',
   codice: 'K',
   mercado: 'L',
+  atlas: 'N',
   social: 'G', // SOCIAL: removível
   opcoes: 'ESC',
 };
@@ -74,6 +76,7 @@ export const TAB_DESC: Record<string, string> = {
   diario: 'Quests, anotações e fragmentos de lore.',
   codice: 'Mods, forja, bestiário e guias de mecânica.',
   mercado: 'Casa de leilões — compra e venda entre jogadores.',
+  atlas: 'Endgame — forje e abra mapas em expedições por loot e tiers.',
   social: 'Chat, guilda, amigos e busca de grupos.', // SOCIAL: removível
   opcoes: 'Preferências do jogo.',
 };

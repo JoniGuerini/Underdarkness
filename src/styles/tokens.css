@@ -68,6 +68,15 @@
   --rarity-lendario: #B57EDC;    /* Lavender — lendário (mesma família do Caos) */
 
   /* ============================================================
+     ATLAS DE MAPAS — cor do tier de mapa (endgame), 4 faixas
+     (segue a família de raridade; sem border-left — só cor de fonte)
+     ============================================================ */
+  --map-tier-1: #b0b6c0;         /* Cinza-folha — tiers baixos (T1–4) */
+  --map-tier-2: #6495ED;         /* Azul — tiers médios (T5–8) */
+  --map-tier-3: #F0E68C;         /* Khaki — tiers altos (T9–12) */
+  --map-tier-4: #C09060;         /* Tussock — tiers de pico (T13–16) */
+
+  /* ============================================================
      REAGENTES DE CRIAÇÃO — rótulo-guarda-chuva + cor por tipo
      (o subtipo é colorido pra ler bem e distinguir a categoria)
      ============================================================ */
